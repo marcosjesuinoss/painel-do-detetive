@@ -1,0 +1,204 @@
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes splashFade {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ================= SPLASH SCREEN ================= */
+#splashScreen {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(var(--splash-glow, 22, 163, 74), 0.22), transparent 42%),
+    linear-gradient(145deg, var(--splash-bg, #0f172a), var(--splash-bg-end, #111827));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.4s ease;
+}
+
+.splash-conteudo {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  animation: splashFade 1.2s ease;
+}
+
+.splash-titulos {
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  padding: 0 22px;
+}
+
+.splash-titulos strong {
+  color: var(--splash-text, #e2e8f0);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+}
+
+.splash-titulos span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+@keyframes focoColuna {
+  0% {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@keyframes desenharCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes aparecerX {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* animacoes e estilo dos icones de estado */
+@keyframes aparecerDuvida {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.estado-icon {
+  display: block;
+  margin: auto;
+  overflow: visible;
+}
+
+.estado-check {
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.4));
+}
+
+.estado-check .estado-traco {
+  fill: none;
+  stroke: #22c55e;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 4px rgba(34, 197, 94, 0.98))
+    drop-shadow(0 0 9px rgba(34, 197, 94, 0.93))
+    drop-shadow(0 0 15px rgba(34, 197, 94, 0.78));
+}
+
+.estado-x {
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.42));
+}
+
+.estado-x .estado-traco {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter:
+    drop-shadow(0 0 4px rgba(239, 68, 68, 0.98))
+    drop-shadow(0 0 9px rgba(239, 68, 68, 0.93))
+    drop-shadow(0 0 15px rgba(239, 68, 68, 0.78));
+}
+
+.estado-duvida {
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45));
+}
+
+.estado-duvida .estado-traco,
+.estado-duvida .estado-ponto {
+  fill: none;
+  stroke: #facc15;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 4px rgba(250, 204, 21, 0.99))
+    drop-shadow(0 0 9px rgba(250, 204, 21, 0.93))
+    drop-shadow(0 0 15px rgba(250, 204, 21, 0.81));
+}
+
+.estado-duvida .estado-ponto {
+  fill: #facc15;
+  stroke: none;
+}
+
+.check-anim .estado-traco {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: desenharCheck 0.28s ease forwards;
+}
+
+.x-anim {
+  animation: aparecerX 0.24s ease;
+}
+
+.q-anim {
+  animation: aparecerDuvida 0.2s ease;
+}
+
+@keyframes xDoFundo {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.45);
+    filter: blur(1.4px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-0.5px) scale(1.08);
+    filter: blur(0.2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.x-auto-anim {
+  transform-origin: center;
+  animation: xDoFundo 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}

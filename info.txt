@@ -1,0 +1,15 @@
+* Estrutura funcional 100% - sem bugs aparentes
+
+* O que está funcionando?
+	- Novo jogo
+	- Continuar
+	- Personalizar
+	- Aparência do App
+	- Aparência da tabela
+	- Logica de marcação configurada
+	- Tela "Sobre" criada
+
+* Próximos passos
+	- modo PRO - EM DESENVOLVIMENTO
+	- Aprimorar "regras" (visualmente)
+	- Melhorias visuais - EM DESENVOLVIMENTO

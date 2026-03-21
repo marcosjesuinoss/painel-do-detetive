@@ -1,0 +1,13 @@
+.vscode/
+backup/
+desktop.ini
+Thumbs.db
+
+# Local notes and temporary files
+*.tmp
+*.temp
+*.bak
+
+# Logs
+*.log
+

@@ -1,0 +1,274 @@
+{
+  "features": {
+    "temas": {
+      "ativo": true,
+      "nome": "Temas Sofisticados",
+      "descricao": "Acesso a temas visuais premium com gradientes e efeitos avan\u00e7ados",
+      "dependencias": []
+    },
+    "ia": {
+      "ativo": true,
+      "nome": "Assistente IA",
+      "descricao": "IA para ajudar na dedu\u00e7\u00e3o de pistas e investiga\u00e7\u00e3o",
+      "dependencias": []
+    },
+    "semAnuncios": {
+      "ativo": true,
+      "nome": "Sem An\u00fancios",
+      "descricao": "Experi\u00eancia livre de an\u00fancios e distra\u00e7\u00f5es",
+      "dependencias": []
+    },
+    "alertaDuplicidade": {
+      "ativo": true,
+      "nome": "Alerta de Duplicidade",
+      "descricao": "Destaca em vermelho suave quando uma mesma linha recebe 2 marca\u00e7\u00f5es \"V\"",
+      "dependencias": []
+    },
+    "alertaCartaEncontrada": {
+      "ativo": true,
+      "nome": "Alerta de carta encontrada",
+      "descricao": "Aplica indica\u00e7\u00e3o visual quando uma carta j\u00e1 foi encontrada no tabuleiro",
+      "dependencias": []
+    }
+  },
+  "temas": {
+    "classico": {
+      "id": "classico",
+      "nome": "Cl\u00e1ssico Refinado",
+      "tipo": "free",
+      "descricao": "Visual equilibrado e leg\u00edvel para qualquer ambiente",
+      "variaveis": {
+        "--bg-primario": "#0f141c",
+        "--bg-secundario": "#171d28",
+        "--card": "#232c3a",
+        "--text-primario": "#e8eef6",
+        "--text-secundario": "#aab5c6",
+        "--accent": "#16a34a",
+        "--accent-soft": "#4ade80",
+        "--accent-strong": "#15803d",
+        "--accent-rgb": "22, 163, 74",
+        "--gradient-principal": "linear-gradient(135deg, #1f2937, #334155)",
+        "--gradient-botao": "linear-gradient(135deg, #4ade80, #16a34a)",
+        "--gradient-card": "linear-gradient(135deg, rgba(74,222,128,0.10), rgba(22,163,74,0.05))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#d9e0e8",
+        "--bg-secundario": "#cfd7e1",
+        "--card": "#c4ced9",
+        "--text-primario": "#1f2937",
+        "--text-secundario": "#475569",
+        "--accent": "#15803d",
+        "--accent-soft": "#4ade80",
+        "--accent-strong": "#166534",
+        "--accent-rgb": "21, 128, 61",
+        "--gradient-principal": "linear-gradient(135deg, #cbd5e1, #b8c4d2)",
+        "--gradient-botao": "linear-gradient(135deg, #4ade80, #16a34a)",
+        "--gradient-card": "linear-gradient(135deg, rgba(74,222,128,0.12), rgba(22,163,74,0.06))"
+      }
+    },
+    "verde": {
+      "id": "verde",
+      "nome": "Verde Assinatura",
+      "tipo": "pro",
+      "descricao": "O visual premium padr\u00e3o do app, com verde sofisticado",
+      "variaveis": {
+        "--bg-primario": "#0c1712",
+        "--bg-secundario": "#13231b",
+        "--card": "#1d3528",
+        "--text-primario": "#b7f0cb",
+        "--text-secundario": "#8ed5ab",
+        "--accent": "#22c55e",
+        "--accent-soft": "#4ade80",
+        "--accent-strong": "#15803d",
+        "--accent-rgb": "34, 197, 94",
+        "--gradient-principal": "linear-gradient(135deg, #1a3226, #235137)",
+        "--gradient-botao": "linear-gradient(135deg, #4ade80, #16a34a)",
+        "--gradient-card": "linear-gradient(135deg, rgba(74,222,128,0.14), rgba(21,128,61,0.07))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#d8e6db",
+        "--bg-secundario": "#cedfce",
+        "--card": "#c2d6c3",
+        "--text-primario": "#1f4d2c",
+        "--text-secundario": "#2e6540",
+        "--accent": "#15803d",
+        "--accent-soft": "#4ade80",
+        "--accent-strong": "#166534",
+        "--accent-rgb": "21, 128, 61",
+        "--gradient-principal": "linear-gradient(135deg, #c4d8c5, #b4cab6)",
+        "--gradient-botao": "linear-gradient(135deg, #4ade80, #15803d)",
+        "--gradient-card": "linear-gradient(135deg, rgba(74,222,128,0.15), rgba(21,128,61,0.08))"
+      }
+    },
+    "azul": {
+      "id": "azul",
+      "nome": "Azul Safira",
+      "tipo": "pro",
+      "descricao": "Detalhes frios e refinados em azul profundo",
+      "variaveis": {
+        "--bg-primario": "#0c121a",
+        "--bg-secundario": "#121c28",
+        "--card": "#1b2c3d",
+        "--text-primario": "#d8e9ff",
+        "--text-secundario": "#a9c3e6",
+        "--accent": "#3b82f6",
+        "--accent-soft": "#60a5fa",
+        "--accent-strong": "#1d4ed8",
+        "--accent-rgb": "59, 130, 246",
+        "--gradient-principal": "linear-gradient(135deg, #182a3c, #203d5a)",
+        "--gradient-botao": "linear-gradient(135deg, #60a5fa, #2563eb)",
+        "--gradient-card": "linear-gradient(135deg, rgba(96,165,250,0.14), rgba(29,78,216,0.07))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#d8e1ea",
+        "--bg-secundario": "#cdd7e2",
+        "--card": "#c2ceda",
+        "--text-primario": "#18334f",
+        "--text-secundario": "#2b4a68",
+        "--accent": "#2563eb",
+        "--accent-soft": "#60a5fa",
+        "--accent-strong": "#1d4ed8",
+        "--accent-rgb": "37, 99, 235",
+        "--gradient-principal": "linear-gradient(135deg, #c5d2df, #b3c3d4)",
+        "--gradient-botao": "linear-gradient(135deg, #60a5fa, #2563eb)",
+        "--gradient-card": "linear-gradient(135deg, rgba(96,165,250,0.14), rgba(37,99,235,0.08))"
+      }
+    },
+    "vermelho": {
+      "id": "vermelho",
+      "nome": "Vermelho Rubi",
+      "tipo": "pro",
+      "descricao": "Presen\u00e7a marcante com vermelhos elegantes e controlados",
+      "variaveis": {
+        "--bg-primario": "#170f11",
+        "--bg-secundario": "#241519",
+        "--card": "#352027",
+        "--text-primario": "#ffd7dc",
+        "--text-secundario": "#efb2bc",
+        "--accent": "#ef4444",
+        "--accent-soft": "#f87171",
+        "--accent-strong": "#b91c1c",
+        "--accent-rgb": "239, 68, 68",
+        "--gradient-principal": "linear-gradient(135deg, #34191e, #4a2028)",
+        "--gradient-botao": "linear-gradient(135deg, #f87171, #dc2626)",
+        "--gradient-card": "linear-gradient(135deg, rgba(248,113,113,0.14), rgba(185,28,28,0.07))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#ead9dc",
+        "--bg-secundario": "#e2cfd3",
+        "--card": "#d9c1c7",
+        "--text-primario": "#5a2029",
+        "--text-secundario": "#7b3340",
+        "--accent": "#dc2626",
+        "--accent-soft": "#f87171",
+        "--accent-strong": "#b91c1c",
+        "--accent-rgb": "220, 38, 38",
+        "--gradient-principal": "linear-gradient(135deg, #d8c1c6, #cab0b6)",
+        "--gradient-botao": "linear-gradient(135deg, #f87171, #dc2626)",
+        "--gradient-card": "linear-gradient(135deg, rgba(248,113,113,0.14), rgba(220,38,38,0.08))"
+      }
+    },
+    "amarelo": {
+      "id": "amarelo",
+      "nome": "Dourado Solar",
+      "tipo": "pro",
+      "descricao": "Destaques quentes em dourado e \u00e2mbar premium",
+      "variaveis": {
+        "--bg-primario": "#16120c",
+        "--bg-secundario": "#231b11",
+        "--card": "#342818",
+        "--text-primario": "#ffe9b3",
+        "--text-secundario": "#e8cc86",
+        "--accent": "#f59e0b",
+        "--accent-soft": "#fbbf24",
+        "--accent-strong": "#d97706",
+        "--accent-rgb": "245, 158, 11",
+        "--gradient-principal": "linear-gradient(135deg, #312410, #483215)",
+        "--gradient-botao": "linear-gradient(135deg, #fbbf24, #d97706)",
+        "--gradient-card": "linear-gradient(135deg, rgba(251,191,36,0.14), rgba(217,119,6,0.07))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#e9dfd0",
+        "--bg-secundario": "#e0d4c1",
+        "--card": "#d5c6b0",
+        "--text-primario": "#5c420b",
+        "--text-secundario": "#7b5a16",
+        "--accent": "#d97706",
+        "--accent-soft": "#fbbf24",
+        "--accent-strong": "#b45309",
+        "--accent-rgb": "217, 119, 6",
+        "--gradient-principal": "linear-gradient(135deg, #d7c6aa, #c8b18d)",
+        "--gradient-botao": "linear-gradient(135deg, #fbbf24, #d97706)",
+        "--gradient-card": "linear-gradient(135deg, rgba(251,191,36,0.14), rgba(217,119,6,0.08))"
+      }
+    },
+    "roxo": {
+      "id": "roxo",
+      "nome": "Roxo Imperial",
+      "tipo": "pro",
+      "descricao": "Roxo elegante com profundidade visual premium",
+      "variaveis": {
+        "--bg-primario": "#120f18",
+        "--bg-secundario": "#1b1625",
+        "--card": "#2a2036",
+        "--text-primario": "#eadcff",
+        "--text-secundario": "#cdb3ee",
+        "--accent": "#8b5cf6",
+        "--accent-soft": "#a78bfa",
+        "--accent-strong": "#6d28d9",
+        "--accent-rgb": "139, 92, 246",
+        "--gradient-principal": "linear-gradient(135deg, #271c37, #3a2850)",
+        "--gradient-botao": "linear-gradient(135deg, #a78bfa, #7c3aed)",
+        "--gradient-card": "linear-gradient(135deg, rgba(167,139,250,0.14), rgba(109,40,217,0.07))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#e3dce9",
+        "--bg-secundario": "#d8d0e1",
+        "--card": "#ccc3d8",
+        "--text-primario": "#4a2c6b",
+        "--text-secundario": "#664189",
+        "--accent": "#7c3aed",
+        "--accent-soft": "#a78bfa",
+        "--accent-strong": "#6d28d9",
+        "--accent-rgb": "124, 58, 237",
+        "--gradient-principal": "linear-gradient(135deg, #cfc5dd, #bfb2d1)",
+        "--gradient-botao": "linear-gradient(135deg, #a78bfa, #7c3aed)",
+        "--gradient-card": "linear-gradient(135deg, rgba(167,139,250,0.14), rgba(124,58,237,0.08))"
+      }
+    },
+    "cinza": {
+      "id": "cinza",
+      "nome": "Cinza Tit\u00e2nio",
+      "tipo": "pro",
+      "descricao": "Acentos met\u00e1licos e discretos em cinza premium",
+      "variaveis": {
+        "--bg-primario": "#101316",
+        "--bg-secundario": "#171c22",
+        "--card": "#242c35",
+        "--text-primario": "#e2e8f0",
+        "--text-secundario": "#b5c0cf",
+        "--accent": "#94a3b8",
+        "--accent-soft": "#cbd5e1",
+        "--accent-strong": "#64748b",
+        "--accent-rgb": "148, 163, 184",
+        "--gradient-principal": "linear-gradient(135deg, #1a222c, #273240)",
+        "--gradient-botao": "linear-gradient(135deg, #cbd5e1, #64748b)",
+        "--gradient-card": "linear-gradient(135deg, rgba(203,213,225,0.14), rgba(100,116,139,0.08))"
+      },
+      "variaveis-light": {
+        "--bg-primario": "#dde3ea",
+        "--bg-secundario": "#d2d9e2",
+        "--card": "#c6d0db",
+        "--text-primario": "#243447",
+        "--text-secundario": "#445569",
+        "--accent": "#64748b",
+        "--accent-soft": "#cbd5e1",
+        "--accent-strong": "#475569",
+        "--accent-rgb": "100, 116, 139",
+        "--gradient-principal": "linear-gradient(135deg, #cad3dc, #bcc7d3)",
+        "--gradient-botao": "linear-gradient(135deg, #cbd5e1, #64748b)",
+        "--gradient-card": "linear-gradient(135deg, rgba(203,213,225,0.14), rgba(100,116,139,0.08))"
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+/* TELAS */
+.tela {
+  position: fixed;
+  inset: 0;
+  padding: 20px;
+  box-sizing: border-box;
+
+  opacity: 0;
+  transform: translateX(30px);
+  transition:
+    transform var(--transition-normal),
+    opacity var(--transition-normal),
+    background var(--transition-normal),
+    color var(--transition-normal);
+
+  pointer-events: none;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch; /* scroll mais suave no iPhone */
+}
+
+#btnMenu {
+  transition: transform var(--transition-normal);
+}
+
+#btnMenu.ativo {
+  transform: rotate(90deg);
+}
+
+#areaRolagemJogo {
+  will-change: filter;
+}
+
+.ativa {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+  margin-top: 60px;
+}
+
+/* LUPA */
+.logo {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+#inicio h1 {
+  margin: 0 0 18px;
+  font-size: 31px;
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  font-weight: 900;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--text);
+  text-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.light #inicio h1 {
+  color: #111827;
+  text-shadow:
+    0 8px 18px rgba(71, 85, 105, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+footer {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  text-align: center;
+  opacity: 0.4;
+  font-size: 12px;
+}
+
+.tela::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

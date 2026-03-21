@@ -1,0 +1,104 @@
+:root {
+  --bg: #0f141c;
+  --card: #232c3a;
+  --text: #e8eef6;
+  --border-color: rgba(255, 255, 255, 0.15);
+  --accent: #16a34a;
+  --accent-soft: #4ade80;
+  --accent-strong: #15803d;
+  --accent-rgb: 22, 163, 74;
+  --gradient-botao: linear-gradient(135deg, #4ade80, #16a34a);
+  --gradient-card: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(22, 163, 74, 0.05));
+
+  --radius: 14px;
+  --shadow-soft: 0 6px 0 rgba(0, 0, 0, 0.38);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* light mode base tones */
+.light {
+  --bg: #d9e0e8;
+  --card: #c4ced9;
+  --text: #1f2937;
+  --border-color: rgba(15, 23, 42, 0.16);
+  --accent: #15803d;
+  --accent-soft: #4ade80;
+  --accent-strong: #166534;
+  --accent-rgb: 21, 128, 61;
+  --gradient-botao: linear-gradient(135deg, #4ade80, #16a34a);
+  --gradient-card: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(22, 163, 74, 0.06));
+}
+
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--transition-normal),
+    color var(--transition-normal);
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+select,
+input {
+  width: 100%;
+  padding: 16px;
+  margin-top: 14px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  appearance: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition:
+    background var(--transition-normal),
+    color var(--transition-normal),
+    transform var(--transition-fast);
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.play {
+  background: var(--gradient-botao);
+  color: white;
+}
+
+.padrao {
+  background: var(--card);
+  color: var(--text);
+}
+
+.section {
+  background: var(--card);
+  font-weight: bold;
+}

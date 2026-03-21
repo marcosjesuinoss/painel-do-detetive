@@ -1,0 +1,676 @@
+.light #tabela {
+  background:
+    linear-gradient(160deg, rgba(241, 245, 249, 0.82), rgba(207, 216, 227, 0.92)),
+    #d9e0e8;
+
+  box-shadow:
+    0 16px 34px rgba(71, 85, 105, 0.12),
+    0 6px 16px rgba(71, 85, 105, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.light .celula {
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.92), rgba(222, 230, 239, 0.98));
+  border: 1px solid rgba(15, 23, 42, 0.11);
+  box-shadow:
+    0 2px 5px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+.light .celula.nome {
+  background:
+    linear-gradient(180deg, rgba(235, 241, 247, 0.94), rgba(212, 221, 231, 0.98)),
+    #dbe3ec;
+}
+
+.light .secao-grid .celula {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.03));
+  border-left: 4px solid rgba(15, 23, 42, 0.35);
+  box-shadow:
+    inset 0 0 10px rgba(15, 23, 42, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.light #tabela .linha-grid:first-child .celula {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.light #tabela .linha-grid:first-child .celula:not(.nome) {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.03));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.light button.padrao {
+  background: #d9e0e8;
+  color: #1e293b;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+}
+
+.light button.section {
+  background: #e3e9f0;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+/* TEMA CLARO COM SOMBRA */
+.light .sel-col:not(.ok):not(.no):not(.maybe) {
+  background: linear-gradient(180deg, rgba(191, 219, 254, 0.26), rgba(219, 234, 254, 0.18));
+  border-color: rgba(59, 130, 246, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    inset 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.light .sel-row:not(.ok):not(.no):not(.maybe) {
+  background: linear-gradient(180deg, rgba(191, 219, 254, 0.26), rgba(219, 234, 254, 0.18));
+  border-color: rgba(59, 130, 246, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    inset 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.light .sel-inter:not(.ok):not(.no):not(.maybe) {
+  background: linear-gradient(180deg, rgba(186, 230, 253, 0.4), rgba(191, 219, 254, 0.28));
+  border-color: rgba(59, 130, 246, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.52),
+    inset 0 0 0 2px rgba(59, 130, 246, 0.16),
+    0 2px 5px rgba(59, 130, 246, 0.06);
+}
+
+.light .selecionada:not(.ok):not(.no):not(.maybe) {
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.52), rgba(147, 197, 253, 0.34));
+  border-color: rgba(37, 99, 235, 0.34);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.64),
+    inset 0 0 0 2px rgba(37, 99, 235, 0.22),
+    0 4px 8px rgba(59, 130, 246, 0.08);
+}
+
+/* AJUSTES DE CORES DINAMICAS PARA O MODO PRO */
+body.modo-pro button.padrao:active,
+body.modo-pro button.padrao:focus-visible,
+body.modo-pro button.play:active,
+body.modo-pro button.play:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+body.modo-pro .badge-pro {
+  background: var(--gradient-botao);
+  box-shadow: 0 6px 14px rgba(var(--accent-rgb), 0.18);
+}
+
+body.modo-pro .preco-section {
+  border: 2px solid rgba(var(--accent-rgb), 0.28);
+  box-shadow:
+    0 12px 30px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.modo-pro .preco-valor,
+body.modo-pro .payload-preco {
+  background: var(--gradient-botao);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: var(--accent);
+}
+
+body.modo-pro .btn-pro-grande,
+body.modo-pro .popup-acoes .play,
+body.modo-pro .play {
+  background: var(--gradient-botao);
+  color: white;
+}
+
+body.modo-pro .btn-pro-grande,
+body.modo-pro .popup-acoes .play,
+body.modo-pro .play {
+  box-shadow:
+    0 10px 24px rgba(var(--accent-rgb), 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+body.modo-pro .btn-pro-grande:active,
+body.modo-pro .btn-pro-grande:focus-visible,
+body.modo-pro .popup-acoes .play:active,
+body.modo-pro .popup-acoes .play:focus-visible,
+body.modo-pro .play:active,
+body.modo-pro .play:focus-visible {
+  box-shadow:
+    0 14px 30px rgba(var(--accent-rgb), 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.modo-pro .btn-pro-grande:focus-visible,
+body.modo-pro .play:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.34);
+  outline-offset: 2px;
+}
+
+body.modo-pro .card-tema::before,
+body.modo-pro .card-tema-sistema::before {
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+body.modo-pro .card-tema:active,
+body.modo-pro .card-tema:focus-visible,
+body.modo-pro .card-tema-sistema:active,
+body.modo-pro .card-tema-sistema:focus-visible,
+body.modo-pro .btn-selecionar-tema:active,
+body.modo-pro .btn-selecionar-tema:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.36);
+}
+
+body.modo-pro .card-tema.selecionado,
+body.modo-pro .card-tema-sistema.selecionado {
+  border: 2px solid rgba(var(--accent-rgb), 0.5);
+  background: var(--gradient-card);
+  box-shadow:
+    0 10px 22px rgba(var(--accent-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+body.modo-pro .btn-selecionar-tema {
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.06));
+}
+
+body.modo-pro .card-tema.selecionado .btn-selecionar-tema {
+  background: var(--gradient-botao);
+  border-color: rgba(var(--accent-rgb), 0.62);
+  color: #fff;
+}
+
+body.modo-pro .card-pro.pro-ativo,
+body.modo-pro .assistente-ia-menu,
+body.modo-pro .status-pro.inativo,
+body.modo-pro .status-pro.ativo {
+  background:
+    var(--gradient-card),
+    var(--card);
+  border-color: rgba(var(--accent-rgb), 0.24);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.18),
+    0 0 18px rgba(var(--accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes pulsoStatusProAccent {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.18),
+      0 0 18px rgba(var(--accent-rgb), 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  50% {
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.22),
+      0 0 28px rgba(var(--accent-rgb), 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+body.modo-pro .status-pro.ativo {
+  animation: pulsoStatusProAccent 3s ease-in-out infinite;
+}
+
+body.modo-pro .pro-sobre-lista li::before,
+body.modo-pro .ia-menu-card h5::before {
+  background: var(--gradient-botao);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3);
+}
+
+body.modo-pro .icone-beneficio {
+  color: var(--accent);
+}
+
+body.modo-pro:not(.light) .menu-lateral,
+body.modo-pro:not(.light) #inicio .container,
+body.modo-pro:not(.light) #novoJogo .container,
+body.modo-pro:not(.light) #aparencia .container,
+body.modo-pro:not(.light) #pro .container,
+body.modo-pro:not(.light) #sobre .container,
+body.modo-pro:not(.light) .card-sobre,
+body.modo-pro:not(.light) .card-pro,
+body.modo-pro:not(.light) .status-pro,
+body.modo-pro:not(.light) .preco-section,
+body.modo-pro:not(.light) .ajuda-container,
+body.modo-pro:not(.light) .assistente-ia-menu,
+body.modo-pro:not(.light) .secao-temas-sistema,
+body.modo-pro:not(.light) .secao-temas-aparencia,
+body.modo-pro:not(.light) .popup-box {
+  background:
+    linear-gradient(160deg, rgba(var(--accent-rgb), 0.07), transparent 34%),
+    linear-gradient(145deg, rgba(32, 44, 62, 0.96), rgba(17, 24, 39, 0.98));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.32),
+    0 0 24px rgba(var(--accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+body.modo-pro:not(.light) .logo {
+  color: #f8fafc;
+  text-shadow:
+    0 0 18px rgba(var(--accent-rgb), 0.22),
+    0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+body.modo-pro:not(.light) button.padrao,
+body.modo-pro:not(.light) button.section,
+body.modo-pro:not(.light) select,
+body.modo-pro:not(.light) input,
+body.modo-pro:not(.light) .card-tema-sistema,
+body.modo-pro:not(.light) .card-tema,
+body.modo-pro:not(.light) .accordion .titulo {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(148, 163, 184, 0.08));
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.modo-pro:not(.light) .accordion .item.ativo .titulo,
+body.modo-pro:not(.light) .card-tema-sistema.selecionado,
+body.modo-pro:not(.light) .card-tema.selecionado {
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.3);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.22),
+    0 0 18px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.modo-pro.light .menu-lateral,
+body.modo-pro.light #inicio .container,
+body.modo-pro.light #novoJogo .container,
+body.modo-pro.light #aparencia .container,
+body.modo-pro.light #pro .container,
+body.modo-pro.light #sobre .container,
+body.modo-pro.light .card-sobre,
+body.modo-pro.light .card-pro,
+body.modo-pro.light .status-pro,
+body.modo-pro.light .preco-section,
+body.modo-pro.light .ajuda-container,
+body.modo-pro.light .assistente-ia-menu,
+body.modo-pro.light .secao-temas-sistema,
+body.modo-pro.light .secao-temas-aparencia,
+body.modo-pro.light .popup-box {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(214, 224, 234, 0.92));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 12px 28px rgba(71, 85, 105, 0.12),
+    0 0 18px rgba(var(--accent-rgb), 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+body.modo-pro.light button.padrao,
+body.modo-pro.light button.section,
+body.modo-pro.light select,
+body.modo-pro.light input,
+body.modo-pro.light .card-tema-sistema,
+body.modo-pro.light .card-tema,
+body.modo-pro.light .accordion .titulo {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(225, 233, 241, 0.96));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 8px 18px rgba(71, 85, 105, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+body.modo-pro.light .accordion .item.ativo .titulo,
+body.modo-pro.light .card-tema.selecionado,
+body.modo-pro.light .card-tema-sistema.selecionado {
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.28);
+  box-shadow:
+    0 10px 22px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+body.modo-pro.light #inicio button.play,
+body.modo-pro.light .btn-pro-grande,
+body.modo-pro.light .popup-acoes .play,
+body.modo-pro:not(.light) button.play,
+body.modo-pro:not(.light) .btn-pro-grande,
+body.modo-pro:not(.light) .popup-acoes .play {
+  background: var(--gradient-botao);
+  box-shadow:
+    0 12px 24px rgba(var(--accent-rgb), 0.22),
+    0 0 12px rgba(var(--accent-rgb), 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.modo-pro.light #inicio button.play {
+  box-shadow:
+    0 10px 22px rgba(var(--accent-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.modo-pro.light #novoJogo button.play,
+body.modo-pro.light #personalizar button.play,
+body.modo-pro:not(.light) #novoJogo button.play,
+body.modo-pro:not(.light) #personalizar button.play {
+  background: var(--gradient-botao);
+  color: #ffffff;
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  box-shadow:
+    0 12px 24px rgba(var(--accent-rgb), 0.22),
+    0 0 12px rgba(var(--accent-rgb), 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.modo-pro.light #novoJogo button.play:active,
+body.modo-pro.light #novoJogo button.play:focus-visible,
+body.modo-pro.light #personalizar button.play:active,
+body.modo-pro.light #personalizar button.play:focus-visible,
+body.modo-pro:not(.light) #novoJogo button.play:active,
+body.modo-pro:not(.light) #novoJogo button.play:focus-visible,
+body.modo-pro:not(.light) #personalizar button.play:active,
+body.modo-pro:not(.light) #personalizar button.play:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.42);
+  box-shadow:
+    0 14px 28px rgba(var(--accent-rgb), 0.3),
+    0 0 18px rgba(var(--accent-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.modo-pro .btn-selecionar-tema {
+  border-radius: 12px;
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.08));
+  color: var(--text);
+  box-shadow:
+    0 8px 18px rgba(var(--accent-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.modo-pro .btn-selecionar-tema:active,
+body.modo-pro .btn-selecionar-tema:focus-visible {
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.12));
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow:
+    0 12px 24px rgba(var(--accent-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  outline: none;
+}
+
+body.modo-pro .card-tema.selecionado .btn-selecionar-tema,
+body.modo-pro .card-tema-sistema.selecionado .btn-selecionar-tema {
+  background: var(--gradient-botao);
+  border-color: rgba(var(--accent-rgb), 0.62);
+  color: #fff;
+  box-shadow:
+    0 10px 22px rgba(var(--accent-rgb), 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+@keyframes pulsoTemaAccent {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 22px rgba(var(--accent-rgb), 0.18),
+      0 0 16px rgba(var(--accent-rgb), 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  50% {
+    box-shadow:
+      0 12px 28px rgba(var(--accent-rgb), 0.24),
+      0 0 22px rgba(var(--accent-rgb), 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+}
+
+body.modo-pro .card-tema.selecionado,
+body.modo-pro .card-tema-sistema.selecionado {
+  animation: pulsoTemaAccent 2.2s ease-in-out infinite;
+}
+
+body.modo-pro .toast-ia-ajuda-destaque {
+  background: rgba(14, 19, 30, 0.995);
+  border: 1px solid rgba(var(--accent-rgb), 0.36);
+  box-shadow:
+    0 16px 34px rgba(15, 23, 42, 0.42),
+    0 0 0 1px rgba(var(--accent-rgb), 0.1) inset;
+  color: #f8fafc;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.modo-pro .toast-ia-cabecalho {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+body.modo-pro .toast-ia-lista li {
+  color: #eaf2fb;
+}
+
+body.modo-pro .ia-info-btn {
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.18), rgba(27, 35, 48, 0.94));
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  color: var(--accent-soft);
+  box-shadow:
+    0 8px 18px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.modo-pro.light .card-pro.pro-ativo,
+body.modo-pro.light .assistente-ia-menu,
+body.modo-pro.light .status-pro.inativo,
+body.modo-pro.light .status-pro.ativo {
+  background:
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.14), rgba(255, 255, 255, 0.76)),
+    var(--card);
+  border-color: rgba(var(--accent-rgb), 0.24);
+  box-shadow:
+    0 12px 26px rgba(71, 85, 105, 0.12),
+    0 0 18px rgba(var(--accent-rgb), 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+@keyframes pulsoStatusProAccentLight {
+  0%,
+  100% {
+    box-shadow:
+      0 12px 26px rgba(71, 85, 105, 0.12),
+      0 0 18px rgba(var(--accent-rgb), 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  }
+
+  50% {
+    box-shadow:
+      0 14px 30px rgba(71, 85, 105, 0.16),
+      0 0 24px rgba(var(--accent-rgb), 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.68);
+  }
+}
+
+body.modo-pro.light .status-pro.ativo {
+  animation: pulsoStatusProAccentLight 3s ease-in-out infinite;
+}
+
+body.modo-pro.light .ia-menu-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(var(--accent-rgb), 0.07));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 8px 18px rgba(71, 85, 105, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+body.modo-pro.light .ia-info-btn {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(var(--accent-rgb), 0.12));
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
+  color: var(--accent-strong);
+  box-shadow:
+    0 8px 18px rgba(var(--accent-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+body.modo-pro.light .toast-ia-ajuda-destaque {
+  background: rgba(250, 252, 255, 0.995);
+  border: 1px solid rgba(var(--accent-rgb), 0.36);
+  box-shadow:
+    0 14px 30px rgba(71, 85, 105, 0.22),
+    0 0 0 1px rgba(var(--accent-rgb), 0.08) inset;
+  color: #1f2937;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.modo-pro.light .toast-ia-cabecalho {
+  color: #111827;
+  font-weight: 800;
+}
+
+body.modo-pro.light .toast-ia-lista li {
+  color: #334155;
+}
+
+body.modo-pro .toast-ia-ajuda {
+  padding: 14px 16px;
+  line-height: 1.5;
+}
+
+body.modo-pro .toast-ia-lista {
+  gap: 8px;
+}
+
+body.modo-pro .toast-ia-lista li {
+  text-shadow: none;
+}
+
+body.modo-pro.light .badge-pro {
+  background: var(--gradient-botao);
+  box-shadow:
+    0 8px 18px rgba(var(--accent-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+body.modo-pro.light .preco-section {
+  border-color: rgba(var(--accent-rgb), 0.32);
+  box-shadow:
+    0 14px 30px rgba(71, 85, 105, 0.12),
+    0 0 18px rgba(var(--accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+body.modo-pro.light .preco-valor,
+body.modo-pro.light .payload-preco {
+  background: var(--gradient-botao);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: var(--accent);
+}
+
+body.modo-pro.light .icone-beneficio,
+body.modo-pro.light .popup-box h3,
+body.modo-pro.light .card-pro .texto-pro strong,
+body.modo-pro.light .ajuda-container h2,
+body.modo-pro.light .pro-sobre-titulo {
+  color: var(--accent-strong);
+}
+
+body.modo-pro.light #sobre .titulo-central {
+  color: #111827;
+}
+
+body.modo-pro.light .pro-sobre-lista li::before,
+body.modo-pro.light .ia-menu-card h5::before {
+  background: var(--gradient-botao);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.26);
+}
+
+body.modo-pro.light .secao-temas-aparencia,
+body.modo-pro.light .secao-temas-sistema {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 12px 26px rgba(71, 85, 105, 0.1),
+    0 0 16px rgba(var(--accent-rgb), 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+body.modo-pro.light .card-tema,
+body.modo-pro.light .card-tema-sistema {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.2);
+  box-shadow:
+    0 8px 18px rgba(71, 85, 105, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+body.modo-pro.light .card-tema:active,
+body.modo-pro.light .card-tema:focus-visible,
+body.modo-pro.light .card-tema-sistema:active,
+body.modo-pro.light .card-tema-sistema:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.34);
+  box-shadow:
+    0 10px 22px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+body.modo-pro .rodape-jogo {
+  background:
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.12), rgba(15, 23, 42, 0.92)),
+    var(--bg);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.22);
+  box-shadow:
+    0 -12px 28px rgba(15, 23, 42, 0.24),
+    0 0 18px rgba(var(--accent-rgb), 0.08);
+}
+
+body.modo-pro .rodape-jogo .botao-auto {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(148, 163, 184, 0.08));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.modo-pro .rodape-jogo .botao-auto:active,
+body.modo-pro .rodape-jogo .botao-auto:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.3);
+  box-shadow:
+    0 10px 20px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.modo-pro.light .rodape-jogo {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(var(--accent-rgb), 0.12)),
+    var(--bg);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.2);
+  box-shadow:
+    0 -12px 28px rgba(71, 85, 105, 0.16),
+    0 0 18px rgba(var(--accent-rgb), 0.08);
+}
+
+body.modo-pro.light .rodape-jogo .botao-auto {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(var(--accent-rgb), 0.08));
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
+  box-shadow:
+    0 8px 16px rgba(71, 85, 105, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+#btnTrue svg {
+  color: #22c55e;
+}
+
+#btnFalse svg {
+  color: #ef4444;
+}
+
+#btnMaybe svg {
+  color: #facc15;
+}

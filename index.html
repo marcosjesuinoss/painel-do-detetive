@@ -1,0 +1,1000 @@
+﻿<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <script>
+      (function () {
+        var temas = {
+          classico: {
+            bg: "#0f141c",
+            bgEnd: "#171d28",
+            glow: "22, 163, 74",
+            accent: "#4ade80",
+            text: "#e8eef6",
+          },
+          verde: {
+            bg: "#0c1712",
+            bgEnd: "#13231b",
+            glow: "34, 197, 94",
+            accent: "#4ade80",
+            text: "#f0fdf4",
+          },
+          azul: {
+            bg: "#0c121a",
+            bgEnd: "#121c28",
+            glow: "59, 130, 246",
+            accent: "#60a5fa",
+            text: "#dbeafe",
+          },
+          vermelho: {
+            bg: "#170f11",
+            bgEnd: "#241519",
+            glow: "239, 68, 68",
+            accent: "#f87171",
+            text: "#ffe4e6",
+          },
+          amarelo: {
+            bg: "#16120c",
+            bgEnd: "#231b11",
+            glow: "245, 158, 11",
+            accent: "#fbbf24",
+            text: "#fef3c7",
+          },
+          roxo: {
+            bg: "#120f18",
+            bgEnd: "#1b1625",
+            glow: "139, 92, 246",
+            accent: "#a78bfa",
+            text: "#f3e8ff",
+          },
+          cinza: {
+            bg: "#101316",
+            bgEnd: "#171c22",
+            glow: "148, 163, 184",
+            accent: "#cbd5e1",
+            text: "#e2e8f0",
+          },
+        };
+
+        var temaAtivo = "classico";
+
+        try {
+          var pro = JSON.parse(localStorage.getItem("modoPRO") || "{\"ativo\":false}");
+          var temaSalvo = localStorage.getItem("temaProSelecionado");
+          if (pro && pro.ativo && temaSalvo && temas[temaSalvo]) {
+            temaAtivo = temaSalvo;
+          }
+        } catch (e) {}
+
+        var visual = temas[temaAtivo] || temas.classico;
+        var root = document.documentElement;
+
+        root.style.setProperty("--splash-bg", visual.bg);
+        root.style.setProperty("--splash-bg-end", visual.bgEnd);
+        root.style.setProperty("--splash-glow", visual.glow);
+        root.style.setProperty("--splash-accent", visual.accent);
+        root.style.setProperty("--splash-text", visual.text);
+
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+          metaTheme.setAttribute("content", visual.bg);
+        }
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Aplicativo de apoio para partidas de Detetive / Clue"
+    />
+
+    <title>Investiga&ccedil;&atilde;o</title>
+
+    <link rel="stylesheet" href="css/style.css?v=69" />
+    <link rel="manifest" href="manifest.json?v=69" />
+    <link rel="apple-touch-icon" href="assets/icons/icon.svg" />
+    <link rel="apple-touch-startup-image" href="assets/splash.svg" />
+
+    <!-- Scripts PRO e Utilitarios -->
+    <script src="js/utils-pro.js?v=69" defer></script>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+  </head>
+
+  <body>
+    <div id="splashScreen">
+      <div class="splash-conteudo" aria-hidden="true">
+        <div class="splash-titulos">
+          <strong>Painel do Detetive</strong>
+          <span>Organize, Deduza e Resolva</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= INICIO ================= -->
+    <div id="inicio" class="tela ativa">
+      <div class="container">
+        <div class="logo">&#128269;</div>
+
+        <h1>Painel do Detetive</h1>
+
+        <button class="play" id="btnNovoJogo" type="button">Novo jogo</button>
+
+        <button id="btnContinuar" class="padrao" type="button">
+          Continuar
+        </button>
+
+        <button class="padrao" type="button" onclick="mostrarTela('aparencia')">
+          Apar&ecirc;ncia
+        </button>
+
+        <button class="padrao" type="button" onclick="mostrarTela('pro')">
+          Modo PRO
+        </button>
+
+        <button class="padrao" type="button" onclick="mostrarTela('sobre')">
+          Sobre
+        </button>
+      </div>
+
+      <footer>Vers&atilde;o 1.2.0</footer>
+    </div>
+
+    <!-- ================= NOVO JOGO ================= -->
+    <div id="novoJogo" class="tela">
+      <div class="container">
+        <button class="padrao btn-voltar" data-destino="inicio" type="button">
+          Voltar
+        </button>
+
+        <h2>Nova Partida</h2>
+
+        <select id="versao" onchange="atualizarJogadores()">
+          <option value="clueOriginal">Clue Original</option>
+          <option value="detetiveAntigo">Detetive (Antigo)</option>
+          <option value="detetiveEstrela" selected>
+            Detetive (Vers&atilde;o Estrela)
+          </option>
+        </select>
+
+        <select id="jogadores" onchange="atualizarJogadores()"></select>
+
+        <button class="play" type="button" onclick="abrirPersonalizar()">
+          Pr&oacute;ximo
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= PERSONALIZAR ================= -->
+    <div id="personalizar" class="tela">
+      <button class="padrao btn-voltar" data-destino="novoJogo" type="button">
+        Voltar
+      </button>
+
+      <h2 class="titulo-central">Personalizar jogadores</h2>
+
+      <div id="editarJogadores"></div>
+      <div id="editarCartas"></div>
+
+      <button id="btnIniciarPersonalizado" class="play" type="button">
+        Iniciar Partida
+      </button>
+    </div>
+
+    <!-- ================= JOGO ================= -->
+    <div id="jogo" class="tela">
+      <div id="areaRolagemJogo">
+        <div id="tabela"></div>
+      </div>
+
+      <!-- RODAPE FIXO -->
+      <div class="rodape-jogo">
+        <!-- PRIVACIDADE -->
+        <button
+          id="btnPrivacidade"
+          class="padrao botao-auto"
+          type="button"
+          onclick="togglePrivacidade()"
+          aria-label="Alternar modo privacidade"
+        >
+          <svg
+            id="iconePrivacidade"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+
+        <!-- MARCAR V -->
+        <button
+          id="btnTrue"
+          class="padrao botao-auto botao-desativado"
+          type="button"
+          aria-label="Marcar verdadeiro"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+
+        <!-- MARCAR X -->
+        <button
+          id="btnFalse"
+          class="padrao botao-auto botao-desativado"
+          type="button"
+          aria-label="Marcar falso"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        </button>
+
+        <!-- MARCAR ? -->
+        <button
+          id="btnMaybe"
+          class="padrao botao-auto botao-desativado"
+          type="button"
+          aria-label="Marcar d&uacute;vida"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 9a3 3 0 116 0c0 2-3 2-3 4" />
+            <circle cx="12" cy="17" r="1" />
+          </svg>
+        </button>
+
+        <!-- LIMPAR -->
+        <button
+          id="btnClearSel"
+          class="padrao botao-auto botao-desativado"
+          type="button"
+          aria-label="Limpar sele&ccedil;&atilde;o"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 6h18" />
+            <path d="M8 6l1-3h6l1 3" />
+            <path d="M19 6l-1 14H6L5 6" />
+          </svg>
+        </button>
+
+        <!-- MENU -->
+        <button
+          id="btnMenu"
+          class="padrao botao-auto"
+          type="button"
+          onclick="toggleMenu()"
+          aria-label="Abrir menu"
+        >
+          <svg
+            id="iconeMenu"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- OVERLAY -->
+      <div id="overlayMenu" onclick="toggleMenu()"></div>
+
+      <!-- MENU LATERAL -->
+      <div id="menuLateral" class="menu-lateral">
+        <button class="padrao" type="button" onclick="irParaInicio()">
+          Voltar ao in&iacute;cio
+        </button>
+
+        <button class="padrao" type="button" onclick="abrirPopupLimpar()">
+          Limpar tabuleiro
+        </button>
+
+        <button
+          class="padrao"
+          type="button"
+          onclick="
+            resetarMenu();
+            mostrarTela('ajuda');
+          "
+        >
+          Regras do jogo
+        </button>
+
+        <section id="assistenteIAMenu" class="assistente-ia-menu" style="display: none">
+          <div class="assistente-ia-titulo">
+            <h4>Assistente de IA</h4>
+            <button
+              class="ia-info-btn ia-info-geral"
+              type="button"
+              aria-label="Como funciona o assistente"
+              onclick="mostrarAjudaAssistenteIA(event)"
+            >
+              ?
+            </button>
+          </div>
+
+          <article class="ia-menu-card">
+            <h5>O que mudou</h5>
+            <p>Nenhuma an&aacute;lise ainda. Marque jogadas para receber insights.</p>
+          </article>
+
+          <article class="ia-menu-card">
+            <h5>Pr&oacute;xima sugest&atilde;o</h5>
+            <p>Exemplo: perguntar Sargento + Faca + Hospital.</p>
+          </article>
+
+          <article class="ia-menu-card">
+            <h5>Confianca</h5>
+            <p>N&iacute;vel m&eacute;dio. Falta confirmar 2 linhas na se&ccedil;&atilde;o de Locais.</p>
+          </article>
+        </section>
+
+        <button
+          id="btnMenuPRO"
+          class="play"
+          type="button"
+          onclick="acaoBotaoMenuPRO()"
+        >
+          Ativar Modo PRO
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= APARENCIA ================= -->
+    <div id="aparencia" class="tela">
+      <button class="padrao btn-voltar" data-destino="inicio" type="button">
+        Voltar
+      </button>
+
+      <div class="container">
+        <h2 class="titulo-aparencia">Apar&ecirc;ncia</h2>
+
+        <!-- SECAO DE TEMAS DO SISTEMA -->
+        <div class="secao-temas-sistema">
+          <h3 class="titulo-secao">Modo de Cor</h3>
+          <p class="desc-secao">Escolha como o app aparece</p>
+
+          <div class="grid-temas-sistema">
+            <button
+              class="card-tema-sistema"
+              type="button"
+              data-tema="auto"
+              onclick="setTema('auto')"
+            >
+              <svg
+                class="icone-tema"
+                viewBox="0 0 64 64"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="16"
+                  y="8"
+                  width="32"
+                  height="48"
+                  rx="4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                />
+                <circle cx="32" cy="52" r="1" fill="currentColor" />
+                <rect
+                  x="24"
+                  y="16"
+                  width="16"
+                  height="24"
+                  rx="2"
+                  fill="currentColor"
+                />
+              </svg>
+              <h4>Autom&aacute;tico</h4>
+            </button>
+
+            <button
+              class="card-tema-sistema"
+              type="button"
+              data-tema="dark"
+              onclick="setTema('dark')"
+            >
+              <svg
+                class="icone-tema"
+                viewBox="0 0 64 64"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M32 8C20.95 8 12 16.95 12 28C12 39.05 20.95 48 32 48C43.05 48 52 39.05 52 28C52 16.95 43.05 8 32 8ZM32 44C23.16 44 16 36.84 16 28C16 19.16 23.16 12 32 12C40.84 12 48 19.16 48 28C48 36.84 40.84 44 32 44Z"
+                />
+                <path
+                  d="M32 16C25.37 16 20 21.37 20 28C20 34.63 25.37 40 32 40C38.63 40 44 34.63 44 28C44 21.37 38.63 16 32 16ZM32 36C27.58 36 24 32.42 24 28C24 23.58 27.58 20 32 20C36.42 20 40 23.58 40 28C40 32.42 36.42 36 32 36Z"
+                />
+                <circle cx="32" cy="28" r="8" fill="currentColor" />
+              </svg>
+              <h4>Escuro</h4>
+            </button>
+
+            <button
+              class="card-tema-sistema"
+              type="button"
+              data-tema="light"
+              onclick="setTema('light')"
+            >
+              <svg
+                class="icone-tema"
+                viewBox="0 0 64 64"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="32" cy="32" r="16" fill="currentColor" />
+                <path
+                  d="M32 8V16M32 48V56"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M8 32H16M48 32H56"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M16.34 16.34L21.17 21.17M42.83 42.83L47.66 47.66"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M16.34 47.66L21.17 42.83M42.83 21.17L47.66 16.34"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <h4>Claro</h4>
+            </button>
+          </div>
+        </div>
+
+        <!-- SELECAO DE TEMAS PRO -->
+        <div
+          id="secaoTemasAparencia"
+          class="secao-temas-aparencia"
+          style="display: none"
+        >
+          <h3 class="titulo-secao">Temas PRO</h3>
+          <p class="desc-secao">
+            Customize a apar&ecirc;ncia com temas premium e exclusivos
+          </p>
+
+          <div id="containerTemasAparencia" class="temas-container">
+            <!-- Temas serao inseridos aqui via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PRO ================= -->
+    <div id="pro" class="tela">
+      <button class="padrao btn-voltar" data-destino="inicio" type="button">
+        Voltar
+      </button>
+
+      <div class="container">
+        <!-- STATUS PRO -->
+        <div id="statusPRO" class="status-pro inativo">
+          <h2>Desbloqueie o Poder Total</h2>
+          <p id="statusTexto" class="status-descricao">
+            Ative o Modo PRO e ganhe acesso a recursos exclusivos
+          </p>
+        </div>
+
+        <!-- BENEFICIOS -->
+        <div id="beneficiosGridPRO" class="beneficios-grid">
+          <!-- Recursos PRO inseridos via JavaScript -->
+        </div>
+
+        <!-- PRECO E BOTOES -->
+        <div class="preco-section">
+          <div class="preco-box">
+            <p class="preco-label">Acesso Vitalicio</p>
+            <div class="preco-valor"><strong>R$ 19,90</strong></div>
+            <p class="preco-info">Pagamento &uacute;nico, sem recorr&ecirc;ncia</p>
+          </div>
+
+          <button
+            id="btnAtivarPRO"
+            class="play btn-pro-grande"
+            type="button"
+            onclick="abrirAtivarPRO()"
+          >
+            Ativar PRO Agora
+          </button>
+
+          <button
+            id="btnCancelarPRO"
+            class="padrao btn-cancelar-pro"
+            type="button"
+            style="display: none"
+            onclick="abrirCancelarPRO()"
+          >
+            Cancelar Assinatura
+          </button>
+
+          <p class="info-pro">Contribua com o desenvolvimento do app!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POPUP DE ATIVACAO PRO ================= -->
+    <div
+      id="popupAtivarPRO"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupAtivarPRO"
+      aria-hidden="true"
+    >
+      <div class="popup-box popup-pro">
+        <div class="popup-icon">&#10024;</div>
+        <h3 id="tituloPopupAtivarPRO">Confirmar Ativa&ccedil;&atilde;o</h3>
+        <p>Voc&ecirc; est&aacute; prestes a ativar o Modo PRO!</p>
+        <p class="payload-preco">R$ 19,90 (Acesso Vital&iacute;cio)</p>
+
+        <div class="popup-acoes">
+          <button class="play" type="button" onclick="confirmarAtivarPRO()">
+            Confirmar Pagamento
+          </button>
+          <button class="padrao" type="button" onclick="fecharPopupAtivarPRO()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POPUP DE CANCELAMENTO PRO ================= -->
+    <div
+      id="popupCancelarPRO"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupCancelarPRO"
+      aria-hidden="true"
+    >
+      <div class="popup-box popup-pro">
+        <div class="popup-icon">&#9888;</div>
+        <h3 id="tituloPopupCancelarPRO">Cancelar PRO?</h3>
+        <p>Voc&ecirc; perder&aacute; acesso aos recursos exclusivos.</p>
+        <p style="font-size: 12px; opacity: 0.7">
+          Poder&aacute; reativar a qualquer momento.
+        </p>
+
+        <div class="popup-acoes">
+          <button class="padrao" type="button" onclick="confirmarCancelarPRO()">
+            Sim, Cancelar
+          </button>
+          <button class="play" type="button" onclick="fecharPopupCancelarPRO()">
+            Manter PRO
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SOBRE ================= -->
+    <div id="sobre" class="tela">
+      <button class="padrao btn-voltar" data-destino="inicio" type="button">
+        Voltar
+      </button>
+
+      <h2 class="titulo-central">Sobre o App</h2>
+
+      <!-- CARD 1 - INSTITUCIONAL -->
+      <div class="card-sobre">
+        <p>
+          Este aplicativo foi desenvolvido para tornar suas partidas de
+          investiga&ccedil;&atilde;o mais organizadas, estrat&eacute;gicas e fluidas.
+        </p>
+
+        <p>
+          A interface limpa e intuitiva permite acompanhar suspeitos, armas e
+          locais com precis&atilde;o, reduzindo erros e aumentando sua vantagem
+          competitiva.
+        </p>
+
+        <p>
+          Destaques inteligentes, marca&ccedil;&otilde;es autom&aacute;ticas e controle por colunas
+          tornam a dedu&ccedil;&atilde;o mais eficiente e r&aacute;pida.
+        </p>
+
+        <p>Compat&iacute;vel com m&uacute;ltiplas vers&otilde;es do jogo.</p>
+
+        <div class="sobre-destaque">
+          &#10024; Mais estrat&eacute;gia<br />
+          &#128221; Menos confus&atilde;o<br />
+          &#127918; Mais divers&atilde;o
+        </div>
+      </div>
+
+      <!-- CARD 2 - PRO -->
+      <div class="card-pro">
+        <p class="texto-pro">
+          Quer elevar sua experi&ecirc;ncia? Utilize o <strong>Modo Pro</strong> e
+          tenha o aux&iacute;lio de uma IA para analisar pistas e solucionar o jogo com
+          mais intelig&ecirc;ncia.
+        </p>
+
+        <button class="play" onclick="mostrarTela('pro')" type="button">
+          Ativar Modo Pro
+        </button>
+      </div>
+
+      <!-- BOTAO SUGESTAO (FORA DOS CONTORNOS) -->
+      <div class="sobre-acoes">
+        <button
+          class="padrao botao-sugestao"
+          type="button"
+          onclick="abrirFormulario()"
+        >
+          Enviar uma sugest&atilde;o
+        </button>
+      </div>
+
+      <!-- VERSAO -->
+      <div class="versao-app">Vers&atilde;o 1.2.0</div>
+    </div>
+
+    <!-- ================= AJUDA ================= -->
+    <div id="ajuda" class="tela">
+      <button class="padrao btn-voltar" data-destino="jogo" type="button">
+        Voltar
+      </button>
+
+      <div class="ajuda-container">
+        <h2 class="titulo-central">
+          Regras B&aacute;sicas do Jogo Detetive / Clue
+        </h2>
+
+        <div class="accordion">
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaObjetivo"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#127919; Objetivo
+            </div>
+            <div class="conteudo" id="ajudaObjetivo">
+              Descobrir <strong>quem cometeu o crime</strong>,
+              <strong>com qual arma</strong> e
+              <strong>em qual c&ocirc;modo da mans&atilde;o</strong>.
+            </div>
+          </div>
+
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaComponentes"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#129513; Componentes
+            </div>
+            <div class="conteudo" id="ajudaComponentes">
+              - 1 tabuleiro<br />
+              - 8 pe&otilde;es<br />
+              - 8 armas<br />
+              - 27 cartas<br />
+              - 1 envelope confidencial<br />
+              - Bloco de anota&ccedil;&otilde;es ou este app<br />
+              - 1 dado<br /><br />
+              <em>OBS: Sua vers&atilde;o pode variar, mas as regras s&atilde;o as mesmas.</em>
+            </div>
+          </div>
+
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaPreparacao"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#128736;&#65039; Preparacao
+            </div>
+            <div class="conteudo" id="ajudaPreparacao">
+              1. Separe cartas em montes divididos em suspeitos, armas e
+              c&ocirc;modos.<br /><br />
+              2. Embaralhe cada grupo separadamente.<br /><br />
+              3. Escolha uma carta de cada grupo e coloque no envelope
+              <strong>sem olhar</strong>.<br /><br />
+              4. Embaralhe as demais cartas e distribua entre os jogadores.<br /><br />
+              5. Posicione os pe&otilde;es.<br /><br />
+              6. Use o bloco ou este app para anota&ccedil;&otilde;es.
+            </div>
+          </div>
+
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaComoJogar"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#127922; Como Jogar
+            </div>
+            <div class="conteudo" id="ajudaComoJogar">
+              1. Defina qual pe&atilde;o ser&aacute; de qual jogador.<br /><br />
+              2. Role o dado e mova o peao.<br /><br />
+              3. Ao entrar em um c&ocirc;modo, fa&ccedil;a um palpite.<br /><br />
+              Exemplo:<br />
+              <em>"Foi o Sargento, com a Faca, na Esta&ccedil;&atilde;o de Trem."</em
+              ><br /><br />
+              4. O jogador a esquerda verifica suas cartas e mostra apenas 1
+              caso tenha, se n&atilde;o tiver, passa para o pr&oacute;ximo jogador &agrave; esquerda,
+              a rodada acaba quando algum jogador mostra uma carta ou todos
+              dizem que n&atilde;o possuem as referidas cartas do palpite.<br /><br />
+
+              <div class="regra-alerta">
+                <strong>
+                  - O pe&atilde;o do jogador deve estar no local onde ele quer citar
+                  no palpite.<br /><br />
+                  - N&atilde;o &eacute; permitido aos jogadores dar o primeiro palpite no
+                  mesmo local onde iniciam o jogo. Saia, d&ecirc; palpite em outro
+                  local e depois volte, caso queira.<br /><br />
+                  - O pe&atilde;o do suspeito citado deve ser puxado para o local do
+                  palpite e permanecer l&aacute; ao final da rodada.<br /><br />
+                  - Regra obrigat&oacute;ria: Se voc&ecirc; possui uma carta citada, &eacute;
+                  obrigado a mostrar.
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaAcusacao"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#9878;&#65039; Acusacao
+            </div>
+            <div class="conteudo" id="ajudaAcusacao">
+              Em qualquer momento da partida, se algum jogador acredita que sabe
+              a solu&ccedil;&atilde;o, ele pode fazer uma acusa&ccedil;&atilde;o.<br /><br />
+              A acusa&ccedil;&atilde;o &eacute; semelhante ao palpite, mas ela define se o jogo
+              acaba.<br /><br />
+              Se o jogador acertar a acusa&ccedil;&atilde;o, ele vence.<br /><br />
+              Se o jogador errar, ele sai da disputa, mas continua mostrando
+              cartas.
+            </div>
+          </div>
+
+          <div class="item">
+            <div
+              class="titulo"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+              aria-controls="ajudaFimJogo"
+              onclick="toggleAccordion(this)"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
+            >
+              &#127937; Fim do Jogo
+            </div>
+            <div class="conteudo" id="ajudaFimJogo">
+              O jogo termina quando algu&eacute;m acerta a acusa&ccedil;&atilde;o. Se todos errarem,
+              ningu&eacute;m vence.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POPUPS ================= -->
+
+    <div
+      id="popupConfirmar"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupConfirmar"
+      aria-hidden="true"
+    >
+      <div class="popup-box">
+        <p id="tituloPopupConfirmar" class="popup-texto">
+          J&aacute; existe uma partida salva.<br /><br />
+          Iniciar nova partida apagar&aacute; o progresso atual.
+        </p>
+
+        <button class="padrao" type="button" onclick="fecharPopup()">
+          Cancelar
+        </button>
+
+        <button
+          class="play botao-confirmar"
+          type="button"
+          onclick="confirmarNovaPartida()"
+        >
+          Confirmar
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="popupLimpar"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupLimpar"
+      aria-hidden="true"
+    >
+      <div class="popup-box">
+        <p id="tituloPopupLimpar" class="popup-texto">
+          Deseja apagar todas as marca&ccedil;&otilde;es desta partida?
+        </p>
+
+        <button class="padrao" type="button" onclick="fecharPopupLimpar()">
+          Cancelar
+        </button>
+
+        <button
+          class="play botao-confirmar"
+          type="button"
+          onclick="confirmarLimpar()"
+        >
+          Confirmar
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="popupSugestao"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupSugestao"
+      aria-hidden="true"
+    >
+      <div class="popup-box">
+        <h3 id="tituloPopupSugestao">Enviar Sugest&atilde;o</h3>
+        <p>Voc&ecirc; ser&aacute; redirecionado para o formul&aacute;rio.</p>
+
+        <button class="play" onclick="confirmarSugestao()">Continuar</button>
+
+        <button class="padrao" onclick="fecharPopupSugestao()">Cancelar</button>
+      </div>
+    </div>
+
+    <div
+      id="popupDistribuicaoCartas"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupDistribuicaoCartas"
+      aria-hidden="true"
+    >
+      <div class="popup-box">
+        <h3 id="tituloPopupDistribuicaoCartas">Quais jogadores estao com mais cartas?</h3>
+        <p id="subtituloPopupDistribuicaoCartas" class="popup-texto"></p>
+
+        <div id="listaPopupDistribuicaoCartas" class="lista-jogadores-cartas"></div>
+
+        <p id="textoPopupDistribuicaoCartas" class="texto-secundario"></p>
+
+        <button class="padrao" type="button" onclick="fecharPopupDistribuicaoCartas()">
+          Cancelar
+        </button>
+
+        <button
+          id="btnConfirmarDistribuicaoCartas"
+          class="play botao-confirmar"
+          type="button"
+          onclick="confirmarDistribuicaoCartasPartida()"
+          disabled
+        >
+          Confirmar
+        </button>
+      </div>
+    </div>
+
+    <script src="js/utils.js?v=69" defer></script>
+    <script src="js/jogadores.js?v=69" defer></script>
+    <script src="js/telas.js?v=69" defer></script>
+    <script src="js/partida.js?v=69" defer></script>
+    <script src="js/menu.js?v=69" defer></script>
+    <script src="js/popup.js?v=69" defer></script>
+    <script src="js/tema.js?v=69" defer></script>
+    <script src="js/accordion.js?v=69" defer></script>
+    <script src="js/estado.js?v=69" defer></script>
+    <script src="js/tabela.js?v=69" defer></script>
+    <script src="js/assistente-ia.js?v=69" defer></script>
+    <script src="js/pro.js?v=69" defer></script>
+    <script src="js/app.js?v=69" defer></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
