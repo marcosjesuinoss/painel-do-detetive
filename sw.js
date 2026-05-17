@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "investigacao-v69";
+﻿const CACHE_NAME = "investigacao-v71";
 
 const STATIC_FILES = [
   "./",
@@ -26,6 +26,10 @@ const STATIC_FILES = [
   "./js/assistente-ia.js",
   "./js/pro.js",
   "./assets/icons/icon.svg",
+  "./assets/icons/icon-180.png",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/icons/icon-512-maskable.png",
   "./assets/splash.svg"
 ];
 

@@ -7,6 +7,7 @@
   --accent-soft: #4ade80;
   --accent-strong: #15803d;
   --accent-rgb: 22, 163, 74;
+  --accent-soft-rgb: 74, 222, 128;
   --gradient-botao: linear-gradient(135deg, #4ade80, #16a34a);
   --gradient-card: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(22, 163, 74, 0.05));
 
@@ -26,6 +27,7 @@
   --accent-soft: #4ade80;
   --accent-strong: #166534;
   --accent-rgb: 21, 128, 61;
+  --accent-soft-rgb: 74, 222, 128;
   --gradient-botao: linear-gradient(135deg, #4ade80, #16a34a);
   --gradient-card: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(22, 163, 74, 0.06));
 }
