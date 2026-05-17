@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#0f172a" />
     <script>
@@ -12,6 +12,7 @@
         var temas = {
           classico: {
             bg: "#0f141c",
+            bgLight: "#d9e0e8",
             bgEnd: "#171d28",
             glow: "22, 163, 74",
             accent: "#4ade80",
@@ -19,6 +20,7 @@
           },
           verde: {
             bg: "#0c1712",
+            bgLight: "#d8e6db",
             bgEnd: "#13231b",
             glow: "34, 197, 94",
             accent: "#4ade80",
@@ -26,6 +28,7 @@
           },
           azul: {
             bg: "#0c121a",
+            bgLight: "#d8e1ea",
             bgEnd: "#121c28",
             glow: "59, 130, 246",
             accent: "#60a5fa",
@@ -33,6 +36,7 @@
           },
           vermelho: {
             bg: "#170f11",
+            bgLight: "#ead9dc",
             bgEnd: "#241519",
             glow: "239, 68, 68",
             accent: "#f87171",
@@ -40,6 +44,7 @@
           },
           amarelo: {
             bg: "#16120c",
+            bgLight: "#e9dfd0",
             bgEnd: "#231b11",
             glow: "245, 158, 11",
             accent: "#fbbf24",
@@ -47,6 +52,7 @@
           },
           roxo: {
             bg: "#120f18",
+            bgLight: "#e3dce9",
             bgEnd: "#1b1625",
             glow: "139, 92, 246",
             accent: "#a78bfa",
@@ -54,6 +60,7 @@
           },
           cinza: {
             bg: "#101316",
+            bgLight: "#dde3ea",
             bgEnd: "#171c22",
             glow: "148, 163, 184",
             accent: "#cbd5e1",
@@ -71,7 +78,16 @@
           }
         } catch (e) {}
 
+        // Decide light vs dark da mesma forma que tema.js faz:
+        // - temaEscolhido salvo ("light"/"dark"/"auto"); default "auto"
+        // - se "auto", segue prefers-color-scheme do sistema
+        var modoTema = localStorage.getItem("temaEscolhido") || "auto";
+        var sistemaClaro = window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches;
+        var usarClaro = modoTema === "light" || (modoTema === "auto" && sistemaClaro);
+
         var visual = temas[temaAtivo] || temas.classico;
+        var corBarra = usarClaro ? (visual.bgLight || visual.bg) : visual.bg;
         var root = document.documentElement;
 
         root.style.setProperty("--splash-bg", visual.bg);
@@ -82,7 +98,7 @@
 
         var metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
-          metaTheme.setAttribute("content", visual.bg);
+          metaTheme.setAttribute("content", corBarra);
         }
       })();
     </script>
@@ -102,9 +118,10 @@
     <script src="js/utils-pro.js?v=69" defer></script>
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
+      content="default"
     />
   </head>
 
