@@ -1529,17 +1529,17 @@ body.modo-pro.light .card-pro.pro-ativo .pro-sobre-titulo {
 
 .light .card-tema:active,
 .light .card-tema:focus-visible {
-  border-color: rgba(22, 163, 74, 0.38);
+  border-color: rgba(var(--accent-rgb), 0.38);
   box-shadow:
     0 8px 18px rgba(15, 23, 42, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .light .card-tema.selecionado {
-  border: 2px solid rgba(22, 163, 74, 0.55);
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.16), rgba(22, 163, 74, 0.08));
+  border: 2px solid rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(135deg, rgba(var(--accent-soft-rgb), 0.16), rgba(var(--accent-rgb), 0.08));
   box-shadow:
-    0 8px 18px rgba(22, 163, 74, 0.2),
+    0 8px 18px rgba(var(--accent-rgb), 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
@@ -2041,19 +2041,19 @@ body.modo-pro .play:focus-visible {
 }
 
 .card-tema-sistema::before {
-  background: rgba(22, 163, 74, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .card-tema-sistema:active,
 .card-tema-sistema:focus-visible {
-  border-color: rgba(22, 163, 74, 0.34);
+  border-color: rgba(var(--accent-rgb), 0.34);
 }
 
 .card-tema-sistema.selecionado {
-  border: 2px solid rgba(22, 163, 74, 0.5);
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(22, 163, 74, 0.06));
+  border: 2px solid rgba(var(--accent-rgb), 0.5);
+  background: linear-gradient(135deg, rgba(var(--accent-soft-rgb), 0.12), rgba(var(--accent-rgb), 0.06));
   box-shadow:
-    0 8px 20px rgba(22, 163, 74, 0.16),
+    0 8px 20px rgba(var(--accent-rgb), 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
@@ -2073,19 +2073,19 @@ body.modo-pro .play:focus-visible {
 
 .card-pro.pro-ativo {
   background:
-    linear-gradient(145deg, rgba(74, 222, 128, 0.12), rgba(22, 163, 74, 0.06)),
+    linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.12), rgba(var(--accent-rgb), 0.06)),
     var(--card);
-  border: 1px solid rgba(22, 163, 74, 0.28);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.2),
-    0 0 18px rgba(22, 163, 74, 0.12),
+    0 0 18px rgba(var(--accent-rgb), 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pro-sobre-lista li::before,
 .ia-menu-card h5::before {
-  background: linear-gradient(135deg, #4ade80, #16a34a);
-  box-shadow: 0 0 8px rgba(22, 163, 74, 0.28);
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.28);
 }
 
 .assistente-ia-menu {
@@ -2153,9 +2153,9 @@ body.modo-pro .play:focus-visible {
 .card-pro,
 .ajuda-container {
   background:
-    linear-gradient(145deg, rgba(74, 222, 128, 0.08), rgba(22, 163, 74, 0.03)),
+    linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.08), rgba(var(--accent-rgb), 0.03)),
     var(--card);
-  border: 1px solid rgba(22, 163, 74, 0.18);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -2207,9 +2207,9 @@ body.modo-pro .play:focus-visible {
 .light .card-pro,
 .light .ajuda-container {
   background:
-    linear-gradient(145deg, rgba(74, 222, 128, 0.12), rgba(22, 163, 74, 0.05)),
+    linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.12), rgba(var(--accent-rgb), 0.05)),
     var(--card);
-  border: 1px solid rgba(22, 163, 74, 0.16);
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
   box-shadow:
     0 10px 22px rgba(71, 85, 105, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -2434,7 +2434,7 @@ body.modo-pro .secao-temas-sistema,
 body.modo-pro .secao-temas-aparencia,
 body.modo-pro .popup-box {
   background: linear-gradient(145deg, rgba(30, 41, 59, 0.94), rgba(20, 29, 42, 0.96));
-  border: 1px solid rgba(74, 222, 128, 0.14);
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.14);
   border-radius: 22px;
   box-shadow:
     0 14px 32px rgba(0, 0, 0, 0.22),
@@ -2509,12 +2509,12 @@ body.modo-pro:not(.light) .secao-temas-sistema,
 body.modo-pro:not(.light) .secao-temas-aparencia,
 body.modo-pro:not(.light) .popup-box {
   background:
-    linear-gradient(160deg, rgba(74, 222, 128, 0.06), transparent 34%),
+    linear-gradient(160deg, rgba(var(--accent-soft-rgb), 0.06), transparent 34%),
     linear-gradient(145deg, rgba(32, 44, 62, 0.96), rgba(17, 24, 39, 0.98));
-  border: 1px solid rgba(74, 222, 128, 0.16);
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.16);
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.32),
-    0 0 24px rgba(22, 163, 74, 0.08),
+    0 0 24px rgba(var(--accent-rgb), 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
@@ -2578,11 +2578,11 @@ body.modo-pro:not(.light) .accordion .item.ativo .titulo,
 body.modo-pro:not(.light) .card-tema-sistema.selecionado,
 body.modo-pro:not(.light) .card-tema.selecionado {
   background:
-    linear-gradient(145deg, rgba(74, 222, 128, 0.14), rgba(22, 163, 74, 0.08));
-  border-color: rgba(74, 222, 128, 0.28);
+    linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.14), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-soft-rgb), 0.28);
   box-shadow:
     0 12px 24px rgba(0, 0, 0, 0.22),
-    0 0 18px rgba(74, 222, 128, 0.12),
+    0 0 18px rgba(var(--accent-soft-rgb), 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -2602,7 +2602,7 @@ body.modo-pro.light .secao-temas-sistema,
 body.modo-pro.light .secao-temas-aparencia,
 body.modo-pro.light .popup-box {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(214, 224, 234, 0.92));
-  border: 1px solid rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
   box-shadow:
     0 12px 28px rgba(71, 85, 105, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.68);

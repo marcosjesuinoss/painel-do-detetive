@@ -1,6 +1,6 @@
 # Mapa de cores verdes hardcoded em css/components.css
 
-Total de ocorrencias: **98**
+Total de ocorrencias: **65**
 
 Cores procuradas: `#16a34a`, `#15803d`, `#4ade80`, `#22c55e`, `#166534`, `#14532d`, `rgba(22,163,74,*)`, `rgba(34,197,94,*)`, `rgba(74,222,128,*)`, `rgba(21,128,61,*)`
 
@@ -16,48 +16,6 @@ Cores procuradas: `#16a34a`, `#15803d`, `#4ade80`, `#22c55e`, `#166534`, `#14532
 - **.light .regra-alerta**
   - linhas: [2239, 2240]
   - cores: ['rgba(22, 163, 74, 0.08)', 'rgba(22, 163, 74, 0.16)']
-
-## 2. Cards (33 ocorrencias)
-
-- **.light .card-tema:active, .light .card-tema:focus-visible**
-  - linhas: [1532]
-  - cores: ['rgba(22, 163, 74, 0.38)']
-- **.light .card-tema.selecionado**
-  - linhas: [1539, 1540, 1542]
-  - cores: ['rgba(22, 163, 74, 0.08)', 'rgba(22, 163, 74, 0.2)', 'rgba(22, 163, 74, 0.55)', 'rgba(74, 222, 128, 0.16)']
-- **.card-tema-sistema::before**
-  - linhas: [2044]
-  - cores: ['rgba(22, 163, 74, 0.05)']
-- **.card-tema-sistema:active, .card-tema-sistema:focus-visible**
-  - linhas: [2049]
-  - cores: ['rgba(22, 163, 74, 0.34)']
-- **.card-tema-sistema.selecionado**
-  - linhas: [2053, 2054, 2056]
-  - cores: ['rgba(22, 163, 74, 0.06)', 'rgba(22, 163, 74, 0.16)', 'rgba(22, 163, 74, 0.5)', 'rgba(74, 222, 128, 0.12)']
-- **.card-pro.pro-ativo**
-  - linhas: [2076, 2078, 2081]
-  - cores: ['rgba(22, 163, 74, 0.06)', 'rgba(22, 163, 74, 0.12)', 'rgba(22, 163, 74, 0.28)', 'rgba(74, 222, 128, 0.12)']
-- **.pro-sobre-lista li::before, .ia-menu-card h5::before**
-  - linhas: [2087, 2088]
-  - cores: ['#16a34a', '#4ade80', 'rgba(22, 163, 74, 0.28)']
-- **.popup-box, .card-sobre, .card-pro, .ajuda-container**
-  - linhas: [2156, 2158]
-  - cores: ['rgba(22, 163, 74, 0.03)', 'rgba(22, 163, 74, 0.18)', 'rgba(74, 222, 128, 0.08)']
-- **.light .popup-box, .light .card-sobre, .light .card-pro, .light .ajuda-container**
-  - linhas: [2210, 2212]
-  - cores: ['rgba(22, 163, 74, 0.05)', 'rgba(22, 163, 74, 0.16)', 'rgba(74, 222, 128, 0.12)']
-- **body.modo-pro .menu-lateral, body.modo-pro #inicio .container, body.modo-pro #novoJogo .container, body.modo-pro #aparencia .container, body...**
-  - linhas: [2437]
-  - cores: ['rgba(74, 222, 128, 0.14)']
-- **body.modo-pro:not(.light) .menu-lateral, body.modo-pro:not(.light) #inicio .container, body.modo-pro:not(.light) #novoJogo .container, body....**
-  - linhas: [2512, 2514, 2517]
-  - cores: ['rgba(22, 163, 74, 0.08)', 'rgba(74, 222, 128, 0.06)', 'rgba(74, 222, 128, 0.16)']
-- **body.modo-pro:not(.light) .accordion .item.ativo .titulo, body.modo-pro:not(.light) .card-tema-sistema.selecionado, body.modo-pro:not(.light...**
-  - linhas: [2581, 2582, 2585]
-  - cores: ['rgba(22, 163, 74, 0.08)', 'rgba(74, 222, 128, 0.12)', 'rgba(74, 222, 128, 0.14)', 'rgba(74, 222, 128, 0.28)']
-- **body.modo-pro.light .menu-lateral, body.modo-pro.light #inicio .container, body.modo-pro.light #novoJogo .container, body.modo-pro.light #ap...**
-  - linhas: [2605]
-  - cores: ['rgba(22, 163, 74, 0.12)']
 
 ## 4. Menu / Container / Popup (17 ocorrencias)
 
