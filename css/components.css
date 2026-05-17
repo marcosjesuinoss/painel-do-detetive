@@ -2462,7 +2462,8 @@ body.modo-pro button.padrao,
 body.modo-pro button.section,
 body.modo-pro .btn-selecionar-tema,
 body.modo-pro .card-tema,
-body.modo-pro .card-tema-sistema {
+body.modo-pro .card-tema-sistema,
+body.modo-pro .popup-acoes .play {
   border-radius: 16px;
 }
 
