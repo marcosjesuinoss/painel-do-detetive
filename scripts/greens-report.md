@@ -1,6 +1,6 @@
 # Mapa de cores verdes hardcoded em css/components.css
 
-Total de ocorrencias: **65**
+Total de ocorrencias: **38**
 
 Cores procuradas: `#16a34a`, `#15803d`, `#4ade80`, `#22c55e`, `#166534`, `#14532d`, `rgba(22,163,74,*)`, `rgba(34,197,94,*)`, `rgba(74,222,128,*)`, `rgba(21,128,61,*)`
 
@@ -82,36 +82,3 @@ Cores procuradas: `#16a34a`, `#15803d`, `#4ade80`, `#22c55e`, `#166534`, `#14532
 - **body.modo-pro:not(.light) .logo**
   - linhas: [2524]
   - cores: ['rgba(74, 222, 128, 0.2)']
-
-## 9. Telas Sobre / Pro / Tema (27 ocorrencias)
-
-- **.status-pro.ativo**
-  - linhas: [528, 531, 2139, 2140, 2142]
-  - cores: ['rgba(22, 163, 74, 0.08)', 'rgba(34, 197, 94, 0.12)', 'rgba(34, 197, 94, 0.15)', 'rgba(34, 197, 94, 0.38)', 'rgba(34, 197, 94, 0.4)']
-- **@keyframes proBadgeGlow**
-  - linhas: [1837, 1842, 1843]
-  - cores: ['rgba(22, 163, 74, 0.22)', 'rgba(74, 222, 128, 0.16)', 'rgba(74, 222, 128, 0.18)']
-- **.status-pro.ativo .status-icon**
-  - linhas: [1865]
-  - cores: ['#16a34a', '#4ade80']
-- **.light .status-pro.ativo .status-icon**
-  - linhas: [1872]
-  - cores: ['#15803d']
-- **.badge-pro**
-  - linhas: [1997]
-  - cores: ['#16a34a', '#4ade80']
-- **.preco-section**
-  - linhas: [2001, 2003]
-  - cores: ['rgba(22, 163, 74, 0.12)', 'rgba(22, 163, 74, 0.26)']
-- **.preco-valor**
-  - linhas: [2008]
-  - cores: ['#16a34a', '#4ade80']
-- **.payload-preco**
-  - linhas: [2040, 2181]
-  - cores: ['#16a34a']
-- **@keyframes pulsoTemaSistema**
-  - linhas: [2064, 2069]
-  - cores: ['rgba(22, 163, 74, 0.16)', 'rgba(22, 163, 74, 0.28)']
-- **.status-pro.inativo**
-  - linhas: [2116, 2117, 2119, 2130, 2131, 2133]
-  - cores: ['rgba(22, 163, 74, 0.06)', 'rgba(22, 163, 74, 0.3)', 'rgba(74, 222, 128, 0.12)']
