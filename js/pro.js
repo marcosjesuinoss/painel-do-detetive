@@ -62,7 +62,7 @@ function atualizarStatusPRO() {
     statusEl.classList.remove("inativo");
     statusEl.classList.add("ativo");
 
-    if (statusIcon) statusIcon.textContent = "✅";
+    if (statusIcon) statusIcon.textContent = "ATIVO";
     if (statusH2) statusH2.textContent = "Modo PRO Ativo!";
 
     if (proDados.dataAtivacao) {
@@ -94,7 +94,7 @@ function atualizarStatusPRO() {
     statusEl.classList.add("inativo");
     statusEl.classList.remove("ativo");
 
-    if (statusIcon) statusIcon.textContent = "🔒";
+    if (statusIcon) statusIcon.textContent = "";
     if (statusH2) statusH2.textContent = "Desbloqueie o Poder Total";
     statusTexto.textContent =
       "Ative o Modo PRO e ganhe acesso a recursos exclusivos";
