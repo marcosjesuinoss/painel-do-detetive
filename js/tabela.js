@@ -387,6 +387,29 @@ if (tipo === "V") {
   atualizarDestaques();
   atualizarBotoes();
   atualizarBotaoContinuar();
+
+  // IA-002: narrar a marcacao manual para o card "O que mudou" do assistente.
+  // Auto-X gerados por V (rest da linha) NAO sao narrados aqui - eles
+  // sao consequencia logica, nao acao primaria do usuario.
+  if (
+    typeof registrarMudancaAssistenteIA === "function" &&
+    tipo &&
+    tipo !== "" &&
+    !modoTrinca
+  ) {
+    const partes = chave.split("-");
+    const rowIdx = Number(partes[0]);
+    const colIdx = Number(partes[1]);
+    const carta = Array.isArray(cartas) && cartas[rowIdx] ? cartas[rowIdx].nome : null;
+    const jogador =
+      typeof obterNomeJogadorAssistenteIA === "function"
+        ? obterNomeJogadorAssistenteIA(colIdx)
+        : localStorage.getItem(`nomeJogador${colIdx + 1}`) || `J${colIdx + 1}`;
+    if (carta && jogador) {
+      registrarMudancaAssistenteIA({ tipo, carta, jogador });
+    }
+  }
+
   if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
   }

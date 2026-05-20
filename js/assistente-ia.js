@@ -176,6 +176,18 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
       const jogadores = obterNumeroJogadoresAssistenteIA();
       const acoes = [];
 
+      // IA-001: linhas que ja possuem V em alguma coluna nao podem receber
+      // novo V em outra coluna (cada carta tem dono unico).
+      const linhasComV = new Set();
+      for (let row = 0; row < cartas.length; row++) {
+        for (let c = 0; c < jogadores; c++) {
+          if (estado[`${row}-${c}`] === "V") {
+            linhasComV.add(row);
+            break;
+          }
+        }
+      }
+
       for (let col = 0; col < jogadores; col++) {
         const limite = cartasPorJogador[col];
         let confirmadas = 0;
@@ -190,7 +202,8 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
             continue;
           }
 
-          if (valor !== "X") {
+          // Exclui rows ja confirmadas em outra coluna (impede V duplicado)
+          if (valor !== "X" && !linhasComV.has(row)) {
             candidatas.push({ row, col, chave });
           }
         }

@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "investigacao-v75";
+﻿const CACHE_NAME = "investigacao-v76";
 
 const STATIC_FILES = [
   "./",
