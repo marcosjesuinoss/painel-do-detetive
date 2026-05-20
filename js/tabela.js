@@ -6,6 +6,19 @@ let linhasSelecionadas = {
   Locais: null
 };
 
+// IA-008: leitura centralizada de estadoTabela.
+// Concentra em 1 ponto as 6+ chamadas anteriores que faziam
+// JSON.parse(localStorage.getItem("estadoTabela") || "{}") espalhadas
+// pelo arquivo. Quando P3 (IA-011 snapshot) chegar, este wrapper passa
+// a delegar ao cache central sem necessidade de tocar callsites.
+function lerEstadoTabela() {
+  try {
+    return JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  } catch {
+    return {};
+  }
+}
+
 /* =====================================
    CONFIGURAÇÕES DO JOGO
 ===================================== */
@@ -134,7 +147,7 @@ function criarTabela() {
   const area = document.getElementById("tabela");
   area.innerHTML = "";
 
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
   const template = `31% repeat(${jogadores}, 1fr)`;
 
   const header = document.createElement("div");
@@ -315,7 +328,7 @@ function marcarCelula(cel, tipo, modoTrinca = false) {
 
   const chave = cel.dataset.key;
   const row = cel.dataset.row;
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
   const autoXChaves = new Set();
 
   if (tipo === "V") {
@@ -420,7 +433,7 @@ if (tipo === "V") {
 }
 
 function atualizarEstadoVisualCartasEncontradas() {
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
   const linhasComV = new Set();
 
   Object.entries(estadoSalvo).forEach(([chave, estado]) => {
@@ -439,7 +452,7 @@ function atualizarEstadoVisualCartasEncontradas() {
 
 function atualizarDestaqueCartaOculta() {
   const jogadores = parseInt(localStorage.getItem("numJogadores") || 3);
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
 
   document
     .querySelectorAll("#tabela .celula.carta-oculta")
@@ -517,7 +530,7 @@ function atualizarAlertaDuplicidadePRO() {
     return;
   }
 
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
   const porLinha = {};
 
   Object.entries(estadoSalvo).forEach(([chave, estado]) => {
@@ -669,7 +682,7 @@ function renderizarEstado(cel, estado) {
 function aplicarTrincaX() {
 
   const jogadores = parseInt(localStorage.getItem("numJogadores") || 3);
-  const estadoSalvo = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  const estadoSalvo = lerEstadoTabela();
 
   const linhasAtivas = Object.values(linhasSelecionadas).filter(l => l !== null);
 

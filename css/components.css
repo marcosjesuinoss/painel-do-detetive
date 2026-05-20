@@ -546,22 +546,10 @@
   }
 }
 
-.status-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  display: inline-block;
-  animation: balancoIcon 2s ease-in-out infinite;
-}
-
-@keyframes balancoIcon {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
+/* IA-009: removida regra legada .status-icon (font-size 48px + balancoIcon)
+   que pertencia a um design antigo de emoji grande. O badge atual usa
+   .status-pro.ativo .status-icon (linha ~1851) com pill + proBadgeFloat
+   + proBadgeGlow. @keyframes balancoIcon removido tambem (sem outros usos). */
 
 .status-descricao {
   font-size: 14px;
@@ -1445,9 +1433,8 @@ body.modo-pro .play:active {
   display: none;
 }
 
-.status-icon {
-  display: none;
-}
+/* IA-009: removida duplicata .status-icon { display: none } - redundante
+   com a definicao em .status-icon (linha ~1847) abaixo. */
 
 /* Refino do 2o bloco da tela Sobre quando PRO ativo */
 .card-pro.pro-ativo {
@@ -1966,11 +1953,11 @@ body.modo-pro.light .card-pro.pro-ativo .pro-sobre-titulo {
   transform: translateY(-3px);
 }
 
-.status-icon,
-.status-pro.ativo .status-icon {
-  display: none !important;
-  animation: none !important;
-}
+/* IA-009: removida regra hard-kill que forcava display:none + animation:none
+   com !important sobre o badge "ATIVO". Era vestigio de quando o elemento
+   <span class="status-icon"> nao existia no HTML; foi adicionada como patch
+   para esconder o icone quebrado. Agora que o elemento existe e o JS preenche
+   "ATIVO", a hard-kill estava suprimindo indevidamente o badge animado. */
 
 
 

@@ -34,6 +34,39 @@ function obterCartasPorJogadorAssistenteIA() {
   return null;
 }
 
+// IA-007: getter para a lista de jogadores com mais cartas (5/7 jogadores).
+// Hoje a deducao usa apenas cartasPorJogador, que ja e o array resolvido.
+// Este getter expoe a lista bruta para P7 (modo explicativo) e validacao.
+function obterJogadoresMaisCartasAssistenteIA() {
+  try {
+    const lista = JSON.parse(localStorage.getItem("assistenteJogadoresMaisCartas") || "null");
+    return Array.isArray(lista) ? lista.map((v) => parseInt(v, 10)) : [];
+  } catch {
+    return [];
+  }
+}
+
+// IA-007: validacao opcional - garante que a distribuicao salva e o
+// conjunto "jogadores com mais cartas" sao consistentes. Loga warning
+// caso contrario (ajuda detectar bug de retomada em 5/7 jogadores).
+function validarConsistenciaDistribuicaoAssistenteIA() {
+  const cartasPorJogador = obterCartasPorJogadorAssistenteIA();
+  const maisCartas = obterJogadoresMaisCartasAssistenteIA();
+  if (!Array.isArray(cartasPorJogador) || cartasPorJogador.length === 0) return true;
+  if (maisCartas.length === 0) return true;
+
+  const maxCartas = Math.max(...cartasPorJogador);
+  for (const idx of maisCartas) {
+    if (cartasPorJogador[idx] !== maxCartas) {
+      console.warn(
+        `[Assistente IA] Inconsistencia: jogador ${idx} marcado como "mais cartas" tem ${cartasPorJogador[idx]} cartas; maximo da distribuicao e ${maxCartas}.`,
+      );
+      return false;
+    }
+  }
+  return true;
+}
+
 function obterLinhasAssistenteIA() {
   if (!Array.isArray(cartas) || cartas.length === 0) return [];
 
@@ -91,6 +124,10 @@ function calcularPesoOcultacaoLocal(infoLinha, linhas) {
 }
 
 function montarResumoLinhasAssistenteIA(linhas) {
+  // IA-006: porTipo era retornado mas nunca consumido externamente.
+  // Mantemos apenas como variavel local para o filtro abaixo - quando
+  // P5 (inconsistencias) e P7 (grupos resposta) chegarem e precisarem
+  // dessa agregacao, sera adicionada de volta no return.
   const porTipo = {
     Suspeitos: linhas.filter((linha) => linha.tipo === "Suspeitos"),
     Armas: linhas.filter((linha) => linha.tipo === "Armas"),
@@ -149,7 +186,6 @@ function montarResumoLinhasAssistenteIA(linhas) {
     .sort((a, b) => b.score - a.score);
 
   return {
-    porTipo,
     ocultas: Array.from(mapaOcultas.values()),
     candidatosOcultos,
   };
@@ -375,6 +411,10 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   const ultima = obterResumoMudancaAssistenteIA();
   const itens = [];
 
+  // IA-005: branch "trinca-x" mantida dormente (sem produtor atual).
+  // Detector de trinca-de-X esta no spec (secao 19 do BACKLOG_IA.md, item
+  // P11+). Quando for restaurado, ele emite payload { tipo: "trinca-x", ... }
+  // e esta branch passa a narrar automaticamente.
   if (ultima?.tipo === "trinca-x" && Array.isArray(ultima.cartas) && ultima.cartas.length) {
     itens.push(`Trinca eliminada para ${ultima.jogador}: ${ultima.cartas.join(", ")}.`);
   } else if (ultima?.tipo === "V" && ultima.carta && ultima.jogador) {
