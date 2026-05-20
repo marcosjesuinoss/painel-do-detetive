@@ -295,7 +295,9 @@ cel.onclick = () => {
   atualizarDestaques();
   atualizarBotoes();
   atualizarBotaoContinuar();
-  if (typeof atualizarAssistenteIA === "function") {
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  } else if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
   }
 }
@@ -410,7 +412,9 @@ if (tipo === "V") {
     }
   }
 
-  if (typeof atualizarAssistenteIA === "function") {
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  } else if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
   }
 }
@@ -705,7 +709,9 @@ function aplicarTrincaX() {
   atualizarDestaques();
   atualizarBotoes();
   atualizarBotaoContinuar();
-  if (typeof atualizarAssistenteIA === "function") {
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  } else if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
   }
 }

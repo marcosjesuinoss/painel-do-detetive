@@ -495,6 +495,23 @@ function construirDicasCapacidadeAssistenteIA(linhas) {
   return dicas.slice(0, 2);
 }
 
+// IA-004: coalesce multiplas chamadas dentro do mesmo frame de pintura.
+// Sem isso, uma unica interacao do usuario dispara atualizarAssistenteIA
+// 3+ vezes em sequencia (tabela.js linhas ~299, 414, 709).
+let agendamentoAssistenteIA = null;
+
+function agendarAtualizacaoAssistenteIA() {
+  if (agendamentoAssistenteIA !== null) return;
+  agendamentoAssistenteIA = requestAnimationFrame(() => {
+    agendamentoAssistenteIA = null;
+    try {
+      atualizarAssistenteIA();
+    } catch (erro) {
+      console.error("Erro ao executar atualizarAssistenteIA agendada.", erro);
+    }
+  });
+}
+
 function atualizarAssistenteIA() {
   try {
     if (typeof isPRO === "function" && !isPRO()) return;
