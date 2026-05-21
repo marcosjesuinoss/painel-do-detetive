@@ -532,24 +532,61 @@ function atualizarAlertaDuplicidadePRO() {
 
   const estadoSalvo = lerEstadoTabela();
   const porLinha = {};
+  const porColuna = {};
 
   Object.entries(estadoSalvo).forEach(([chave, estado]) => {
     if (estado !== "V") return;
 
     const partes = chave.split("-");
     const row = partes[0];
+    const col = partes[1];
 
-    if (!porLinha[row]) {
-      porLinha[row] = [];
-    }
-
+    if (!porLinha[row]) porLinha[row] = [];
     porLinha[row].push(chave);
+
+    if (!porColuna[col]) porColuna[col] = [];
+    porColuna[col].push(chave);
   });
 
+  // Regra 1: linha com 2+ V (carta com 2 donos - impossivel)
   Object.values(porLinha).forEach((chavesDaLinha) => {
     if (chavesDaLinha.length < 2) return;
 
     chavesDaLinha.forEach((chave) => {
+      const cel = document.querySelector(`[data-key="${chave}"]`);
+      if (cel) {
+        cel.classList.add("alerta-duplicidade-v");
+      }
+    });
+  });
+
+  // Regra 2: coluna com mais V que o limite da mao do jogador
+  const numJogadores = parseInt(localStorage.getItem("numJogadores") || "3", 10);
+  let cartasPorJogador = null;
+  try {
+    const salvas = JSON.parse(
+      localStorage.getItem("assistenteCartasPorJogador") || "null",
+    );
+    if (Array.isArray(salvas) && salvas.length === numJogadores) {
+      cartasPorJogador = salvas.map((v) => parseInt(v, 10));
+    }
+  } catch {}
+  if (
+    !cartasPorJogador &&
+    typeof obterConfiguracaoDistribuicaoCartas === "function"
+  ) {
+    const cfg = obterConfiguracaoDistribuicaoCartas(numJogadores);
+    if (cfg && !cfg.precisaSelecionar) {
+      cartasPorJogador = cfg.cartasPorJogador.slice();
+    }
+  }
+  if (!Array.isArray(cartasPorJogador)) return;
+
+  Object.entries(porColuna).forEach(([col, chavesDaColuna]) => {
+    const limite = cartasPorJogador[parseInt(col, 10)];
+    if (typeof limite !== "number") return;
+    if (chavesDaColuna.length <= limite) return;
+    chavesDaColuna.forEach((chave) => {
       const cel = document.querySelector(`[data-key="${chave}"]`);
       if (cel) {
         cel.classList.add("alerta-duplicidade-v");
@@ -735,6 +772,11 @@ function aplicarTrincaX() {
 let timerFocoInconsistenciaAssistenteIA = null;
 
 function aplicarFocoInconsistenciaAssistenteIA(focoJSON) {
+  // Fecha o menu lateral pra que a tabela fique visivel quando o foco aplicar
+  if (typeof resetarMenu === "function") {
+    resetarMenu();
+  }
+
   // Limpa qualquer foco anterior
   document
     .querySelectorAll(".assistente-foco-inconsistencia")

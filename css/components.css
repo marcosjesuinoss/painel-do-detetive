@@ -2810,9 +2810,14 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
   cursor: pointer;
   font: inherit;
   font-size: 13px;
+  font-weight: normal;
   line-height: 1.35;
   border-radius: 8px;
   margin: 0;
+  /* Override do button global (base.css) que adiciona shadow-soft e
+     translateY no :active. Botoes da lista de inconsistencias sao
+     itens de lista, nao botoes de acao. */
+  box-shadow: none;
   transition: background var(--transition-fast);
 }
 
@@ -2820,6 +2825,12 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
 .ia-inconsistencia-btn:focus-visible {
   background: rgba(255, 255, 255, 0.06);
   outline: none;
+  box-shadow: none;
+}
+
+.ia-inconsistencia-btn:active {
+  transform: none;
+  box-shadow: none;
 }
 
 .light .ia-inconsistencia-btn:hover,
