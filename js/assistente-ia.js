@@ -1179,7 +1179,11 @@ function classificarInconsistenciasAssistenteIA(linhas) {
 function formatarInconsistenciasAssistenteIA(graves, leves) {
   const total = (graves?.length || 0) + (leves?.length || 0);
   if (total === 0) {
-    return `<p class="ia-sem-inconsistencias">Nenhuma inconsistencia detectada. Marcacoes estao logicamente consistentes.</p>`;
+    // Mantem o mesmo padrao visual dos outros 3 cards (lista <ul class="ia-lista">)
+    return formatarListaAssistenteIA([
+      "Nenhuma inconsistencia detectada.",
+      "Marcacoes estao logicamente consistentes.",
+    ]);
   }
 
   const itens = [];

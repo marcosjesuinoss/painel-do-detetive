@@ -2730,18 +2730,20 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
    afetadas recebem a classe .assistente-foco-inconsistencia por 2500ms.
    Animacao pulsante em vermelho para chamar atencao sem ser ofensivo. */
 
+/* outline em vez de background pra nao competir com regras do .celula
+   (que usa gradients e cores variadas). box-shadow externo de halo amplo. */
 @keyframes pulsoFocoInconsistencia {
   0%, 100% {
+    outline-color: rgba(239, 68, 68, 0.85);
     box-shadow:
-      0 0 0 2px rgba(239, 68, 68, 0.85),
-      0 0 12px rgba(239, 68, 68, 0.5);
-    background-color: rgba(239, 68, 68, 0.18);
+      0 0 0 6px rgba(239, 68, 68, 0.18),
+      0 0 16px rgba(239, 68, 68, 0.55);
   }
   50% {
+    outline-color: rgba(239, 68, 68, 1);
     box-shadow:
-      0 0 0 3px rgba(239, 68, 68, 1),
-      0 0 22px rgba(239, 68, 68, 0.8);
-    background-color: rgba(239, 68, 68, 0.32);
+      0 0 0 8px rgba(239, 68, 68, 0.35),
+      0 0 26px rgba(239, 68, 68, 0.85);
   }
 }
 
@@ -2749,7 +2751,10 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
 #tabela .assistente-foco-inconsistencia {
   position: relative;
   z-index: 5;
-  animation: pulsoFocoInconsistencia 0.7s ease-in-out infinite;
+  outline: 3px solid rgb(239, 68, 68) !important;
+  outline-offset: -3px;
+  animation: pulsoFocoInconsistencia 0.7s ease-in-out infinite !important;
+  border-radius: 4px;
 }
 
 /* ============================================================================
@@ -2822,9 +2827,6 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
   background: rgba(0, 0, 0, 0.04);
 }
 
-.ia-sem-inconsistencias {
-  color: var(--text-secundario, var(--text));
-  opacity: 0.75;
-  font-size: 13px;
-  margin: 0;
-}
+/* .ia-sem-inconsistencias removido - placeholder agora reusa .ia-lista
+   (formatarListaAssistenteIA) para manter identidade visual com os
+   outros 3 cards do menu IA. */
