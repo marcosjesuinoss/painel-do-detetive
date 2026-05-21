@@ -728,3 +728,63 @@ function aplicarTrincaX() {
     atualizarAssistenteIA();
   }
 }
+
+// IA-019: aplica destaque temporario (2500ms) em celulas/coluna/linhas
+// associadas a uma inconsistencia. Chamado pelo onclick dos botoes
+// gerados em formatarInconsistenciasAssistenteIA.
+let timerFocoInconsistenciaAssistenteIA = null;
+
+function aplicarFocoInconsistenciaAssistenteIA(focoJSON) {
+  // Limpa qualquer foco anterior
+  document
+    .querySelectorAll(".assistente-foco-inconsistencia")
+    .forEach((el) => el.classList.remove("assistente-foco-inconsistencia"));
+  if (timerFocoInconsistenciaAssistenteIA) {
+    clearTimeout(timerFocoInconsistenciaAssistenteIA);
+    timerFocoInconsistenciaAssistenteIA = null;
+  }
+
+  if (!focoJSON) return;
+
+  let foco;
+  try {
+    foco = JSON.parse(focoJSON);
+  } catch {
+    return;
+  }
+  if (!foco || typeof foco !== "object") return;
+
+  let alvos = [];
+  if (foco.tipo === "celulas" && Array.isArray(foco.chaves)) {
+    foco.chaves.forEach((chave) => {
+      const el = document.querySelector(`#tabela [data-key="${chave}"]`);
+      if (el) alvos.push(el);
+    });
+  } else if (foco.tipo === "coluna" && Number.isInteger(foco.coluna)) {
+    alvos = Array.from(
+      document.querySelectorAll(`#tabela [data-col="${foco.coluna}"][data-key]`),
+    );
+  } else if (foco.tipo === "linhas" && Array.isArray(foco.rows)) {
+    foco.rows.forEach((row) => {
+      document
+        .querySelectorAll(`#tabela [data-row="${row}"][data-key]`)
+        .forEach((el) => alvos.push(el));
+    });
+  }
+
+  if (alvos.length === 0) return;
+
+  // Scroll para o primeiro alvo se estiver fora da viewport
+  if (alvos[0].scrollIntoView) {
+    alvos[0].scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  alvos.forEach((el) => el.classList.add("assistente-foco-inconsistencia"));
+
+  timerFocoInconsistenciaAssistenteIA = setTimeout(() => {
+    document
+      .querySelectorAll(".assistente-foco-inconsistencia")
+      .forEach((el) => el.classList.remove("assistente-foco-inconsistencia"));
+    timerFocoInconsistenciaAssistenteIA = null;
+  }, 2500);
+}

@@ -852,9 +852,18 @@ function garantirEstruturaAssistenteIA() {
   const cards = secao.querySelectorAll(".ia-menu-card");
   if (cards.length < 3) return null;
 
-  const ids = ["iaResumoMudancas", "iaProximaSugestao", "iaConfiancaAssistente"];
+  // IA-017: agora suportamos 4 cards (resumo, sugestao, confianca,
+  // inconsistencias). 3 cards continua sendo aceito como fallback - so
+  // o 4o slot fica null. Cards extras alem do 4o sao ignorados.
+  const ids = [
+    "iaResumoMudancas",
+    "iaProximaSugestao",
+    "iaConfiancaAssistente",
+    "iaInconsistenciasAssistente",
+  ];
 
   cards.forEach((card, index) => {
+    if (index >= ids.length) return;
     let conteudo = card.querySelector(".ia-conteudo-lista");
     if (!conteudo) {
       const p = card.querySelector("p");
@@ -875,6 +884,7 @@ function garantirEstruturaAssistenteIA() {
     resumo: getEl("iaResumoMudancas"),
     sugestao: getEl("iaProximaSugestao"),
     confianca: getEl("iaConfiancaAssistente"),
+    inconsistencias: getEl("iaInconsistenciasAssistente"),
   };
 }
 
@@ -1041,6 +1051,161 @@ function agendarAtualizacaoAssistenteIA() {
   });
 }
 
+// ============================================================================
+// IA-016: CLASSIFICADOR DE INCONSISTENCIAS
+// ============================================================================
+// Detecta erros logicos na marcacao atual. Retorna { graves, leves }.
+// Cada item carrega { codigo, nivel, mensagem, foco } - foco e opcional
+// e e usado pelo IA-019 para destaque visual clicavel na tabela.
+//
+// 6 inconsistencias graves implementadas. 1 leve (grupo-impossivel) pula
+// porque depende de assistenteGruposResposta (P7/IA-024).
+
+function classificarInconsistenciasAssistenteIA(linhas) {
+  if (!Array.isArray(linhas) || linhas.length === 0) return { graves: [], leves: [] };
+
+  const snapshot = obterSnapshotAssistenteIA();
+  const nomes = snapshot.nomesJogadores;
+  const cartasPorJogador = snapshot.cartasPorJogador;
+  const jogadores = snapshot.numJogadores;
+
+  const graves = [];
+  const leves = [];
+
+  // 1. linha-v-duplicado: linha com 2+ V
+  linhas.forEach((linha) => {
+    if (linha.vCount >= 2) {
+      const cols = linha.estados
+        .map((v, c) => (v === "V" ? c : -1))
+        .filter((c) => c >= 0);
+      graves.push({
+        codigo: "linha-v-duplicado",
+        nivel: "grave",
+        mensagem: `"${linha.nome}" tem ${linha.vCount} marcacoes V (cada carta tem 1 dono unico).`,
+        foco: { tipo: "celulas", chaves: cols.map((c) => `${linha.row}-${c}`) },
+      });
+    }
+  });
+
+  // Agrupa por tipo para regras de secao
+  const porTipo = {};
+  linhas.forEach((linha) => {
+    if (!porTipo[linha.tipo]) porTipo[linha.tipo] = [];
+    porTipo[linha.tipo].push(linha);
+  });
+
+  // 2. oculta-duplicada: mais de uma linha-toda-X na mesma secao
+  for (const tipo of Object.keys(porTipo)) {
+    const grupo = porTipo[tipo];
+    const ocultasTodaX = grupo.filter((l) => l.isAllX);
+    if (ocultasTodaX.length >= 2) {
+      graves.push({
+        codigo: "oculta-duplicada",
+        nivel: "grave",
+        mensagem: `Secao "${tipo}" tem ${ocultasTodaX.length} cartas marcadas com X em todas as colunas (so pode haver 1 oculta por secao).`,
+        foco: { tipo: "linhas", rows: ocultasTodaX.map((l) => l.row) },
+      });
+    }
+  }
+
+  // 3. secao-toda-v: todas as linhas da secao tem ao menos 1 V
+  for (const tipo of Object.keys(porTipo)) {
+    const grupo = porTipo[tipo];
+    if (grupo.every((l) => l.vCount > 0)) {
+      graves.push({
+        codigo: "secao-toda-v",
+        nivel: "grave",
+        mensagem: `Secao "${tipo}" tem V em todas as cartas (1 carta dessa secao deveria estar oculta).`,
+        foco: { tipo: "linhas", rows: grupo.map((l) => l.row) },
+      });
+    }
+  }
+
+  // Regras de coluna dependem da distribuicao por jogador
+  if (Array.isArray(cartasPorJogador) && cartasPorJogador.length === jogadores) {
+    for (let col = 0; col < jogadores; col++) {
+      const limite = cartasPorJogador[col];
+      let vCount = 0;
+      let xCount = 0;
+      let abertas = 0;
+      linhas.forEach((linha) => {
+        const v = linha.estados[col];
+        if (v === "V") vCount++;
+        else if (v === "X") xCount++;
+        else abertas++;
+      });
+      const nomeJog = nomes[col] || `J${col + 1}`;
+
+      // 4. coluna-excesso: V > limite
+      if (vCount > limite) {
+        graves.push({
+          codigo: "coluna-excesso",
+          nivel: "grave",
+          mensagem: `${nomeJog} tem ${vCount} V marcados mas a mao so permite ${limite}.`,
+          foco: { tipo: "coluna", coluna: col },
+        });
+      }
+
+      // 5. coluna-impossivel-aberta: faltam cartas mas abertas e menor que faltam
+      const faltam = limite - vCount;
+      if (faltam > 0 && abertas < faltam && vCount <= limite) {
+        graves.push({
+          codigo: "coluna-impossivel-aberta",
+          nivel: "grave",
+          mensagem: `${nomeJog} precisa de ${faltam} carta(s) mas so restam ${abertas} celula(s) aberta(s).`,
+          foco: { tipo: "coluna", coluna: col },
+        });
+      }
+
+      // 6. coluna-insuficiente: coluna fechada (sem abertas) com V < limite
+      if (abertas === 0 && vCount < limite) {
+        graves.push({
+          codigo: "coluna-insuficiente",
+          nivel: "grave",
+          mensagem: `${nomeJog} esta com ${vCount} carta(s) confirmada(s) mas a mao precisa de ${limite}.`,
+          foco: { tipo: "coluna", coluna: col },
+        });
+      }
+    }
+  }
+
+  return { graves, leves };
+}
+
+// ============================================================================
+// IA-019: RENDERIZADOR DE LISTA DE INCONSISTENCIAS COM ITENS CLICAVEIS
+// ============================================================================
+
+function formatarInconsistenciasAssistenteIA(graves, leves) {
+  const total = (graves?.length || 0) + (leves?.length || 0);
+  if (total === 0) {
+    return `<p class="ia-sem-inconsistencias">Nenhuma inconsistencia detectada. Marcacoes estao logicamente consistentes.</p>`;
+  }
+
+  const itens = [];
+  (graves || []).forEach((inc) => {
+    const focoJSON = inc.foco ? encodeURIComponent(JSON.stringify(inc.foco)) : "";
+    if (inc.foco) {
+      itens.push(
+        `<li class="ia-inconsistencia ia-grave"><button type="button" class="ia-inconsistencia-btn" data-foco="${focoJSON}" onclick="aplicarFocoInconsistenciaAssistenteIA(decodeURIComponent(this.dataset.foco))">${inc.mensagem}</button></li>`,
+      );
+    } else {
+      itens.push(`<li class="ia-inconsistencia ia-grave">${inc.mensagem}</li>`);
+    }
+  });
+  (leves || []).forEach((inc) => {
+    const focoJSON = inc.foco ? encodeURIComponent(JSON.stringify(inc.foco)) : "";
+    if (inc.foco) {
+      itens.push(
+        `<li class="ia-inconsistencia ia-leve"><button type="button" class="ia-inconsistencia-btn" data-foco="${focoJSON}" onclick="aplicarFocoInconsistenciaAssistenteIA(decodeURIComponent(this.dataset.foco))">${inc.mensagem}</button></li>`,
+      );
+    } else {
+      itens.push(`<li class="ia-inconsistencia ia-leve">${inc.mensagem}</li>`);
+    }
+  });
+  return `<ul class="ia-lista-inconsistencias">${itens.join("")}</ul>`;
+}
+
 function atualizarAssistenteIA() {
   try {
     if (typeof isPRO === "function" && !isPRO()) return;
@@ -1064,6 +1229,9 @@ function atualizarAssistenteIA() {
         "Nivel atual: Inicial.",
         "Sem marca\u00e7\u00f5es, o assistente ainda n\u00e3o tem base para orientar.",
       ]);
+      if (estrutura.inconsistencias) {
+        estrutura.inconsistencias.innerHTML = formatarInconsistenciasAssistenteIA([], []);
+      }
       return;
     }
 
@@ -1087,13 +1255,55 @@ function atualizarAssistenteIA() {
       const confianca = calcularConfiancaAssistenteIA(sugestao.escolhas);
       const dicasCapacidade = construirDicasCapacidadeAssistenteIA(linhas);
 
+      // IA-016: classifica inconsistencias antes de renderizar cards
+      const inc = classificarInconsistenciasAssistenteIA(linhas);
+      const temGrave = inc.graves.length > 0;
+      const temLeve = inc.leves.length > 0;
+
+      // Card "O que mudou" - mantem normal
       estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
-      estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
+
+      // IA-018: override Sugestao quando ha inconsistencia grave
+      if (temGrave) {
+        const primeira = inc.graves[0];
+        estrutura.sugestao.innerHTML = formatarListaAssistenteIA([
+          `Corrija a inconsistencia antes de continuar: ${primeira.mensagem}`,
+          inc.graves.length > 1
+            ? `Total de inconsistencias graves detectadas: ${inc.graves.length}.`
+            : "Clique no item no card 'Inconsistencias' para destacar na tabela.",
+        ]);
+      } else {
+        estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
+      }
+
+      // IA-018: override Confianca - "Invalida" se grave, "Cautela" se leve
+      let nivelFinal = confianca.nivel;
+      let detalhesFinal = confianca.detalhes;
+      if (temGrave) {
+        nivelFinal = "Invalida";
+        detalhesFinal = [
+          "Marcacoes contem erros logicos - corrigir antes de confiar em sugestoes.",
+        ];
+      } else if (temLeve) {
+        nivelFinal = "Cautela";
+        detalhesFinal = [
+          "Ha uma inconsistencia leve. A sugestao segue valida mas verifique.",
+          ...confianca.detalhes,
+        ];
+      }
       estrutura.confianca.innerHTML = formatarListaAssistenteIA([
-        `N\u00edvel atual: ${confianca.nivel}.`,
-        ...confianca.detalhes,
-        ...dicasCapacidade,
+        `Nivel atual: ${nivelFinal}.`,
+        ...detalhesFinal,
+        ...(temGrave ? [] : dicasCapacidade),
       ]);
+
+      // Card "Inconsistencias" (IA-017)
+      if (estrutura.inconsistencias) {
+        estrutura.inconsistencias.innerHTML = formatarInconsistenciasAssistenteIA(
+          inc.graves,
+          inc.leves,
+        );
+      }
     });
   } catch (erro) {
     console.error("Assistente IA falhou ao atualizar.", erro);

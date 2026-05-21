@@ -2722,3 +2722,109 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+
+/* ============================================================================
+   IA-019: FOCO DE INCONSISTENCIA NA TABELA
+   ============================================================================
+   Quando o usuario clica em um item do card "Inconsistencias", as celulas
+   afetadas recebem a classe .assistente-foco-inconsistencia por 2500ms.
+   Animacao pulsante em vermelho para chamar atencao sem ser ofensivo. */
+
+@keyframes pulsoFocoInconsistencia {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(239, 68, 68, 0.85),
+      0 0 12px rgba(239, 68, 68, 0.5);
+    background-color: rgba(239, 68, 68, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(239, 68, 68, 1),
+      0 0 22px rgba(239, 68, 68, 0.8);
+    background-color: rgba(239, 68, 68, 0.32);
+  }
+}
+
+#tabela .celula.assistente-foco-inconsistencia,
+#tabela .assistente-foco-inconsistencia {
+  position: relative;
+  z-index: 5;
+  animation: pulsoFocoInconsistencia 0.7s ease-in-out infinite;
+}
+
+/* ============================================================================
+   IA-017/018: ESTILOS DO CARD DE INCONSISTENCIAS
+   ============================================================================ */
+
+.ia-lista-inconsistencias {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ia-inconsistencia {
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ia-inconsistencia.ia-grave {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.38);
+  color: rgb(254, 226, 226);
+}
+
+.light .ia-inconsistencia.ia-grave {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: rgb(127, 29, 29);
+}
+
+.ia-inconsistencia.ia-leve {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  color: rgb(254, 243, 199);
+}
+
+.light .ia-inconsistencia.ia-leve {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  color: rgb(120, 53, 15);
+}
+
+.ia-inconsistencia-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  border-radius: 8px;
+  margin: 0;
+  transition: background var(--transition-fast);
+}
+
+.ia-inconsistencia-btn:hover,
+.ia-inconsistencia-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+.light .ia-inconsistencia-btn:hover,
+.light .ia-inconsistencia-btn:focus-visible {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ia-sem-inconsistencias {
+  color: var(--text-secundario, var(--text));
+  opacity: 0.75;
+  font-size: 13px;
+  margin: 0;
+}
