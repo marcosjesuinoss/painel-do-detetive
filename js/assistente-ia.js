@@ -484,6 +484,305 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
   }
 }
 
+// ============================================================================
+// IA-014: EXCLUSOES FORTES (coluna-saturada + linha-unica)
+// ============================================================================
+// Duas regras de exclusao defensivas:
+//
+// 1. coluna-saturada: se uma coluna ja tem N V's (limite da mao), todas as
+//    celulas abertas dessa coluna viram X. Outros jogadores nao podem ter
+//    cartas adicionais para esse jogador.
+//
+// 2. linha-unica: se uma secao (Suspeitos/Armas/Locais) ja tem a oculta
+//    direta identificada, as DEMAIS linhas dessa secao TEM dono (regra do
+//    Detetive: 1 oculta por secao). Se uma dessas demais linhas, sem V
+//    ainda, tem candidatos restritos a 1 unica coluna -> essa celula vira V.
+
+let executandoExclusoesFortesAssistenteIA = false;
+
+function deduzirExclusoesFortesAssistenteIA() {
+  if (executandoExclusoesFortesAssistenteIA) return false;
+  if (!Array.isArray(cartas) || cartas.length === 0) return false;
+
+  const cartasPorJogador = obterCartasPorJogadorAssistenteIA();
+  if (!Array.isArray(cartasPorJogador) || cartasPorJogador.length === 0) {
+    return false;
+  }
+
+  executandoExclusoesFortesAssistenteIA = true;
+
+  try {
+    let houveMudancaTotal = false;
+
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
+      const estado = obterEstadoTabelaAssistenteIA();
+      const jogadores = obterNumeroJogadoresAssistenteIA();
+      const acoes = [];
+
+      // ===== Regra 1: coluna-saturada =====
+      for (let col = 0; col < jogadores; col++) {
+        let confirmadas = 0;
+        const abertas = [];
+        for (let row = 0; row < cartas.length; row++) {
+          const v = estado[`${row}-${col}`] || "";
+          if (v === "V") confirmadas++;
+          else if (v !== "X") abertas.push({ row, col });
+        }
+        if (confirmadas >= cartasPorJogador[col] && abertas.length > 0) {
+          abertas.forEach((a) => {
+            acoes.push({
+              row: a.row,
+              col: a.col,
+              chave: `${a.row}-${a.col}`,
+              marca: "X",
+              motivo: "coluna-saturada",
+            });
+          });
+        }
+      }
+
+      // ===== Regra 2: linha-unica =====
+      // Identifica ocultas diretas por secao
+      const ocultaPorTipo = {};
+      const linhasPorTipo = {};
+      for (let row = 0; row < cartas.length; row++) {
+        const tipo = cartas[row].tipo;
+        let vCount = 0;
+        let xCount = 0;
+        for (let col = 0; col < jogadores; col++) {
+          const v = estado[`${row}-${col}`] || "";
+          if (v === "V") vCount++;
+          else if (v === "X") xCount++;
+        }
+        if (!linhasPorTipo[tipo]) linhasPorTipo[tipo] = [];
+        linhasPorTipo[tipo].push({ row, vCount, xCount });
+        if (xCount === jogadores) {
+          // linha-toda-x -> oculta direta
+          ocultaPorTipo[tipo] = row;
+        }
+      }
+      // Se uma secao tem exatamente 1 linha sem V e sem oculta-toda-x,
+      // essa linha e a oculta (ultima-sem-v).
+      for (const tipo of Object.keys(linhasPorTipo)) {
+        if (ocultaPorTipo[tipo] != null) continue;
+        const semV = linhasPorTipo[tipo].filter((l) => l.vCount === 0);
+        if (semV.length === 1) {
+          ocultaPorTipo[tipo] = semV[0].row;
+        }
+      }
+      // Para linhas que NAO sao ocultas (mas ainda sem V) e tem 1 candidato unico -> V
+      for (const tipo of Object.keys(linhasPorTipo)) {
+        if (ocultaPorTipo[tipo] == null) continue;
+        for (const info of linhasPorTipo[tipo]) {
+          if (info.row === ocultaPorTipo[tipo]) continue;
+          if (info.vCount > 0) continue;
+          const candidatos = [];
+          for (let col = 0; col < jogadores; col++) {
+            const v = estado[`${info.row}-${col}`] || "";
+            if (v !== "X") candidatos.push(col);
+          }
+          if (candidatos.length === 1) {
+            const col = candidatos[0];
+            acoes.push({
+              row: info.row,
+              col,
+              chave: `${info.row}-${col}`,
+              marca: "V",
+              motivo: "linha-unica",
+            });
+          }
+        }
+      }
+
+      // Aplica acoes (dedupe por chave+marca)
+      if (acoes.length === 0) break;
+
+      const unicas = new Map();
+      acoes.forEach((a) => {
+        const k = `${a.chave}:${a.marca}`;
+        if (!unicas.has(k)) unicas.set(k, a);
+      });
+
+      let mudouNoCiclo = false;
+      unicas.forEach((acao) => {
+        const valorAtual = estado[acao.chave] || "";
+        if (valorAtual === acao.marca) return;
+        const cel = document.querySelector(`[data-key="${acao.chave}"]`);
+        if (!cel) return;
+        marcarCelula(cel, acao.marca);
+        mudouNoCiclo = true;
+        houveMudancaTotal = true;
+      });
+
+      if (!mudouNoCiclo) break;
+    }
+
+    return houveMudancaTotal;
+  } finally {
+    executandoExclusoesFortesAssistenteIA = false;
+  }
+}
+
+// ============================================================================
+// IA-015: CRUZAMENTOS FORTES (dupla-trio)
+// ============================================================================
+// Encontra subconjuntos de 2 ou 3 colunas onde o numero de linhas
+// "confinadas" (cujos candidatos estao todos dentro do subconjunto)
+// iguala o numero total de vagas restantes nessas colunas.
+//
+// Quando isso ocorre, essas linhas vao ocupar TODAS as vagas do subconjunto -
+// outras linhas que ainda tem candidatos dentro do subconjunto NAO PODEM
+// usar essas vagas, entao suas celulas nessas colunas viram X.
+//
+// E o equivalente em logica do Detetive ao "naked pair/triple" do Sudoku.
+
+let executandoCruzamentosFortesAssistenteIA = false;
+
+function gerarSubconjuntosColunasAssistenteIA(n, tamanho) {
+  const resultado = [];
+  function recursivo(inicio, atual) {
+    if (atual.length === tamanho) {
+      resultado.push(atual.slice());
+      return;
+    }
+    for (let i = inicio; i <= n - (tamanho - atual.length); i++) {
+      atual.push(i);
+      recursivo(i + 1, atual);
+      atual.pop();
+    }
+  }
+  recursivo(0, []);
+  return resultado;
+}
+
+function deduzirCruzamentosFortesAssistenteIA() {
+  if (executandoCruzamentosFortesAssistenteIA) return false;
+  if (!Array.isArray(cartas) || cartas.length === 0) return false;
+
+  const cartasPorJogador = obterCartasPorJogadorAssistenteIA();
+  if (!Array.isArray(cartasPorJogador) || cartasPorJogador.length === 0) {
+    return false;
+  }
+
+  executandoCruzamentosFortesAssistenteIA = true;
+
+  try {
+    const estado = obterEstadoTabelaAssistenteIA();
+    const jogadores = obterNumeroJogadoresAssistenteIA();
+
+    // Pre-computa para cada linha: candidatos (cols nao-X), e se ja tem V
+    const linhaInfo = [];
+    for (let row = 0; row < cartas.length; row++) {
+      let temV = false;
+      const candidatos = [];
+      for (let col = 0; col < jogadores; col++) {
+        const v = estado[`${row}-${col}`] || "";
+        if (v === "V") temV = true;
+        if (v !== "X") candidatos.push(col);
+      }
+      linhaInfo.push({ row, temV, candidatos });
+    }
+
+    // Pre-computa vagas por coluna
+    const vagas = [];
+    for (let col = 0; col < jogadores; col++) {
+      let confirmadas = 0;
+      for (let row = 0; row < cartas.length; row++) {
+        if ((estado[`${row}-${col}`] || "") === "V") confirmadas++;
+      }
+      vagas.push(Math.max(0, cartasPorJogador[col] - confirmadas));
+    }
+
+    const acoes = [];
+
+    for (const tamanho of [2, 3]) {
+      if (jogadores < tamanho) continue;
+      const subconjuntos = gerarSubconjuntosColunasAssistenteIA(jogadores, tamanho);
+
+      for (const S of subconjuntos) {
+        const setS = new Set(S);
+        const vagasS = S.reduce((soma, c) => soma + vagas[c], 0);
+        if (vagasS === 0) continue;
+
+        // Linhas confinadas: sem V e candidatos subseteq S, com pelo menos 1 candidato em S
+        const confinadas = [];
+        for (const info of linhaInfo) {
+          if (info.temV) continue;
+          if (info.candidatos.length === 0) continue;
+          const todosEmS = info.candidatos.every((c) => setS.has(c));
+          if (todosEmS) confinadas.push(info);
+        }
+
+        if (confinadas.length !== vagasS) continue;
+        if (confinadas.length === 0) continue;
+
+        // Outras linhas (nao confinadas, sem V) que tem candidatos em S -> X nessas celulas
+        const rowsConfinadas = new Set(confinadas.map((c) => c.row));
+        for (const info of linhaInfo) {
+          if (info.temV) continue;
+          if (rowsConfinadas.has(info.row)) continue;
+          for (const col of info.candidatos) {
+            if (!setS.has(col)) continue;
+            const chave = `${info.row}-${col}`;
+            if ((estado[chave] || "") === "X") continue;
+            acoes.push({
+              row: info.row,
+              col,
+              chave,
+              marca: "X",
+              motivo: "dupla-trio",
+            });
+          }
+        }
+      }
+    }
+
+    if (acoes.length === 0) return false;
+
+    // Dedupe e aplica
+    const unicas = new Map();
+    acoes.forEach((a) => {
+      const k = `${a.chave}:${a.marca}`;
+      if (!unicas.has(k)) unicas.set(k, a);
+    });
+
+    let houveMudanca = false;
+    unicas.forEach((acao) => {
+      const cel = document.querySelector(`[data-key="${acao.chave}"]`);
+      if (!cel) return;
+      const valorAtual = estado[acao.chave] || "";
+      if (valorAtual === acao.marca) return;
+      marcarCelula(cel, acao.marca);
+      houveMudanca = true;
+    });
+
+    return houveMudanca;
+  } finally {
+    executandoCruzamentosFortesAssistenteIA = false;
+  }
+}
+
+// ============================================================================
+// ORQUESTRADOR DE DEDUCOES
+// ============================================================================
+// Roda as 3 funcoes de deducao em loop ate estabilizar (sem mudancas em
+// um ciclo). Cada funcao pode habilitar a outra: ex. capacidade-coluna
+// pode tornar uma coluna saturada, ativando exclusoes-fortes, que por sua
+// vez pode confinar linhas e ativar dupla-trio.
+
+function executarTodasDeducoesAssistenteIA() {
+  let houveMudancaTotal = false;
+  const MAX_CICLOS = 8;
+  for (let ciclo = 0; ciclo < MAX_CICLOS; ciclo++) {
+    const a = deduzirCartasPorCapacidadeAssistenteIA();
+    const b = deduzirExclusoesFortesAssistenteIA();
+    const c = deduzirCruzamentosFortesAssistenteIA();
+    if (!a && !b && !c) break;
+    houveMudancaTotal = true;
+  }
+  return houveMudancaTotal;
+}
+
 function obterMelhorLinhaPorTipoAssistenteIA(tipo, resumo) {
   const ocultaDireta = resumo.ocultas.find((linha) => linha.tipo === tipo);
   if (ocultaDireta) return ocultaDireta;
@@ -770,7 +1069,11 @@ function atualizarAssistenteIA() {
 
     // Etapa 1: dedu\u00e7\u00e3o autom\u00e1tica - escreve em localStorage (marcarCelula).
     // NAO usa cache pois cada iteracao precisa releitura fresca apos writes.
-    deduzirCartasPorCapacidadeAssistenteIA();
+    // Orquestrador roda 3 deducoes em loop ate estabilizar:
+    //  - capacidade (IA-001)
+    //  - exclusoes fortes: coluna-saturada + linha-unica (IA-014)
+    //  - cruzamentos fortes: dupla-trio (IA-015)
+    executarTodasDeducoesAssistenteIA();
 
     // Etapa 2: an\u00e1lise sobre estado FINAL - read-only, ideal para cache.
     // executarComCacheAssistenteIA garante consistencia: todas as funcoes
