@@ -1,4 +1,180 @@
-﻿function obterEstadoTabelaAssistenteIA() {
+﻿// ============================================================================
+// IA-011: SNAPSHOT + CACHE DO MOTOR DO ASSISTENTE
+// ============================================================================
+// Em vez de cada funcao ler localStorage diretamente (gerando leituras
+// redundantes e potenciais inconsistencias quando alguma funcao escreve no
+// meio de outra), o motor monta UM snapshot consolidado por ciclo e todas
+// as funcoes downstream leem dele.
+//
+// API:
+//   obterSnapshotAssistenteIA()        -> retorna snapshot ativo OU constroi um novo
+//   executarComCacheAssistenteIA(fn)   -> ativa cache durante fn, invalida ao fim
+//   invalidarSnapshotAssistenteIA()    -> dropa o cache (forca proximo getter a reler)
+//
+// Os getters obter*AssistenteIA checam o cache primeiro. Sem cache ativo,
+// fazem leitura direta de localStorage como antes (backward-compat).
+//
+// Snapshot inclui placeholders para campos que ainda nao existem:
+//   configuracao (P6 / IA-020)
+//   gruposResposta, origensDuvida (P7 / IA-024)
+
+let cacheSnapshotAssistenteIA = null;
+
+function construirSnapshotAssistenteIA() {
+  const numJogadores = parseInt(localStorage.getItem("numJogadores") || "3", 10);
+
+  const nomesJogadores = [];
+  for (let i = 0; i < numJogadores; i++) {
+    nomesJogadores.push(
+      localStorage.getItem(`nomeJogador${i + 1}`) || `J${i + 1}`,
+    );
+  }
+
+  let estadoTabela = {};
+  try {
+    estadoTabela = JSON.parse(localStorage.getItem("estadoTabela") || "{}");
+  } catch {}
+
+  let cartasPorJogador = null;
+  try {
+    const salvas = JSON.parse(
+      localStorage.getItem("assistenteCartasPorJogador") || "null",
+    );
+    if (Array.isArray(salvas) && salvas.length === numJogadores) {
+      cartasPorJogador = salvas.map((v) => parseInt(v, 10));
+    }
+  } catch {}
+  if (
+    !cartasPorJogador &&
+    typeof obterConfiguracaoDistribuicaoCartas === "function"
+  ) {
+    const configuracao = obterConfiguracaoDistribuicaoCartas(numJogadores);
+    if (configuracao && !configuracao.precisaSelecionar) {
+      cartasPorJogador = configuracao.cartasPorJogador.slice();
+    }
+  }
+
+  let jogadoresMaisCartas = [];
+  try {
+    const lista = JSON.parse(
+      localStorage.getItem("assistenteJogadoresMaisCartas") || "null",
+    );
+    if (Array.isArray(lista)) {
+      jogadoresMaisCartas = lista.map((v) => parseInt(v, 10));
+    }
+  } catch {}
+
+  // Placeholders - estruturas reais virao com P6 (config) e P7 (grupos/origens)
+  const configuracao = { ativo: true, automarcacao: true, nivelExplicacao: "objetiva" };
+  const gruposResposta = [];
+  const origensDuvida = {};
+
+  return {
+    estadoTabela,
+    numJogadores,
+    nomesJogadores,
+    cartasPorJogador,
+    jogadoresMaisCartas,
+    configuracao,
+    gruposResposta,
+    origensDuvida,
+    timestamp: Date.now(),
+  };
+}
+
+function obterSnapshotAssistenteIA() {
+  if (cacheSnapshotAssistenteIA !== null) return cacheSnapshotAssistenteIA;
+  return construirSnapshotAssistenteIA();
+}
+
+function invalidarSnapshotAssistenteIA() {
+  cacheSnapshotAssistenteIA = null;
+}
+
+function executarComCacheAssistenteIA(callback) {
+  cacheSnapshotAssistenteIA = construirSnapshotAssistenteIA();
+  try {
+    return callback(cacheSnapshotAssistenteIA);
+  } finally {
+    cacheSnapshotAssistenteIA = null;
+  }
+}
+
+// ============================================================================
+// IA-012: CAMADAS LOGICAS E TABELA DE PRIORIDADES
+// ============================================================================
+// O motor classifica cada motivo de inferencia em uma das 4 camadas formais.
+// Camadas tem peso decrescente para desempate, priorizacao e calculo de
+// confianca. Prioridades sao numericas e usadas em score/cadeiaPrioridades.
+//
+// Estas estruturas sao expostas para uso em sprints C+ (P4 deducoes,
+// P5 inconsistencias, P6+ refinamentos). Sprint B nao muda comportamento
+// observavel - so disponibiliza a infraestrutura.
+
+const CAMADAS_ASSISTENTE_IA = Object.freeze([
+  "soberana",
+  "estrutural-forte",
+  "dedutiva",
+  "heuristica",
+]);
+
+const PESO_CAMADA_ASSISTENTE_IA = Object.freeze({
+  "soberana": 4,
+  "estrutural-forte": 3,
+  "dedutiva": 2,
+  "heuristica": 1,
+});
+
+const MOTIVO_CAMADA_ASSISTENTE_IA = Object.freeze({
+  "oculta-direta": "soberana",
+  "capacidade-coluna": "soberana",
+  "exige-coluna": "soberana",
+  "linha-unica": "estrutural-forte",
+  "grupo-resposta-unico": "estrutural-forte",
+  "secao-quase-fechada": "estrutural-forte",
+  "grupo-resposta": "dedutiva",
+  "grupos-sobrepostos": "dedutiva",
+  "exclusoes-linha": "dedutiva",
+  "gargalo-coluna": "dedutiva",
+  "duvida-manual": "dedutiva",
+  "heuristica-local": "heuristica",
+});
+
+const PRIORIDADE_MOTIVO_ASSISTENTE_IA = Object.freeze({
+  "oculta-direta": 100,
+  "linha-unica": 92,
+  "grupo-resposta-unico": 90,
+  "capacidade-coluna": 87,
+  "secao-quase-fechada": 84,
+  "grupo-resposta": 76,
+  "grupos-sobrepostos": 72,
+  "exclusoes-linha": 68,
+  "exige-coluna": 64,
+  "gargalo-coluna": 61,
+  "duvida-manual": 28,
+  "heuristica-local": 18,
+});
+
+function obterCamadaDoMotivoAssistenteIA(motivo) {
+  return MOTIVO_CAMADA_ASSISTENTE_IA[motivo] || "heuristica";
+}
+
+function obterPrioridadeDoMotivoAssistenteIA(motivo) {
+  return PRIORIDADE_MOTIVO_ASSISTENTE_IA[motivo] || 0;
+}
+
+function obterPesoDaCamadaAssistenteIA(camada) {
+  return PESO_CAMADA_ASSISTENTE_IA[camada] || 0;
+}
+
+// ============================================================================
+// GETTERS - leem do snapshot quando ha cache ativo, fallback para localStorage
+// ============================================================================
+
+function obterEstadoTabelaAssistenteIA() {
+  if (cacheSnapshotAssistenteIA !== null) {
+    return cacheSnapshotAssistenteIA.estadoTabela;
+  }
   try {
     return JSON.parse(localStorage.getItem("estadoTabela") || "{}");
   } catch {
@@ -7,14 +183,25 @@
 }
 
 function obterNumeroJogadoresAssistenteIA() {
+  if (cacheSnapshotAssistenteIA !== null) {
+    return cacheSnapshotAssistenteIA.numJogadores;
+  }
   return parseInt(localStorage.getItem("numJogadores") || "3", 10);
 }
 
 function obterNomeJogadorAssistenteIA(coluna) {
+  if (cacheSnapshotAssistenteIA !== null) {
+    return (
+      cacheSnapshotAssistenteIA.nomesJogadores[coluna] || `J${coluna + 1}`
+    );
+  }
   return localStorage.getItem(`nomeJogador${coluna + 1}`) || `J${coluna + 1}`;
 }
 
 function obterCartasPorJogadorAssistenteIA() {
+  if (cacheSnapshotAssistenteIA !== null) {
+    return cacheSnapshotAssistenteIA.cartasPorJogador;
+  }
   const jogadores = obterNumeroJogadoresAssistenteIA();
 
   try {
@@ -38,6 +225,9 @@ function obterCartasPorJogadorAssistenteIA() {
 // Hoje a deducao usa apenas cartasPorJogador, que ja e o array resolvido.
 // Este getter expoe a lista bruta para P7 (modo explicativo) e validacao.
 function obterJogadoresMaisCartasAssistenteIA() {
+  if (cacheSnapshotAssistenteIA !== null) {
+    return cacheSnapshotAssistenteIA.jogadoresMaisCartas;
+  }
   try {
     const lista = JSON.parse(localStorage.getItem("assistenteJogadoresMaisCartas") || "null");
     return Array.isArray(lista) ? lista.map((v) => parseInt(v, 10)) : [];
@@ -578,22 +768,30 @@ function atualizarAssistenteIA() {
       return;
     }
 
+    // Etapa 1: dedu\u00e7\u00e3o autom\u00e1tica - escreve em localStorage (marcarCelula).
+    // NAO usa cache pois cada iteracao precisa releitura fresca apos writes.
     deduzirCartasPorCapacidadeAssistenteIA();
 
-    const linhas = obterLinhasAssistenteIA();
-    const resumo = montarResumoLinhasAssistenteIA(linhas);
-    const mudancas = construirMudancasAssistenteIA(linhas, resumo);
-    const sugestao = construirSugestaoAssistenteIA(resumo, linhas);
-    const confianca = calcularConfiancaAssistenteIA(sugestao.escolhas);
-    const dicasCapacidade = construirDicasCapacidadeAssistenteIA(linhas);
+    // Etapa 2: an\u00e1lise sobre estado FINAL - read-only, ideal para cache.
+    // executarComCacheAssistenteIA garante consistencia: todas as funcoes
+    // downstream (obterLinhasAssistenteIA, montarResumo, construirSugestao,
+    // calcularConfianca, etc.) leem do MESMO snapshot.
+    executarComCacheAssistenteIA(() => {
+      const linhas = obterLinhasAssistenteIA();
+      const resumo = montarResumoLinhasAssistenteIA(linhas);
+      const mudancas = construirMudancasAssistenteIA(linhas, resumo);
+      const sugestao = construirSugestaoAssistenteIA(resumo, linhas);
+      const confianca = calcularConfiancaAssistenteIA(sugestao.escolhas);
+      const dicasCapacidade = construirDicasCapacidadeAssistenteIA(linhas);
 
-    estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
-    estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
-    estrutura.confianca.innerHTML = formatarListaAssistenteIA([
-      `N\u00edvel atual: ${confianca.nivel}.`,
-      ...confianca.detalhes,
-      ...dicasCapacidade,
-    ]);
+      estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
+      estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
+      estrutura.confianca.innerHTML = formatarListaAssistenteIA([
+        `N\u00edvel atual: ${confianca.nivel}.`,
+        ...confianca.detalhes,
+        ...dicasCapacidade,
+      ]);
+    });
   } catch (erro) {
     console.error("Assistente IA falhou ao atualizar.", erro);
   }
