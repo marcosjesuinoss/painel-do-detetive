@@ -1267,14 +1267,15 @@ function atualizarAssistenteIA() {
       // Card "O que mudou" - mantem normal
       estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
 
-      // IA-018: override Sugestao quando ha inconsistencia grave
+      // IA-018: override Sugestao quando ha inconsistencia grave.
+      // Mostra apenas contagem + recomendacao - detalhes ficam no card
+      // dedicado de "Inconsistencias" (evita duplicacao de mensagem).
       if (temGrave) {
-        const primeira = inc.graves[0];
+        const qtd = inc.graves.length;
+        const plural = qtd > 1 ? "inconsistencias graves" : "inconsistencia grave";
         estrutura.sugestao.innerHTML = formatarListaAssistenteIA([
-          `Corrija a inconsistencia antes de continuar: ${primeira.mensagem}`,
-          inc.graves.length > 1
-            ? `Total de inconsistencias graves detectadas: ${inc.graves.length}.`
-            : "Clique no item no card 'Inconsistencias' para destacar na tabela.",
+          `Corrija ${qtd} ${plural} antes de continuar.`,
+          "Veja os detalhes no card 'Inconsistencias' (clique em cada item para destacar na tabela).",
         ]);
       } else {
         estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
