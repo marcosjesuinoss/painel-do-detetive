@@ -334,24 +334,40 @@ function marcarCelula(cel, tipo, modoTrinca = false) {
   if (tipo === "V") {
     estadoSalvo[chave] = "V";
 
-    // marcar resto da linha como X automaticamente
-    document.querySelectorAll(`[data-row="${row}"]`)
-      .forEach(c => {
-        if (c !== cel) {
-          const k = c.dataset.key;
-          if (!k) return;
+    // Auto-X no resto da linha (carta com 1 dono unico, outros nao podem ter).
+    // Respeita o toggle "Marcacao automatica" do popup config do assistente:
+    // se PRO ativo + config.automarcacao=false, NAO faz auto-X.
+    let permitirAutoX = true;
+    try {
+      const isProAtivo = typeof isPRO === "function" && isPRO();
+      if (isProAtivo) {
+        const cfgRaw = localStorage.getItem("assistenteIAConfiguracoes");
+        if (cfgRaw) {
+          const cfg = JSON.parse(cfgRaw);
+          if (cfg && cfg.automarcacao === false) permitirAutoX = false;
+        }
+      }
+    } catch {}
 
-          const estadoAnterior = estadoSalvo[k] || "";
-          if (estadoAnterior !== "V") {
-            estadoSalvo[k] = "X";
+    if (permitirAutoX) {
+      document.querySelectorAll(`[data-row="${row}"]`)
+        .forEach(c => {
+          if (c !== cel) {
+            const k = c.dataset.key;
+            if (!k) return;
 
-            // animar apenas os X que surgiram agora por causa do V
-            if (estadoAnterior !== "X") {
-              autoXChaves.add(k);
+            const estadoAnterior = estadoSalvo[k] || "";
+            if (estadoAnterior !== "V") {
+              estadoSalvo[k] = "X";
+
+              // animar apenas os X que surgiram agora por causa do V
+              if (estadoAnterior !== "X") {
+                autoXChaves.add(k);
+              }
             }
           }
-        }
-      });
+        });
+    }
   }
 
   if (tipo === "X") {
