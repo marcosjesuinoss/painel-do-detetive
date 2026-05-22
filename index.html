@@ -369,6 +369,14 @@
           <div class="assistente-ia-titulo">
             <h4>Assistente de IA</h4>
             <button
+              class="ia-info-btn ia-config-btn"
+              type="button"
+              aria-label="Configurar assistente"
+              onclick="abrirConfiguracoesAssistenteIA(event)"
+            >
+              &#9881;
+            </button>
+            <button
               class="ia-info-btn ia-info-geral"
               type="button"
               aria-label="Como funciona o assistente"
@@ -646,6 +654,66 @@
           </button>
           <button class="play" type="button" onclick="fecharPopupCancelarPRO()">
             Manter PRO
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POPUP CONFIGURACOES DO ASSISTENTE IA ================= -->
+    <div
+      id="popupConfiguracoesAssistenteIA"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupConfigIA"
+      aria-hidden="true"
+    >
+      <div class="popup-box popup-config-ia">
+        <h3 id="tituloPopupConfigIA">Configurar Assistente</h3>
+
+        <div class="config-ia-grupo">
+          <label class="config-ia-toggle" for="configIAAtivo">
+            <span>Assistente ativo</span>
+            <input
+              type="checkbox"
+              id="configIAAtivo"
+              onchange="atualizarPopupConfiguracoesAssistenteIA()"
+            />
+          </label>
+          <p class="config-ia-descricao">
+            Desliga toda an&aacute;lise, sugest&otilde;es, confian&ccedil;a e inconsist&ecirc;ncias.
+          </p>
+        </div>
+
+        <div class="config-ia-grupo" data-dependente-de-ativo>
+          <label class="config-ia-toggle" for="configIAAutomarcacao">
+            <span>Marca&ccedil;&atilde;o autom&aacute;tica</span>
+            <input type="checkbox" id="configIAAutomarcacao" />
+          </label>
+          <p class="config-ia-descricao">
+            Se ligado, a IA marca V e X automaticamente quando deduz.
+            Se desligado, gera instru&ccedil;&otilde;es manuais no card "Pr&oacute;xima sugest&atilde;o".
+          </p>
+        </div>
+
+        <div class="config-ia-grupo" data-dependente-de-ativo>
+          <span class="config-ia-titulo-grupo">N&iacute;vel de explica&ccedil;&atilde;o</span>
+          <label class="config-ia-radio">
+            <input type="radio" name="configIANivel" value="objetiva" />
+            <span>Objetiva (curto e direto)</span>
+          </label>
+          <label class="config-ia-radio">
+            <input type="radio" name="configIANivel" value="explicativa" />
+            <span>Explicativa (inclui a raz&atilde;o)</span>
+          </label>
+        </div>
+
+        <div class="popup-acoes">
+          <button class="play" type="button" onclick="confirmarConfiguracoesAssistenteIA()">
+            Salvar
+          </button>
+          <button class="padrao" type="button" onclick="fecharConfiguracoesAssistenteIA()">
+            Cancelar
           </button>
         </div>
       </div>

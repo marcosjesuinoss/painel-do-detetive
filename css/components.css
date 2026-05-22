@@ -2842,3 +2842,99 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
 /* .ia-sem-inconsistencias removido - placeholder agora reusa .ia-lista
    (formatarListaAssistenteIA) para manter identidade visual com os
    outros 3 cards do menu IA. */
+
+/* ============================================================================
+   IA-021: POPUP DE CONFIGURACOES DO ASSISTENTE IA
+   ============================================================================ */
+
+.popup-config-ia {
+  text-align: left;
+  max-width: 420px;
+}
+
+.popup-config-ia h3 {
+  text-align: center;
+  margin: 0 0 18px;
+}
+
+.config-ia-grupo {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: opacity var(--transition-fast);
+}
+
+.config-ia-grupo:last-of-type {
+  border-bottom: none;
+}
+
+.light .config-ia-grupo {
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+.config-ia-grupo.desabilitado {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.config-ia-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.config-ia-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.config-ia-descricao {
+  margin: 6px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+.config-ia-titulo-grupo {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.config-ia-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.config-ia-radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Botao gear ao lado do "?" no header do menu IA. Reusa estilos de ia-info-btn
+   e adiciona margem para nao colar. */
+.ia-config-btn {
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+/* Quando ha 2 botoes no header (config + ajuda), o auto-margin do ajuda some */
+.assistente-ia-titulo .ia-config-btn ~ .ia-info-geral {
+  margin-left: 0;
+}

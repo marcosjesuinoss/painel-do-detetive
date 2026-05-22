@@ -70,6 +70,95 @@ function assistenteIAEstaAtivo() {
 }
 
 // ============================================================================
+// IA-021: HANDLERS DO POPUP DE CONFIGURACOES
+// ============================================================================
+
+function abrirConfiguracoesAssistenteIA(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  // Pre-fill com config atual
+  const cfg = obterConfiguracaoAssistenteIA();
+  const ativoEl = getEl("configIAAtivo");
+  const autoEl = getEl("configIAAutomarcacao");
+  const radios = document.querySelectorAll('input[name="configIANivel"]');
+
+  if (ativoEl) ativoEl.checked = cfg.ativo;
+  if (autoEl) autoEl.checked = cfg.automarcacao;
+  radios.forEach((r) => {
+    r.checked = r.value === cfg.nivelExplicacao;
+  });
+
+  atualizarPopupConfiguracoesAssistenteIA();
+
+  if (typeof abrirOverlayAcessivel === "function") {
+    abrirOverlayAcessivel(
+      "popupConfiguracoesAssistenteIA",
+      "#configIAAtivo, .popup-acoes .play",
+    );
+  } else {
+    const popup = getEl("popupConfiguracoesAssistenteIA");
+    if (popup) popup.classList.add("ativo");
+  }
+}
+
+function fecharConfiguracoesAssistenteIA() {
+  if (typeof fecharOverlayAcessivel === "function") {
+    fecharOverlayAcessivel("popupConfiguracoesAssistenteIA");
+  } else {
+    const popup = getEl("popupConfiguracoesAssistenteIA");
+    if (popup) popup.classList.remove("ativo");
+  }
+}
+
+function confirmarConfiguracoesAssistenteIA() {
+  const ativoEl = getEl("configIAAtivo");
+  const autoEl = getEl("configIAAutomarcacao");
+  const radioChecked = document.querySelector('input[name="configIANivel"]:checked');
+
+  const parcial = {};
+  if (ativoEl) parcial.ativo = !!ativoEl.checked;
+  if (autoEl) parcial.automarcacao = !!autoEl.checked;
+  if (radioChecked && radioChecked.value) parcial.nivelExplicacao = radioChecked.value;
+
+  salvarConfiguracaoAssistenteIA(parcial);
+  fecharConfiguracoesAssistenteIA();
+
+  // Re-roda IA com nova config
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  } else if (typeof atualizarAssistenteIA === "function") {
+    atualizarAssistenteIA();
+  }
+
+  // Quando assistente fica desativado, oculta o menu inteiro pra nao
+  // confundir o usuario. Quando reativado, atualizarAssistenteIA cuida
+  // de mostrar de novo via atualizarStatusPRO (chamada externa).
+  const ativoFinal = parcial.ativo === true;
+  const menuEl = getEl("assistenteIAMenu");
+  if (menuEl) {
+    menuEl.style.display = ativoFinal ? "grid" : "none";
+  }
+}
+
+function atualizarPopupConfiguracoesAssistenteIA() {
+  const ativoEl = getEl("configIAAtivo");
+  if (!ativoEl) return;
+  const dependentes = document.querySelectorAll(
+    "#popupConfiguracoesAssistenteIA [data-dependente-de-ativo]",
+  );
+  const habilitar = ativoEl.checked;
+  dependentes.forEach((grupo) => {
+    grupo.classList.toggle("desabilitado", !habilitar);
+    grupo.querySelectorAll("input").forEach((input) => {
+      input.disabled = !habilitar;
+    });
+  });
+}
+
+// ============================================================================
 // IA-011: SNAPSHOT + CACHE DO MOTOR DO ASSISTENTE
 // ============================================================================
 // Em vez de cada funcao ler localStorage diretamente (gerando leituras
