@@ -126,20 +126,13 @@ function confirmarConfiguracoesAssistenteIA() {
   salvarConfiguracaoAssistenteIA(parcial);
   fecharConfiguracoesAssistenteIA();
 
-  // Re-roda IA com nova config
+  // Re-roda IA com nova config. Quando o usuario desliga via popup, o
+  // menu CONTINUA visivel mas com mensagem "Desativado" nos cards (para
+  // que o gear de configuracao permaneca acessivel para reativacao).
   if (typeof agendarAtualizacaoAssistenteIA === "function") {
     agendarAtualizacaoAssistenteIA();
   } else if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
-  }
-
-  // Quando assistente fica desativado, oculta o menu inteiro pra nao
-  // confundir o usuario. Quando reativado, atualizarAssistenteIA cuida
-  // de mostrar de novo via atualizarStatusPRO (chamada externa).
-  const ativoFinal = parcial.ativo === true;
-  const menuEl = getEl("assistenteIAMenu");
-  if (menuEl) {
-    menuEl.style.display = ativoFinal ? "grid" : "none";
   }
 }
 
@@ -1373,16 +1366,33 @@ function formatarInconsistenciasAssistenteIA(graves, leves) {
 
 function atualizarAssistenteIA() {
   try {
-    // IA-020: respeita PRO E configuracao.ativo do usuario
-    if (typeof assistenteIAEstaAtivo === "function") {
-      if (!assistenteIAEstaAtivo()) return;
-    } else if (typeof isPRO === "function" && !isPRO()) {
-      return;
-    }
+    // Sem PRO -> menu inteiro fica oculto via atualizarStatusPRO; nao
+    // precisamos renderizar nada.
+    if (typeof isPRO === "function" && !isPRO()) return;
     if (!Array.isArray(cartas) || cartas.length === 0) return;
 
     const estrutura = garantirEstruturaAssistenteIA();
     if (!estrutura) return;
+
+    // PRO ativo mas usuario desligou o assistente via popup: cards continuam
+    // visiveis (pra o gear ficar acessivel) mas mostram estado "desativado".
+    const cfgUsuario = obterConfiguracaoAssistenteIA();
+    if (!cfgUsuario.ativo) {
+      const msgDesativado = formatarListaAssistenteIA([
+        "Assistente desativado.",
+        "Reative no botão de configurações (engrenagem no topo).",
+      ]);
+      estrutura.resumo.innerHTML = msgDesativado;
+      estrutura.sugestao.innerHTML = msgDesativado;
+      estrutura.confianca.innerHTML = formatarListaAssistenteIA([
+        "Nível atual: Desativado.",
+        "Reative no botão de configurações para receber análises.",
+      ]);
+      if (estrutura.inconsistencias) {
+        estrutura.inconsistencias.innerHTML = msgDesativado;
+      }
+      return;
+    }
 
     const estado = obterEstadoTabelaAssistenteIA();
     const totalMarcacoes = Object.values(estado).filter(Boolean).length;
