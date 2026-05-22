@@ -555,8 +555,22 @@ function ehAutomarcacaoAtivaAssistenteIA() {
 }
 
 // Helper que cada deducao usa em vez de chamar marcarCelula diretamente.
-// Retorna true se aplicou (modo automatico), false se adiou (modo manual).
+// Retorna true se aplicou (modo automatico), false se adiou ou bloqueou.
 function aplicarOuAdiarMarcacaoAssistenteIA(acao) {
+  // Idempotencia: se valor ja igual, nao faz nada (evita re-validacao)
+  const snap = obterSnapshotAssistenteIA();
+  const valorAtual = snap.estadoTabela[acao.chave] || "";
+  if (valorAtual === acao.marca) return false;
+
+  // IA-023: integridade pre-marcacao - bloqueia acoes que criariam
+  // inconsistencia grave (coluna excesso, duplicidade de oculta, etc).
+  if (!marcacaoAutomaticaPermitidaAssistenteIA(acao)) {
+    console.warn(
+      `[Assistente IA] Acao bloqueada por integridade: marca=${acao.marca} chave=${acao.chave} motivo=${acao.motivo}`,
+    );
+    return false;
+  }
+
   if (ehAutomarcacaoAtivaAssistenteIA()) {
     const cel = document.querySelector(`[data-key="${acao.chave}"]`);
     if (!cel) return false;
@@ -571,6 +585,91 @@ function aplicarOuAdiarMarcacaoAssistenteIA(acao) {
     pendenciasMarcacaoAssistenteIA.push({ ...acao });
   }
   return false;
+}
+
+// ============================================================================
+// IA-023: INTEGRIDADE PRE-MARCACAO
+// ============================================================================
+// Antes de aplicar (ou adiar) uma acao auto-detectada, simula o efeito
+// global. Se a acao geraria inconsistencia grave (coluna-excesso,
+// oculta-duplicada, secao-toda-v, etc), bloqueia. Isso evita que bug em
+// uma deducao cascateie em estado invalido.
+
+function construirLinhasDeEstadoAssistenteIA(estadoSimulado) {
+  if (!Array.isArray(cartas) || cartas.length === 0) return [];
+  const jogadores = obterNumeroJogadoresAssistenteIA();
+  return cartas.map((carta, row) => {
+    const estados = [];
+    let vCount = 0;
+    let xCount = 0;
+    let maybeCount = 0;
+    for (let col = 0; col < jogadores; col++) {
+      const valor = estadoSimulado[`${row}-${col}`] || "";
+      estados.push(valor);
+      if (valor === "V") vCount++;
+      if (valor === "X") xCount++;
+      if (valor === "?") maybeCount++;
+    }
+    return {
+      row,
+      tipo: carta.tipo,
+      nome: carta.nome,
+      estados,
+      vCount,
+      xCount,
+      maybeCount,
+      isFound: vCount > 0,
+      isAllX: xCount === jogadores,
+      candidatos: estados
+        .map((valor, col) => ({ valor, col }))
+        .filter((item) => item.valor !== "X"),
+    };
+  });
+}
+
+function simularAcaoAssistenteIA(acao) {
+  const snapshot = obterSnapshotAssistenteIA();
+  return { ...snapshot.estadoTabela, [acao.chave]: acao.marca };
+}
+
+// Validacao completa: simula a acao e classifica inconsistencias.
+// Retorna true se nenhuma inconsistencia grave seria criada.
+function validarIntegridadeGlobalAcaoAssistenteIA(acao) {
+  const estadoSim = simularAcaoAssistenteIA(acao);
+  const linhasSim = construirLinhasDeEstadoAssistenteIA(estadoSim);
+  const inc = classificarInconsistenciasAssistenteIA(linhasSim);
+  return inc.graves.length === 0;
+}
+
+// Wrapper: validacao rapida (sem reconstruir tudo) + global se passou.
+// Garante 2 camadas: defesa cheap por excesso simples + defesa profunda
+// via simulacao global.
+function marcacaoAutomaticaPermitidaAssistenteIA(acao) {
+  const snapshot = obterSnapshotAssistenteIA();
+
+  // Validacao rapida 1: V que excederia capacidade da coluna
+  if (acao.marca === "V" && Array.isArray(snapshot.cartasPorJogador)) {
+    const limite = snapshot.cartasPorJogador[acao.col];
+    if (typeof limite === "number") {
+      let vAtual = 0;
+      for (let row = 0; row < cartas.length; row++) {
+        if (snapshot.estadoTabela[`${row}-${acao.col}`] === "V") vAtual++;
+      }
+      if (vAtual + 1 > limite) return false;
+    }
+  }
+
+  // Validacao rapida 2: V que duplicaria V em outra coluna da mesma linha
+  if (acao.marca === "V") {
+    const jogadores = snapshot.numJogadores;
+    for (let col = 0; col < jogadores; col++) {
+      if (col === acao.col) continue;
+      if (snapshot.estadoTabela[`${acao.row}-${col}`] === "V") return false;
+    }
+  }
+
+  // Validacao profunda: simulacao global + classificarInconsistencias
+  return validarIntegridadeGlobalAcaoAssistenteIA(acao);
 }
 
 const MOTIVO_LEGIVEL_ASSISTENTE_IA = {
