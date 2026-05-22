@@ -535,6 +535,88 @@ function montarResumoLinhasAssistenteIA(linhas) {
   };
 }
 
+// ============================================================================
+// IA-022: MODO MANUAL (pendencias em vez de auto-marcacao)
+// ============================================================================
+// Quando config.automarcacao=false, as deducoes NAO chamam marcarCelula -
+// elas registram em pendenciasMarcacaoAssistenteIA. O card "Proxima sugestao"
+// passa a listar "Marque V em X para Y" (modo objetivo) ou anexa razao
+// (modo explicativo). Confianca rebaixa 1 nivel quando ha pendencias.
+
+let pendenciasMarcacaoAssistenteIA = [];
+
+function resetarPendenciasMarcacaoAssistenteIA() {
+  pendenciasMarcacaoAssistenteIA = [];
+}
+
+function ehAutomarcacaoAtivaAssistenteIA() {
+  const cfg = obterConfiguracaoAssistenteIA();
+  return cfg.automarcacao === true;
+}
+
+// Helper que cada deducao usa em vez de chamar marcarCelula diretamente.
+// Retorna true se aplicou (modo automatico), false se adiou (modo manual).
+function aplicarOuAdiarMarcacaoAssistenteIA(acao) {
+  if (ehAutomarcacaoAtivaAssistenteIA()) {
+    const cel = document.querySelector(`[data-key="${acao.chave}"]`);
+    if (!cel) return false;
+    marcarCelula(cel, acao.marca);
+    return true;
+  }
+  // Modo manual: dedupe por chave+marca antes de adicionar
+  const jaExiste = pendenciasMarcacaoAssistenteIA.some(
+    (p) => p.chave === acao.chave && p.marca === acao.marca,
+  );
+  if (!jaExiste) {
+    pendenciasMarcacaoAssistenteIA.push({ ...acao });
+  }
+  return false;
+}
+
+const MOTIVO_LEGIVEL_ASSISTENTE_IA = {
+  capacidade: "jogador fecha a mao com essa carta",
+  "coluna-saturada": "outras cartas dessa coluna ja foram confirmadas",
+  "linha-unica": "secao ja tem a oculta - esta carta tem 1 candidato unico",
+  "dupla-trio": "outras linhas estao confinadas em outras colunas",
+};
+
+function motivoLegivelAssistenteIA(motivo) {
+  return MOTIVO_LEGIVEL_ASSISTENTE_IA[motivo] || motivo;
+}
+
+function construirInstrucoesPendentesAssistenteIA() {
+  if (pendenciasMarcacaoAssistenteIA.length === 0) return [];
+
+  const cfg = obterConfiguracaoAssistenteIA();
+  const explicativo = cfg.nivelExplicacao === "explicativa";
+  const snapshot = obterSnapshotAssistenteIA();
+  const itens = [];
+
+  itens.push(
+    `A IA detectou ${pendenciasMarcacaoAssistenteIA.length} marca${pendenciasMarcacaoAssistenteIA.length === 1 ? "cao" : "coes"} sugerida${pendenciasMarcacaoAssistenteIA.length === 1 ? "" : "s"} (marcação automática desligada):`,
+  );
+
+  const LIMITE_LISTA = 4;
+  const mostrar = Math.min(pendenciasMarcacaoAssistenteIA.length, LIMITE_LISTA);
+  for (let i = 0; i < mostrar; i++) {
+    const p = pendenciasMarcacaoAssistenteIA[i];
+    const carta =
+      Array.isArray(cartas) && cartas[p.row] ? cartas[p.row].nome : `linha ${p.row}`;
+    const jogador = snapshot.nomesJogadores[p.col] || `J${p.col + 1}`;
+    let texto = `Marque ${p.marca} em ${carta} para ${jogador}`;
+    if (explicativo && p.motivo) {
+      texto += ` (${motivoLegivelAssistenteIA(p.motivo)})`;
+    }
+    itens.push(texto + ".");
+  }
+  if (pendenciasMarcacaoAssistenteIA.length > LIMITE_LISTA) {
+    const resto = pendenciasMarcacaoAssistenteIA.length - LIMITE_LISTA;
+    itens.push(`+ ${resto} marca${resto === 1 ? "cao" : "coes"} adicional${resto === 1 ? "" : "is"}.`);
+  }
+
+  return itens;
+}
+
 let executandoDeducaoCapacidadeAssistenteIA = false;
 
 function deduzirCartasPorCapacidadeAssistenteIA() {
@@ -550,8 +632,11 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
 
   try {
     let houveMudanca = false;
+    // IA-022: em modo manual, so 1 passada (sem aplicar -> estado nao muda
+    // -> proximas iteracoes detectariam as mesmas acoes -> loop sem progresso)
+    const maxTentativas = ehAutomarcacaoAtivaAssistenteIA() ? 10 : 1;
 
-    for (let tentativa = 0; tentativa < 10; tentativa++) {
+    for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
       const estado = obterEstadoTabelaAssistenteIA();
       const jogadores = obterNumeroJogadoresAssistenteIA();
       const acoes = [];
@@ -608,17 +693,23 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
       const porJogador = new Map();
 
       unicas.forEach((acao) => {
-        const cel = document.querySelector(`[data-key="${acao.chave}"]`);
-        if (!cel) return;
+        const aplicada = aplicarOuAdiarMarcacaoAssistenteIA({
+          row: acao.row,
+          col: acao.col,
+          chave: acao.chave,
+          marca: "V",
+          motivo: "capacidade",
+        });
 
-        marcarCelula(cel, "V");
-        houveMudanca = true;
+        if (aplicada) {
+          houveMudanca = true;
 
-        if (!porJogador.has(acao.col)) {
-          porJogador.set(acao.col, []);
+          if (!porJogador.has(acao.col)) {
+            porJogador.set(acao.col, []);
+          }
+
+          porJogador.get(acao.col).push(cartas[acao.row].nome);
         }
-
-        porJogador.get(acao.col).push(cartas[acao.row].nome);
       });
 
       if (porJogador.size > 0 && typeof registrarMudancaAssistenteIA === "function") {
@@ -667,8 +758,10 @@ function deduzirExclusoesFortesAssistenteIA() {
 
   try {
     let houveMudancaTotal = false;
+    // IA-022: em modo manual, so 1 passada
+    const maxTentativas = ehAutomarcacaoAtivaAssistenteIA() ? 5 : 1;
 
-    for (let tentativa = 0; tentativa < 5; tentativa++) {
+    for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
       const estado = obterEstadoTabelaAssistenteIA();
       const jogadores = obterNumeroJogadoresAssistenteIA();
       const acoes = [];
@@ -761,11 +854,11 @@ function deduzirExclusoesFortesAssistenteIA() {
       unicas.forEach((acao) => {
         const valorAtual = estado[acao.chave] || "";
         if (valorAtual === acao.marca) return;
-        const cel = document.querySelector(`[data-key="${acao.chave}"]`);
-        if (!cel) return;
-        marcarCelula(cel, acao.marca);
-        mudouNoCiclo = true;
-        houveMudancaTotal = true;
+        const aplicada = aplicarOuAdiarMarcacaoAssistenteIA(acao);
+        if (aplicada) {
+          mudouNoCiclo = true;
+          houveMudancaTotal = true;
+        }
       });
 
       if (!mudouNoCiclo) break;
@@ -902,12 +995,10 @@ function deduzirCruzamentosFortesAssistenteIA() {
 
     let houveMudanca = false;
     unicas.forEach((acao) => {
-      const cel = document.querySelector(`[data-key="${acao.chave}"]`);
-      if (!cel) return;
       const valorAtual = estado[acao.chave] || "";
       if (valorAtual === acao.marca) return;
-      marcarCelula(cel, acao.marca);
-      houveMudanca = true;
+      const aplicada = aplicarOuAdiarMarcacaoAssistenteIA(acao);
+      if (aplicada) houveMudanca = true;
     });
 
     return houveMudanca;
@@ -925,6 +1016,19 @@ function deduzirCruzamentosFortesAssistenteIA() {
 // vez pode confinar linhas e ativar dupla-trio.
 
 function executarTodasDeducoesAssistenteIA() {
+  // IA-022: limpa pendencias antes de cada rodada
+  resetarPendenciasMarcacaoAssistenteIA();
+
+  // Modo manual: roda cada deducao apenas 1 vez (sem aplicar, estado nao
+  // muda - loop nao agregaria nada). Pendencias sao coletadas.
+  if (!ehAutomarcacaoAtivaAssistenteIA()) {
+    deduzirCartasPorCapacidadeAssistenteIA();
+    deduzirExclusoesFortesAssistenteIA();
+    deduzirCruzamentosFortesAssistenteIA();
+    return false;
+  }
+
+  // Modo automatico: loop ate estabilizar (cascata permitida)
   let houveMudancaTotal = false;
   const MAX_CICLOS = 8;
   for (let ciclo = 0; ciclo < MAX_CICLOS; ciclo++) {
@@ -1443,9 +1547,12 @@ function atualizarAssistenteIA() {
       // Card "O que mudou" - mantem normal
       estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
 
-      // IA-018: override Sugestao quando ha inconsistencia grave.
-      // Mostra apenas contagem + recomendacao - detalhes ficam no card
-      // dedicado de "Inconsistencias" (evita duplicacao de mensagem).
+      // Prioridade do override do card "Proxima sugestao":
+      // 1. Inconsistencia grave -> "Corrija X" (IA-018)
+      // 2. Pendencias do modo manual (IA-022) -> lista de instrucoes
+      // 3. Sugestao normal
+      const temPendencias = pendenciasMarcacaoAssistenteIA.length > 0;
+
       if (temGrave) {
         const qtd = inc.graves.length;
         const plural = qtd > 1 ? "inconsistencias graves" : "inconsistencia grave";
@@ -1453,11 +1560,20 @@ function atualizarAssistenteIA() {
           `Corrija ${qtd} ${plural} antes de continuar.`,
           "Veja os detalhes no card 'Inconsistencias' (clique em cada item para destacar na tabela).",
         ]);
+      } else if (temPendencias) {
+        estrutura.sugestao.innerHTML = formatarListaAssistenteIA(
+          construirInstrucoesPendentesAssistenteIA(),
+        );
       } else {
         estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
       }
 
-      // IA-018: override Confianca - "Invalida" se grave, "Cautela" se leve
+      // Override Confianca - hierarquia:
+      // 1. Inconsistencia grave -> "Invalida"
+      // 2. Inconsistencia leve -> "Cautela"
+      // 3. Pendencias do modo manual -> rebaixa 1 nivel (Alta->Media,
+      //    Media->Baixa, Baixa->Baixa)
+      // 4. Nenhuma das anteriores -> nivel normal calculado
       let nivelFinal = confianca.nivel;
       let detalhesFinal = confianca.detalhes;
       if (temGrave) {
@@ -1471,11 +1587,18 @@ function atualizarAssistenteIA() {
           "Ha uma inconsistencia leve. A sugestao segue valida mas verifique.",
           ...confianca.detalhes,
         ];
+      } else if (temPendencias) {
+        const rebaixar = { Alta: "Media", Media: "Baixa", Baixa: "Baixa" };
+        nivelFinal = rebaixar[confianca.nivel] || confianca.nivel;
+        detalhesFinal = [
+          `A IA detectou ${pendenciasMarcacaoAssistenteIA.length} marca${pendenciasMarcacaoAssistenteIA.length === 1 ? "cao pendente" : "coes pendentes"} - aplique manualmente para subir a confianca.`,
+          ...confianca.detalhes,
+        ];
       }
       estrutura.confianca.innerHTML = formatarListaAssistenteIA([
         `Nivel atual: ${nivelFinal}.`,
         ...detalhesFinal,
-        ...(temGrave ? [] : dicasCapacidade),
+        ...(temGrave || temPendencias ? [] : dicasCapacidade),
       ]);
 
       // Card "Inconsistencias" (IA-017)

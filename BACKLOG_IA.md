@@ -355,6 +355,14 @@ Backlog estruturado de tudo que precisa ser feito no motor lógico do Assistente
 - **Custo:** 1-2 dias
 - **Deps:** IA-036 (módulos ES6)
 
+### IA-043 — Polimento de UX (textos do assistente + popup config)
+- Revisar e melhorar todos os textos do popup de configurações do assistente (descrições, labels).
+- Revisar e melhorar as mensagens nos cards do assistente (resumo, sugestão, confiança, inconsistências).
+- Revisar mensagem de "Assistente desativado" e CTAs.
+- Considerar tooltips ou microcopy adicional.
+- **Custo:** 1-2 dias
+- **Deps:** todos P3-P7 prontos (texto depende do que o sistema diz)
+
 ---
 
 ## Notas operacionais
