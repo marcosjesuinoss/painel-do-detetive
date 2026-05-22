@@ -1,4 +1,75 @@
 ﻿// ============================================================================
+// IA-020: CONFIGURACAO PERSISTIDA DO ASSISTENTE
+// ============================================================================
+// 3 eixos de comportamento independentes:
+//   - ativo: bool        - desliga/liga toda a analise do motor
+//   - automarcacao: bool - se true, IA marca V/X automaticamente; se false,
+//                          gera apenas instrucoes manuais (pendencias)
+//   - nivelExplicacao    - "objetiva" (curta) ou "explicativa" (com razao)
+//
+// Persistido em localStorage["assistenteIAConfiguracoes"]. Reset em
+// novaPartida() preserva o que o usuario configurou se ele quiser
+// (decisao deliberada - so reseta se chamar resetarConfiguracaoAssistenteIA).
+
+const CHAVE_CONFIGURACAO_ASSISTENTE_IA = "assistenteIAConfiguracoes";
+
+const CONFIGURACAO_PADRAO_ASSISTENTE_IA = Object.freeze({
+  ativo: true,
+  automarcacao: true,
+  nivelExplicacao: "objetiva",
+});
+
+function obterConfiguracaoAssistenteIA() {
+  try {
+    const bruto = localStorage.getItem(CHAVE_CONFIGURACAO_ASSISTENTE_IA);
+    if (!bruto) return { ...CONFIGURACAO_PADRAO_ASSISTENTE_IA };
+    const parsed = JSON.parse(bruto);
+    // Merge com defaults para tolerar chaves ausentes em saves antigos
+    return {
+      ativo:
+        typeof parsed.ativo === "boolean"
+          ? parsed.ativo
+          : CONFIGURACAO_PADRAO_ASSISTENTE_IA.ativo,
+      automarcacao:
+        typeof parsed.automarcacao === "boolean"
+          ? parsed.automarcacao
+          : CONFIGURACAO_PADRAO_ASSISTENTE_IA.automarcacao,
+      nivelExplicacao:
+        parsed.nivelExplicacao === "explicativa" ||
+        parsed.nivelExplicacao === "objetiva"
+          ? parsed.nivelExplicacao
+          : CONFIGURACAO_PADRAO_ASSISTENTE_IA.nivelExplicacao,
+    };
+  } catch {
+    return { ...CONFIGURACAO_PADRAO_ASSISTENTE_IA };
+  }
+}
+
+function salvarConfiguracaoAssistenteIA(parcial) {
+  const atual = obterConfiguracaoAssistenteIA();
+  const novo = { ...atual, ...(parcial || {}) };
+  // Sanidade: nao deixa nivelExplicacao virar algo invalido
+  if (novo.nivelExplicacao !== "objetiva" && novo.nivelExplicacao !== "explicativa") {
+    novo.nivelExplicacao = "objetiva";
+  }
+  localStorage.setItem(CHAVE_CONFIGURACAO_ASSISTENTE_IA, JSON.stringify(novo));
+  return novo;
+}
+
+function resetarConfiguracaoAssistenteIA() {
+  localStorage.removeItem(CHAVE_CONFIGURACAO_ASSISTENTE_IA);
+  return { ...CONFIGURACAO_PADRAO_ASSISTENTE_IA };
+}
+
+// Combina PRO + configuracao.ativo. Toda checagem "deve rodar assistente?"
+// deveria passar por aqui em vez de chamar isPRO() direto.
+function assistenteIAEstaAtivo() {
+  if (typeof isPRO !== "function" || !isPRO()) return false;
+  const cfg = obterConfiguracaoAssistenteIA();
+  return cfg.ativo === true;
+}
+
+// ============================================================================
 // IA-011: SNAPSHOT + CACHE DO MOTOR DO ASSISTENTE
 // ============================================================================
 // Em vez de cada funcao ler localStorage diretamente (gerando leituras
@@ -64,8 +135,9 @@ function construirSnapshotAssistenteIA() {
     }
   } catch {}
 
-  // Placeholders - estruturas reais virao com P6 (config) e P7 (grupos/origens)
-  const configuracao = { ativo: true, automarcacao: true, nivelExplicacao: "objetiva" };
+  // IA-020: configuracao real lida do localStorage (P6/Sprint E).
+  // gruposResposta/origensDuvida continuam como placeholder ate P7/Sprint F.
+  const configuracao = obterConfiguracaoAssistenteIA();
   const gruposResposta = [];
   const origensDuvida = {};
 
@@ -1212,7 +1284,12 @@ function formatarInconsistenciasAssistenteIA(graves, leves) {
 
 function atualizarAssistenteIA() {
   try {
-    if (typeof isPRO === "function" && !isPRO()) return;
+    // IA-020: respeita PRO E configuracao.ativo do usuario
+    if (typeof assistenteIAEstaAtivo === "function") {
+      if (!assistenteIAEstaAtivo()) return;
+    } else if (typeof isPRO === "function" && !isPRO()) {
+      return;
+    }
     if (!Array.isArray(cartas) || cartas.length === 0) return;
 
     const estrutura = garantirEstruturaAssistenteIA();
