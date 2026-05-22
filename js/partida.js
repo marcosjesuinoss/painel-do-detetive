@@ -186,10 +186,14 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
   localStorage.removeItem("estadoTabela");
   localStorage.removeItem("assistenteIAUltimaMudanca");
 
-  // IA-020: nova partida sempre reseta config do assistente para defaults
-  // (ativo, automarcacao, nivelExplicacao=objetiva). NAO afeta "continuar".
+  // IA-020/022: nova partida sempre reseta config do assistente para
+  // defaults (ativo, automarcacao, nivelExplicacao=objetiva) e tambem
+  // limpa pendencias de marcacao. NAO afeta "continuar".
   if (typeof resetarConfiguracaoAssistenteIA === "function") {
     resetarConfiguracaoAssistenteIA();
+  }
+  if (typeof resetarPendenciasMarcacaoAssistenteIA === "function") {
+    resetarPendenciasMarcacaoAssistenteIA();
   }
 
   // Garantir que privacidade inicia desativada
