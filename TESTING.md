@@ -42,12 +42,27 @@ O app é vanilla JS (sem ES6 modules). Os testes usam:
 
 ## Cobertura atual
 
+**tests/deducoes.test.js (9 testes):**
 - ✅ `deduzirCartasPorCapacidadeAssistenteIA` (3 casos incluindo regressão IA-001)
 - ✅ `deduzirExclusoesFortesAssistenteIA` (2 casos: coluna-saturada, linha-unica)
 - ✅ `deduzirCartasPorGrupoRespostaAssistenteIA` (3 casos: marca V, multi-candidato, já-V)
 - ✅ `deduzirCruzamentosFortesAssistenteIA` (1 caso: dupla-trio)
 
-Total: 9 testes, ~10ms de execução.
+**tests/inconsistencias.test.js (9 testes):**
+- ✅ `linha-v-duplicado`, `oculta-duplicada`, `secao-toda-v`
+- ✅ `coluna-excesso` (incluindo verificação do foco em células do IA-043)
+- ✅ `coluna-fechada-abaixo` (código unificado em IA-043)
+- ✅ `coluna-impossivel-aberta` (caso separado)
+- ✅ `grupo-impossivel` (leve) + caso negativo (não dispara quando há V)
+- ✅ estado válido não gera inconsistência
+
+**tests/sugestao-confianca.test.js (10 testes):**
+- ✅ `calcularConfiancaAssistenteIA` (4 níveis: Alta/Media/Baixa/Baixa-sem-escolhas)
+- ✅ `construirSugestaoAssistenteIA` (acusação final, tripla forte, exploratória)
+- ✅ Modo objetiva vs explicativa (cabeçalho muda)
+- ✅ `construirRaciocinioDetalhadoAssistenteIA` (3 itens formatados, sem jargão de camada)
+
+Total: **28 testes**, ~35ms de execução.
 
 ## Helpers disponíveis nos testes (via globalThis)
 
