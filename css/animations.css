@@ -145,24 +145,24 @@
 }
 
 .estado-duvida {
-  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45));
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.45));
 }
 
 .estado-duvida .estado-traco,
 .estado-duvida .estado-ponto {
   fill: none;
-  stroke: #facc15;
+  stroke: #f59e0b;
   stroke-width: 2.3;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter:
-    drop-shadow(0 0 4px rgba(250, 204, 21, 0.99))
-    drop-shadow(0 0 9px rgba(250, 204, 21, 0.93))
-    drop-shadow(0 0 15px rgba(250, 204, 21, 0.81));
+    drop-shadow(0 0 4px rgba(245, 158, 11, 0.99))
+    drop-shadow(0 0 9px rgba(245, 158, 11, 0.93))
+    drop-shadow(0 0 15px rgba(245, 158, 11, 0.81));
 }
 
 .estado-duvida .estado-ponto {
-  fill: #facc15;
+  fill: #f59e0b;
   stroke: none;
 }
 

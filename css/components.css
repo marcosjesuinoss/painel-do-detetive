@@ -443,7 +443,9 @@
 .selecionada:not(.ok):not(.no):not(.maybe) {
   background: rgba(255, 255, 255, 0.25);
 }
-/* ===== SE???.ES COM GRADIENTE FORTE (Suspeitos, Armas, Locais) ===== */
+/* ===== SECOES (Suspeitos, Armas, Locais) =====
+   Polish: fundo cinza mais escuro/marcado pra destacar a separacao entre
+   secoes (antes era branco translucido muito sutil, ficava apagado). */
 #tabela .secao-grid .celula {
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -452,15 +454,29 @@
 
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.05)
+    rgba(0, 0, 0, 0.42),
+    rgba(0, 0, 0, 0.30)
   );
 
   border: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 1px 0 rgba(0, 0, 0, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 1px 2px rgba(0, 0, 0, 0.18);
   border-radius: 9px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Tema claro - cinza-azulado escuro pra ter contraste em fundo claro */
+.light #tabela .secao-grid .celula {
+  background: linear-gradient(
+    90deg,
+    rgba(71, 85, 105, 0.85),
+    rgba(71, 85, 105, 0.65)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 3px rgba(15, 23, 42, 0.16);
+  color: rgba(255, 255, 255, 0.96);
 }
 
 /* ===== CABE??ALHO DESTACADO (Nomes dos jogadores) ===== */
@@ -1435,6 +1451,115 @@ body.modo-pro .play:active {
 /* Centralizacao e tamanho dos icones nas celulas */
 #tabela .celula[data-key] {
   padding: 0;
+}
+
+/* Polish A: tint super-sutil de fundo refletindo o estado da celula.
+   Cores fixas (verde/vermelho/amarelo) - universais. Intensidade reduzida
+   apos feedback do usuario (passou de 0.18 -> 0.10). */
+#tabela .celula.celula-v {
+  background:
+    linear-gradient(180deg, rgba(34, 197, 94, 0.10), rgba(34, 197, 94, 0.05));
+  border-color: rgba(34, 197, 94, 0.20);
+}
+#tabela .celula.celula-x {
+  background:
+    linear-gradient(180deg, rgba(239, 68, 68, 0.09), rgba(239, 68, 68, 0.04));
+  border-color: rgba(239, 68, 68, 0.18);
+}
+#tabela .celula.celula-duvida {
+  background:
+    linear-gradient(180deg, rgba(250, 204, 21, 0.10), rgba(250, 204, 21, 0.04));
+  border-color: rgba(250, 204, 21, 0.20);
+}
+/* Tema claro - leve aumento pra manter contraste em fundo claro */
+.light #tabela .celula.celula-v {
+  background:
+    linear-gradient(180deg, rgba(34, 197, 94, 0.14), rgba(34, 197, 94, 0.07));
+  border-color: rgba(22, 163, 74, 0.22);
+}
+.light #tabela .celula.celula-x {
+  background:
+    linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.06));
+  border-color: rgba(220, 38, 38, 0.22);
+}
+.light #tabela .celula.celula-duvida {
+  background:
+    linear-gradient(180deg, rgba(250, 204, 21, 0.14), rgba(250, 204, 21, 0.06));
+  border-color: rgba(202, 138, 4, 0.22);
+}
+
+/* Polish A: selecao em celulas COM estado SOBRESCREVE o tint do fundo.
+   O fundo vira a cor de selecao (branco/cinza). O icone V/X/? continua
+   mostrando o estado pela cor do SVG. Visual unificado independente
+   do estado. */
+#tabela .celula.celula-v.sel-col,
+#tabela .celula.celula-v.sel-row,
+#tabela .celula.celula-x.sel-col,
+#tabela .celula.celula-x.sel-row,
+#tabela .celula.celula-duvida.sel-col,
+#tabela .celula.celula-duvida.sel-row {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+#tabela .celula.celula-v.sel-inter,
+#tabela .celula.celula-x.sel-inter,
+#tabela .celula.celula-duvida.sel-inter {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.20);
+}
+#tabela .celula.celula-v.selecionada,
+#tabela .celula.celula-x.selecionada,
+#tabela .celula.celula-duvida.selecionada {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+/* Tema claro - tudo cinza (a pedido do usuario, em vez do azul do theme.css).
+   Cobre AMBOS: celulas com estado (V/X/?) e celulas vazias. Sobrescreve
+   as regras coloridas do theme.css com !important onde necessario, mas
+   prefere especificidade via #tabela. */
+
+/* Light - celulas COM estado: fundo cinza sobrescreve o tint do estado */
+.light #tabela .celula.celula-v.sel-col,
+.light #tabela .celula.celula-v.sel-row,
+.light #tabela .celula.celula-x.sel-col,
+.light #tabela .celula.celula-x.sel-row,
+.light #tabela .celula.celula-duvida.sel-col,
+.light #tabela .celula.celula-duvida.sel-row {
+  background: rgba(31, 41, 55, 0.08);
+  border-color: rgba(31, 41, 55, 0.18);
+  box-shadow: none;
+}
+.light #tabela .celula.celula-v.sel-inter,
+.light #tabela .celula.celula-x.sel-inter,
+.light #tabela .celula.celula-duvida.sel-inter {
+  background: rgba(31, 41, 55, 0.16);
+  border-color: rgba(31, 41, 55, 0.26);
+  box-shadow: none;
+}
+.light #tabela .celula.celula-v.selecionada,
+.light #tabela .celula.celula-x.selecionada,
+.light #tabela .celula.celula-duvida.selecionada {
+  background: rgba(31, 41, 55, 0.24);
+  border-color: rgba(31, 41, 55, 0.40);
+  box-shadow: none;
+}
+
+/* Light - celulas SEM estado: cinza tambem (sobrescreve azul do theme.css) */
+.light #tabela .celula.sel-col:not(.celula-v):not(.celula-x):not(.celula-duvida),
+.light #tabela .celula.sel-row:not(.celula-v):not(.celula-x):not(.celula-duvida) {
+  background: rgba(31, 41, 55, 0.08);
+  border-color: rgba(31, 41, 55, 0.18);
+  box-shadow: none;
+}
+.light #tabela .celula.sel-inter:not(.celula-v):not(.celula-x):not(.celula-duvida) {
+  background: rgba(31, 41, 55, 0.16);
+  border-color: rgba(31, 41, 55, 0.26);
+  box-shadow: none;
+}
+.light #tabela .celula.selecionada:not(.celula-v):not(.celula-x):not(.celula-duvida) {
+  background: rgba(31, 41, 55, 0.24);
+  border-color: rgba(31, 41, 55, 0.40);
+  box-shadow: none;
 }
 
 #tabela .celula[data-key] .estado-icon {

@@ -729,7 +729,12 @@ function renderizarEstado(cel, estado) {
 
   cel.innerHTML = "";
 
+  // Polish A: classe na celula reflete estado pra tint de fundo via CSS.
+  // Remove classes antigas e aplica a correta (ou nenhuma).
+  cel.classList.remove("celula-v", "celula-x", "celula-duvida");
+
   if (estado === "V") {
+    cel.classList.add("celula-v");
     cel.innerHTML = `
       <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-check check-anim" aria-hidden="true">        <path class="estado-traco" d="M7.2 12.3L10.4 15.5L16.9 8.7"></path>
       </svg>
@@ -737,6 +742,7 @@ function renderizarEstado(cel, estado) {
   }
 
   if (estado === "X") {
+    cel.classList.add("celula-x");
     cel.innerHTML = `
       <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-x x-anim" aria-hidden="true">        <path class="estado-traco" d="M8 8L16 16"></path>
         <path class="estado-traco" d="M16 8L8 16"></path>
@@ -745,6 +751,7 @@ function renderizarEstado(cel, estado) {
   }
 
   if (estado === "?") {
+    cel.classList.add("celula-duvida");
     cel.innerHTML = `
       <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-duvida q-anim" aria-hidden="true">        <path class="estado-traco" d="M9.2 9.2A2.9 2.9 0 0112 7.6A2.85 2.85 0 0114.8 10.5C14.8 12.2 12.8 12.5 12 13.8"></path>
         <circle class="estado-ponto" cx="12" cy="16.8" r="1.2"></circle>
