@@ -49,26 +49,44 @@ function agendarRetomadaJogoComCarregamento(origem) {
   }, 200);
 }
 
+// IA-034: flag anti-overlap. Multiplos eventos (visibilitychange + focus +
+// pageshow) podem disparar em sequencia. Se uma reidratacao ja esta em curso,
+// novos pedidos sao ignorados ate que termine (overlay esconda).
+let reidratacaoEmAndamentoP9 = false;
+
 // IA-033: orquestrador completo da reidratacao apos retomada do jogo.
 // Mostra overlay -> valida distribuicao -> recria tabela -> atualiza assistente
 // -> esconde overlay (com minimo de 300ms pra evitar flash).
-function reidratarTelaJogoAoRetomar(origem) {
+//
+// IA-034: aceita opts.ignorarFiltros pra entrada via API publica
+// (retomarJogoComCarregamento) onde a chamada eh explicita do usuario
+// e nao deve ser bloqueada pelos filtros de tela/tempo.
+function reidratarTelaJogoAoRetomar(origem, opts) {
+  if (reidratacaoEmAndamentoP9) return; // IA-034: coalesce
+
+  const ignorarFiltros = !!(opts && opts.ignorarFiltros);
+
   // Filtro 1: so reage se o usuario esta na tela do jogo
-  const tela = document.getElementById("jogo");
-  if (!tela || !tela.classList.contains("ativa")) return;
+  if (!ignorarFiltros) {
+    const tela = document.getElementById("jogo");
+    if (!tela || !tela.classList.contains("ativa")) return;
+  }
 
   // Filtro 2: ignora retomadas muito curtas (< 3s desde a ultima saida).
   // Eventos como focus quando o usuario so passa o mouse sobre a janela
   // nao precisam disparar reidratacao pesada.
-  try {
-    const ultimaSaida = parseInt(
-      localStorage.getItem("jogoUltimaSaida") || "0",
-      10,
-    );
-    const agora = Date.now();
-    if (ultimaSaida && agora - ultimaSaida < 3000) return;
-  } catch {}
+  if (!ignorarFiltros) {
+    try {
+      const ultimaSaida = parseInt(
+        localStorage.getItem("jogoUltimaSaida") || "0",
+        10,
+      );
+      const agora = Date.now();
+      if (ultimaSaida && agora - ultimaSaida < 3000) return;
+    } catch {}
+  }
 
+  reidratacaoEmAndamentoP9 = true;
   const inicio = Date.now();
   mostrarOverlayRetomada();
 
@@ -120,9 +138,20 @@ function reidratarTelaJogoAoRetomar(origem) {
       // aguarda completar antes de esconder
       const decorrido = Date.now() - inicio;
       const espera = Math.max(0, 300 - decorrido);
-      setTimeout(esconderOverlayRetomada, espera);
+      setTimeout(() => {
+        esconderOverlayRetomada();
+        reidratacaoEmAndamentoP9 = false; // IA-034: libera para proxima
+      }, espera);
     }
   });
+}
+
+// IA-034: API publica pra outros modulos pedirem reidratacao explicitamente
+// (continuar do menu, recovery flows, etc.). Pula filtros de tela/tempo -
+// caller eh responsavel por estar no contexto certo. Coalesce via
+// reidratacaoEmAndamentoP9 garante que chamadas simultaneas nao duplicam.
+function retomarJogoComCarregamento(origem) {
+  reidratarTelaJogoAoRetomar(origem, { ignorarFiltros: true });
 }
 
 function mostrarOverlayRetomada() {

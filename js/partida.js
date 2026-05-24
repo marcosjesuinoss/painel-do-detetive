@@ -306,6 +306,13 @@ function continuar() {
   gerarCartas();
   criarTabela();
   mostrarTela("jogo");
+
+  // IA-034: dispara reidratacao explicita (valida distribuicao + invalida
+  // caches IA + recria tabela + atualiza assistente). Cobre o caso de
+  // localStorage corrompido entre sessoes ou estado IA fora de fase.
+  if (typeof retomarJogoComCarregamento === "function") {
+    retomarJogoComCarregamento("continuar");
+  }
 }
 
 function novaPartida() {
