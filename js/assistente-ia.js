@@ -217,11 +217,14 @@ function construirSnapshotAssistenteIA() {
     }
   } catch {}
 
-  // IA-020: configuracao real lida do localStorage (P6/Sprint E).
-  // gruposResposta/origensDuvida continuam como placeholder ate P7/Sprint F.
+  // IA-020: configuracao real (Sprint E)
   const configuracao = obterConfiguracaoAssistenteIA();
-  const gruposResposta = [];
-  const origensDuvida = {};
+  // Sprint G (trinca de ?): grupos de resposta e origens de duvida
+  // tambem reais agora (eram placeholder ate aqui).
+  const gruposResposta =
+    typeof obterGruposResposta === "function" ? obterGruposResposta() : [];
+  const origensDuvida =
+    typeof obterOrigensDuvida === "function" ? obterOrigensDuvida() : {};
 
   return {
     estadoTabela,
@@ -416,12 +419,18 @@ function obterLinhasAssistenteIA() {
 
   const estado = obterEstadoTabelaAssistenteIA();
   const jogadores = obterNumeroJogadoresAssistenteIA();
+  // Sprint G (trinca de ?): le origens de duvida do snapshot para diff
+  // entre "?" manual (dúvida local) e "?" de grupo (evidência forte).
+  const snapshot = obterSnapshotAssistenteIA();
+  const origens = (snapshot && snapshot.origensDuvida) || {};
 
   return cartas.map((carta, row) => {
     const estados = [];
     let vCount = 0;
     let xCount = 0;
     let maybeCount = 0;
+    let maybeManualCount = 0;
+    let maybeGrupoCount = 0;
 
     for (let col = 0; col < jogadores; col++) {
       const valor = estado[`${row}-${col}`] || "";
@@ -429,7 +438,20 @@ function obterLinhasAssistenteIA() {
 
       if (valor === "V") vCount++;
       if (valor === "X") xCount++;
-      if (valor === "?") maybeCount++;
+      if (valor === "?") {
+        maybeCount++;
+        const chave = `${row}-${col}`;
+        const origem = origens[chave];
+        if (origem) {
+          if (origem.manual) maybeManualCount++;
+          if (Array.isArray(origem.grupos) && origem.grupos.length > 0) {
+            maybeGrupoCount++;
+          }
+        } else {
+          // "?" sem origem registrada (legacy ou edge case): conta como manual
+          maybeManualCount++;
+        }
+      }
     }
 
     return {
@@ -440,6 +462,8 @@ function obterLinhasAssistenteIA() {
       vCount,
       xCount,
       maybeCount,
+      maybeManualCount,
+      maybeGrupoCount,
       isFound: vCount > 0,
       isAllX: xCount === jogadores,
       candidatos: estados
@@ -798,6 +822,7 @@ const MOTIVO_LEGIVEL_ASSISTENTE_IA = {
   "coluna-saturada": "outras cartas dessa coluna ja foram confirmadas",
   "linha-unica": "secao ja tem a oculta - esta carta tem 1 candidato unico",
   "dupla-trio": "outras linhas estao confinadas em outras colunas",
+  "grupo-resposta-unico": "grupo de resposta tem so esta carta como opcao restante",
 };
 
 function motivoLegivelAssistenteIA(motivo) {
@@ -1091,6 +1116,97 @@ function deduzirExclusoesFortesAssistenteIA() {
 }
 
 // ============================================================================
+// TRINCA DE ? : deduzirCartasPorGrupoRespostaAssistenteIA (motivo: grupo-resposta-unico)
+// ============================================================================
+// Para cada grupo persistido em assistenteGruposResposta:
+//   - se o grupo nao tem V em nenhuma de suas 3 cartas
+//   - e exatamente 1 das 3 cartas tem candidato nao-X (as outras 2 viraram X)
+//   -> essa carta vira V para a coluna do grupo
+// Motivo: "grupo-resposta-unico" (camada estrutural-forte, prioridade 90 do spec)
+
+let executandoDeducaoGrupoRespostaAssistenteIA = false;
+
+function deduzirCartasPorGrupoRespostaAssistenteIA() {
+  if (executandoDeducaoGrupoRespostaAssistenteIA) return false;
+  if (!Array.isArray(cartas) || cartas.length === 0) return false;
+
+  const grupos =
+    typeof obterGruposResposta === "function" ? obterGruposResposta() : [];
+  if (grupos.length === 0) return false;
+
+  executandoDeducaoGrupoRespostaAssistenteIA = true;
+
+  try {
+    let houveMudancaTotal = false;
+    // Em modo manual nao precisa loop interno (cada passada gera mesmas pendencias)
+    const maxTentativas = ehAutomarcacaoAtivaAssistenteIA() ? 5 : 1;
+
+    for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
+      const estado = obterEstadoTabelaAssistenteIA();
+      const acoes = [];
+
+      for (const g of grupos) {
+        if (!Array.isArray(g.rows) || g.rows.length === 0) continue;
+        const col = g.coluna;
+
+        // Se alguma das cartas do grupo ja tem V (na coluna do grupo OU em outra),
+        // o grupo esta resolvido logicamente.
+        let grupoResolvido = false;
+        for (const row of g.rows) {
+          const chaveCol = `${row}-${col}`;
+          if (estado[chaveCol] === "V") {
+            grupoResolvido = true;
+            break;
+          }
+        }
+        if (grupoResolvido) continue;
+
+        // Conta candidatos validos (nao X, nao V) dentro do grupo
+        const candidatos = [];
+        for (const row of g.rows) {
+          const chave = `${row}-${col}`;
+          const v = estado[chave] || "";
+          if (v !== "X" && v !== "V") candidatos.push({ row, chave });
+        }
+
+        // Se sobrou exatamente 1 candidato -> ele DEVE ser V
+        if (candidatos.length === 1) {
+          acoes.push({
+            row: candidatos[0].row,
+            col,
+            chave: candidatos[0].chave,
+            marca: "V",
+            motivo: "grupo-resposta-unico",
+          });
+        }
+      }
+
+      if (acoes.length === 0) break;
+
+      let mudouNoCiclo = false;
+      const unicas = new Map();
+      acoes.forEach((a) => {
+        const k = `${a.chave}:${a.marca}`;
+        if (!unicas.has(k)) unicas.set(k, a);
+      });
+      unicas.forEach((acao) => {
+        const aplicada = aplicarOuAdiarMarcacaoAssistenteIA(acao);
+        if (aplicada) {
+          mudouNoCiclo = true;
+          houveMudancaTotal = true;
+        }
+      });
+
+      if (!mudouNoCiclo) break;
+    }
+
+    return houveMudancaTotal;
+  } finally {
+    executandoDeducaoGrupoRespostaAssistenteIA = false;
+  }
+}
+
+// ============================================================================
 // IA-015: CRUZAMENTOS FORTES (dupla-trio)
 // ============================================================================
 // Encontra subconjuntos de 2 ou 3 colunas onde o numero de linhas
@@ -1245,6 +1361,7 @@ function executarTodasDeducoesAssistenteIA() {
     deduzirCartasPorCapacidadeAssistenteIA();
     deduzirExclusoesFortesAssistenteIA();
     deduzirCruzamentosFortesAssistenteIA();
+    deduzirCartasPorGrupoRespostaAssistenteIA();
     return false;
   }
 
@@ -1255,7 +1372,8 @@ function executarTodasDeducoesAssistenteIA() {
     const a = deduzirCartasPorCapacidadeAssistenteIA();
     const b = deduzirExclusoesFortesAssistenteIA();
     const c = deduzirCruzamentosFortesAssistenteIA();
-    if (!a && !b && !c) break;
+    const d = deduzirCartasPorGrupoRespostaAssistenteIA();
+    if (!a && !b && !c && !d) break;
     houveMudancaTotal = true;
   }
   return houveMudancaTotal;
@@ -1654,6 +1772,7 @@ function classificarInconsistenciasAssistenteIA(linhas) {
   const nomes = snapshot.nomesJogadores;
   const cartasPorJogador = snapshot.cartasPorJogador;
   const jogadores = snapshot.numJogadores;
+  const gruposResposta = snapshot.gruposResposta || [];
 
   const graves = [];
   const leves = [];
@@ -1750,6 +1869,45 @@ function classificarInconsistenciasAssistenteIA(linhas) {
           nivel: "grave",
           mensagem: `${nomeJog} esta com ${vCount} carta(s) confirmada(s) mas a mao precisa de ${limite}.`,
           foco: { tipo: "coluna", coluna: col },
+        });
+      }
+    }
+  }
+
+  // 7. grupo-impossivel (LEVE): grupo de resposta ficou sem nenhuma opcao
+  //    possivel (todas as cartas do grupo viraram X na coluna do grupo,
+  //    ou nenhuma sobrou nao-V, sem haver V em outra das cartas)
+  if (Array.isArray(gruposResposta) && gruposResposta.length > 0) {
+    // Indexa estado por chave pra lookups rapidos
+    const estadoLookup = {};
+    linhas.forEach((linha) => {
+      linha.estados.forEach((valor, col) => {
+        estadoLookup[`${linha.row}-${col}`] = valor;
+      });
+    });
+    for (const g of gruposResposta) {
+      if (!Array.isArray(g.rows) || g.rows.length === 0) continue;
+      const col = g.coluna;
+      let temCandidato = false;
+      let temVNoGrupo = false;
+      for (const row of g.rows) {
+        const v = estadoLookup[`${row}-${col}`] || "";
+        if (v === "V") temVNoGrupo = true;
+        if (v !== "X" && v !== "V") temCandidato = true;
+      }
+      // Inconsistente quando: nenhuma das cartas do grupo eh V para essa
+      // coluna E todas viraram X (sem candidatos). Logica: jogador
+      // mostrou uma das 3 - mas agora todas as 3 foram descartadas.
+      if (!temVNoGrupo && !temCandidato) {
+        const nomesCartas = g.rows
+          .map((r) => (cartas[r] ? cartas[r].nome : `linha ${r}`))
+          .join(", ");
+        const nomeJog = nomes[col] || `J${col + 1}`;
+        leves.push({
+          codigo: "grupo-impossivel",
+          nivel: "leve",
+          mensagem: `Grupo de resposta de ${nomeJog} (${nomesCartas}) ficou sem opções possíveis - revise as marcações.`,
+          foco: { tipo: "celulas", chaves: g.rows.map((r) => `${r}-${col}`) },
         });
       }
     }
