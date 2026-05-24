@@ -2010,6 +2010,78 @@ function formatarInconsistenciasAssistenteIA(graves, leves) {
   return `<ul class="ia-lista-inconsistencias">${itens.join("")}</ul>`;
 }
 
+// ============================================================================
+// IA-030: APLICADORES DOM (substituem innerHTML = formatar*)
+// ============================================================================
+// Em vez de gerar string HTML e atribuir a innerHTML (parse + recria nodes +
+// perde foco/scroll/animacoes), montamos nodes via createElement e usamos
+// replaceChildren. Inconsistencias usam addEventListener no botao em vez
+// do onclick inline HTML.
+//
+// Conteudo dos itens eh sempre texto puro (verificado em todos os push
+// dos producers); usar textContent eh seguro e mais rapido que innerHTML.
+
+function aplicarListaAssistenteIA(el, itens) {
+  if (!el) return;
+  if (!Array.isArray(itens) || itens.length === 0) {
+    const p = document.createElement("p");
+    p.textContent = "Nenhuma análise disponível.";
+    el.replaceChildren(p);
+    return;
+  }
+  const ul = document.createElement("ul");
+  ul.className = "ia-lista";
+  for (const item of itens) {
+    const li = document.createElement("li");
+    li.textContent = String(item);
+    ul.appendChild(li);
+  }
+  el.replaceChildren(ul);
+}
+
+function aplicarInconsistenciasAssistenteIA(el, graves, leves) {
+  if (!el) return;
+  const total = (graves?.length || 0) + (leves?.length || 0);
+  if (total === 0) {
+    aplicarListaAssistenteIA(el, [
+      "Nenhuma inconsistencia detectada.",
+      "Marcacoes estao logicamente consistentes.",
+    ]);
+    return;
+  }
+
+  const ul = document.createElement("ul");
+  ul.className = "ia-lista-inconsistencias";
+
+  const adicionarItens = (lista, classeNivel) => {
+    (lista || []).forEach((inc) => {
+      const li = document.createElement("li");
+      li.className = `ia-inconsistencia ${classeNivel}`;
+      if (inc.foco) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ia-inconsistencia-btn";
+        btn.textContent = inc.mensagem;
+        const focoCopia = inc.foco;
+        btn.addEventListener("click", () => {
+          if (typeof aplicarFocoInconsistenciaAssistenteIA === "function") {
+            aplicarFocoInconsistenciaAssistenteIA(JSON.stringify(focoCopia));
+          }
+        });
+        li.appendChild(btn);
+      } else {
+        li.textContent = inc.mensagem;
+      }
+      ul.appendChild(li);
+    });
+  };
+
+  adicionarItens(graves, "ia-grave");
+  adicionarItens(leves, "ia-leve");
+
+  el.replaceChildren(ul);
+}
+
 // IA-029: render dos cards do assistente eh desperdicio quando o menu
 // lateral esta fechado (usuario nao ve). DEDUCOES continuam rodando
 // (afetam V/auto-X na tabela mesmo com menu fechado). Quando o menu
@@ -2041,18 +2113,19 @@ function atualizarAssistenteIA() {
     if (!cfgUsuario.ativo) {
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
-      const msgDesativado = formatarListaAssistenteIA([
+      // IA-030: replaceChildren via aplicarListaAssistenteIA
+      const itensDesativado = [
         "Assistente desativado.",
         "Reative no botão de configurações (engrenagem no topo).",
-      ]);
-      estrutura.resumo.innerHTML = msgDesativado;
-      estrutura.sugestao.innerHTML = msgDesativado;
-      estrutura.confianca.innerHTML = formatarListaAssistenteIA([
+      ];
+      aplicarListaAssistenteIA(estrutura.resumo, itensDesativado);
+      aplicarListaAssistenteIA(estrutura.sugestao, itensDesativado);
+      aplicarListaAssistenteIA(estrutura.confianca, [
         "Nível atual: Desativado.",
         "Reative no botão de configurações para receber análises.",
       ]);
       if (estrutura.inconsistencias) {
-        estrutura.inconsistencias.innerHTML = msgDesativado;
+        aplicarListaAssistenteIA(estrutura.inconsistencias, itensDesativado);
       }
       return;
     }
@@ -2063,19 +2136,20 @@ function atualizarAssistenteIA() {
     if (totalMarcacoes === 0) {
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
-      estrutura.resumo.innerHTML = formatarListaAssistenteIA([
+      // IA-030: replaceChildren via aplicarListaAssistenteIA
+      aplicarListaAssistenteIA(estrutura.resumo, [
         "Ainda n\u00e3o h\u00e1 leitura suficiente para resumir a rodada.",
         "Comece marcando V, X e ? para liberar an\u00e1lises reais.",
       ]);
-      estrutura.sugestao.innerHTML = formatarListaAssistenteIA([
+      aplicarListaAssistenteIA(estrutura.sugestao, [
         "Registre as primeiras respostas da mesa para gerar uma sugestao valida.",
       ]);
-      estrutura.confianca.innerHTML = formatarListaAssistenteIA([
+      aplicarListaAssistenteIA(estrutura.confianca, [
         "Nivel atual: Inicial.",
         "Sem marca\u00e7\u00f5es, o assistente ainda n\u00e3o tem base para orientar.",
       ]);
       if (estrutura.inconsistencias) {
-        estrutura.inconsistencias.innerHTML = formatarInconsistenciasAssistenteIA([], []);
+        aplicarInconsistenciasAssistenteIA(estrutura.inconsistencias, [], []);
       }
       return;
     }
@@ -2119,7 +2193,8 @@ function atualizarAssistenteIA() {
       const temLeve = inc.leves.length > 0;
 
       // Card "O que mudou" - mantem normal
-      estrutura.resumo.innerHTML = formatarListaAssistenteIA(mudancas);
+      // IA-030: replaceChildren via aplicarListaAssistenteIA
+      aplicarListaAssistenteIA(estrutura.resumo, mudancas);
 
       // Prioridade do override do card "Proxima sugestao":
       // 1. Inconsistencia grave -> "Corrija X" (IA-018)
@@ -2130,16 +2205,17 @@ function atualizarAssistenteIA() {
       if (temGrave) {
         const qtd = inc.graves.length;
         const plural = qtd > 1 ? "inconsistencias graves" : "inconsistencia grave";
-        estrutura.sugestao.innerHTML = formatarListaAssistenteIA([
+        aplicarListaAssistenteIA(estrutura.sugestao, [
           `Corrija ${qtd} ${plural} antes de continuar.`,
           "Veja os detalhes no card 'Inconsistencias' (clique em cada item para destacar na tabela).",
         ]);
       } else if (temPendencias) {
-        estrutura.sugestao.innerHTML = formatarListaAssistenteIA(
+        aplicarListaAssistenteIA(
+          estrutura.sugestao,
           construirInstrucoesPendentesAssistenteIA(),
         );
       } else {
-        estrutura.sugestao.innerHTML = formatarListaAssistenteIA(sugestao.itens);
+        aplicarListaAssistenteIA(estrutura.sugestao, sugestao.itens);
       }
 
       // Override Confianca - hierarquia:
@@ -2169,7 +2245,8 @@ function atualizarAssistenteIA() {
           ...confianca.detalhes,
         ];
       }
-      estrutura.confianca.innerHTML = formatarListaAssistenteIA([
+      // IA-030: replaceChildren via aplicarListaAssistenteIA
+      aplicarListaAssistenteIA(estrutura.confianca, [
         `Nivel atual: ${nivelFinal}.`,
         ...detalhesFinal,
         ...(temGrave || temPendencias ? [] : dicasCapacidade),
@@ -2177,7 +2254,8 @@ function atualizarAssistenteIA() {
 
       // Card "Inconsistencias" (IA-017)
       if (estrutura.inconsistencias) {
-        estrutura.inconsistencias.innerHTML = formatarInconsistenciasAssistenteIA(
+        aplicarInconsistenciasAssistenteIA(
+          estrutura.inconsistencias,
           inc.graves,
           inc.leves,
         );

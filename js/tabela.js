@@ -828,23 +828,14 @@ function aplicarTrincaResposta() {
     row: linha,
   }));
 
-  // Cenario 1: alguma carta da trinca ja tem V -> trinca colapsada
-  const algumV = chaves.some((c) => estadoSalvo[c.chave] === "V");
-  if (algumV) {
-    avancarColunaTrinca(jogadores);
-    if (typeof agendarAtualizacaoAssistenteIA === "function") {
-      agendarAtualizacaoAssistenteIA();
-    }
-    return;
-  }
-
-  // Filtra candidatas (nao V e nao X)
+  // Filtra candidatas (nao V e nao X) - sao as celulas que podem virar "?"
   const candidatas = chaves.filter((c) => {
     const v = estadoSalvo[c.chave] || "";
     return v !== "V" && v !== "X";
   });
+  const algumV = chaves.some((c) => estadoSalvo[c.chave] === "V");
 
-  // Cenario 2: nenhuma candidata - sem info nova
+  // Cenario A: nenhuma candidata - todas ja sao V/X, so avanca coluna
   if (candidatas.length === 0) {
     avancarColunaTrinca(jogadores);
     if (typeof agendarAtualizacaoAssistenteIA === "function") {
@@ -853,8 +844,8 @@ function aplicarTrincaResposta() {
     return;
   }
 
-  // Cenario 3: 1 candidata - colapsa para V
-  if (candidatas.length === 1) {
+  // Cenario B: 1 candidata SEM V no resto -> colapsa para V (outros sao X)
+  if (candidatas.length === 1 && !algumV) {
     const cel = document.querySelector(`[data-key="${candidatas[0].chave}"]`);
     if (cel) {
       marcarCelula(cel, "V", false, "assistente");
@@ -877,7 +868,34 @@ function aplicarTrincaResposta() {
     return;
   }
 
-  // Cenario 4: 2 ou 3 candidatas - cria grupo e marca como "?" com origem grupo
+  // Cenario C: 1 candidata MAS ja existe V no resto -> nao colapsar (criaria
+  // 2o V na coluna - inconsistente). So marca a candidata como "?" sem grupo.
+  // Permite ao usuario seguir registrando a duvida visual.
+  if (candidatas.length === 1 && algumV) {
+    const c = candidatas[0];
+    estadoSalvo[c.chave] = "?";
+    const cel = document.querySelector(`[data-key="${c.chave}"]`);
+    if (cel) renderizarEstado(cel, "?");
+    if (typeof registrarOrigemDuvidaManual === "function") {
+      registrarOrigemDuvidaManual(c.chave);
+    }
+    localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
+
+    avancarColunaTrinca(jogadores);
+    atualizarEstadoVisualCartasEncontradas();
+    atualizarDestaqueCartaOculta();
+    atualizarAlertaDuplicidadePRO();
+    atualizarDestaques();
+    atualizarBotoes();
+    atualizarBotaoContinuar();
+    if (typeof agendarAtualizacaoAssistenteIA === "function") {
+      agendarAtualizacaoAssistenteIA();
+    }
+    return;
+  }
+
+  // Cenario D: 2 ou 3 candidatas - cria grupo e marca como "?" com origem grupo
+  // (algumV ou nao - se algumV, o grupo so contem as nao-V; o V permanece V)
   const grupoId = `grupo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const novoGrupo = {
     id: grupoId,
