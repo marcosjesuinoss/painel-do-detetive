@@ -115,12 +115,38 @@ function reidratarTelaJogoAoRetomar(origem, opts) {
         resetarHashRenderAssistenteIA();
       }
 
-      // 3. Reconstroi a tabela a partir do localStorage (repinta visual)
-      if (typeof criarTabela === "function") {
+      // 3. Atualiza visual da tabela. Estrategia inteligente pra evitar
+      // GPU pressure desnecessario (iOS Safari perde shadows/gradients sob
+      // stress):
+      //   - Tabela vazia OU distribuicao reconstruida -> criarTabela completo
+      //   - Caso comum (mesma partida continuando) -> apenas refresh dos
+      //     visuais sem reinjetar DOM (muito mais leve)
+      const area = document.getElementById("tabela");
+      const tabelaExiste = !!(area && area.children.length > 0);
+      const precisaRecriar =
+        !tabelaExiste || (resultadoDist && resultadoDist.reconstruiu);
+
+      if (precisaRecriar && typeof criarTabela === "function") {
         try {
           criarTabela();
         } catch (erro) {
           console.error("Falha em criarTabela durante reidratacao:", erro);
+        }
+      } else {
+        // Refresh leve - apenas atualiza classes/destaques sem recriar DOM
+        try {
+          if (typeof atualizarEstadoVisualCartasEncontradas === "function")
+            atualizarEstadoVisualCartasEncontradas();
+          if (typeof atualizarDestaqueCartaOculta === "function")
+            atualizarDestaqueCartaOculta();
+          if (typeof atualizarAlertaDuplicidadePRO === "function")
+            atualizarAlertaDuplicidadePRO();
+          if (typeof atualizarDestaques === "function") atualizarDestaques();
+          if (typeof atualizarBotoes === "function") atualizarBotoes();
+          if (typeof atualizarBotaoContinuar === "function")
+            atualizarBotaoContinuar();
+        } catch (erro) {
+          console.error("Falha no refresh visual leve da reidratacao:", erro);
         }
       }
 
@@ -166,6 +192,19 @@ function esconderOverlayRetomada() {
   if (!overlay) return;
   overlay.hidden = true;
   overlay.setAttribute("aria-hidden", "true");
+
+  // Defesa contra bug iOS Safari: apos overlay sumir, alguns elementos
+  // (botoes de acao, células, cards) podem ficar sem shadows/gradients
+  // ate o proximo repaint manual. Forcamos repaint adicionando+removendo
+  // uma classe vazia no body, que dispara recalc de estilo sem efeito visual.
+  try {
+    document.body.classList.add("forcar-repaint-pos-retomada");
+    // leitura de offsetHeight forca o navegador a fazer reflow sincrono
+    void document.body.offsetHeight;
+    requestAnimationFrame(() => {
+      document.body.classList.remove("forcar-repaint-pos-retomada");
+    });
+  } catch {}
 }
 
 function registrarSaidaJogoAssistenteIA() {

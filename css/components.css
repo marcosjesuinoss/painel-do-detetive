@@ -858,17 +858,18 @@ body.modo-pro.light button.item-jogador-cartas.ativo {
   transform: none;
 }
 
-/* IA-033: overlay de loading durante reidratacao apos retomada do jogo */
+/* IA-033: overlay de loading durante reidratacao apos retomada do jogo.
+   NAO usar backdrop-filter aqui - causa bug iOS Safari onde shadows/gradients
+   das camadas abaixo ficam "stuck" sem repaint apos overlay sumir.
+   Compensamos com opacidade do fundo um pouco maior pra dar sensacao similar. */
 .overlay-retomada {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 99998;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 .overlay-retomada[hidden] {
   display: none !important;
@@ -902,6 +903,14 @@ body.modo-pro.light button.item-jogador-cartas.ativo {
   margin: 0;
   font-size: 14px;
   opacity: 0.85;
+}
+
+/* Classe efemera usada por esconderOverlayRetomada pra forcar repaint
+   completo - workaround do bug iOS Safari onde shadows/gradients ficam
+   "stuck" apos o overlay sumir. opacity 0.99999 dispara recalc de
+   composicao sem efeito visual perceptivel. */
+body.forcar-repaint-pos-retomada {
+  opacity: 0.99999;
 }
 
 /* Notificacao PRO */
