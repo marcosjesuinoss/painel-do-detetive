@@ -95,11 +95,12 @@ function montarToastAjudaAssistenteIA() {
       <strong>Como o assistente funciona</strong>
     </div>
     <ul class="toast-ia-lista">
-      <li>L\u00ea o que j\u00e1 est\u00e1 marcado na tabela em tempo real.</li>
-      <li>Resume as \u00faltimas pistas realmente relevantes.</li>
-      <li>Sugere a pr\u00f3xima pergunta para cortar mais possibilidades.</li>
-      <li>Mostra um n\u00edvel de confian\u00e7a com base nas exclus\u00f5es atuais.</li>
-      <li>No modo Pro, considera tamb\u00e9m que locais costumam ser escondidos quando o jogador pode revelar outra carta.</li>
+      <li>Analisa suas marca\u00e7\u00f5es em tempo real e deduz cartas automaticamente.</li>
+      <li>Sugere a pr\u00f3xima pergunta pra eliminar mais hip\u00f3teses.</li>
+      <li>Mostra n\u00edvel de confian\u00e7a (Alta, M\u00e9dia, Baixa) baseado nas exclus\u00f5es atuais.</li>
+      <li>Alerta inconsist\u00eancias: marca\u00e7\u00f5es contradit\u00f3rias ou imposs\u00edveis (graves) e situa\u00e7\u00f5es de aten\u00e7\u00e3o (leves).</li>
+      <li>Trinca de "?": selecione coluna + 3 linhas e toque "?" pra registrar "o jogador mostrou uma destas 3".</li>
+      <li>Considera que locais costumam ser escondidos quando o jogador tamb\u00e9m pode revelar suspeito ou arma.</li>
     </ul>
   `;
   return toast;

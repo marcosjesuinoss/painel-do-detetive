@@ -2165,15 +2165,15 @@ function atualizarAssistenteIA() {
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
       // IA-030: replaceChildren via aplicarListaAssistenteIA
+      // IA-043: textos mais diretos
       const itensDesativado = [
         "Assistente desativado.",
-        "Reative no botão de configurações (engrenagem no topo).",
+        "Toque na engrenagem no topo para ativar.",
       ];
       aplicarListaAssistenteIA(estrutura.resumo, itensDesativado);
       aplicarListaAssistenteIA(estrutura.sugestao, itensDesativado);
       aplicarListaAssistenteIA(estrutura.confianca, [
         "Nível atual: Desativado.",
-        "Reative no botão de configurações para receber análises.",
       ]);
       if (estrutura.inconsistencias) {
         aplicarListaAssistenteIA(estrutura.inconsistencias, itensDesativado);
@@ -2188,16 +2188,16 @@ function atualizarAssistenteIA() {
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
       // IA-030: replaceChildren via aplicarListaAssistenteIA
+      // IA-043: textos mais diretos
       aplicarListaAssistenteIA(estrutura.resumo, [
-        "Ainda n\u00e3o h\u00e1 leitura suficiente para resumir a rodada.",
-        "Comece marcando V, X e ? para liberar an\u00e1lises reais.",
+        "Comece marcando V, X e ? na tabela.",
+        "O assistente come\u00e7a a analisar assim que houver dados.",
       ]);
       aplicarListaAssistenteIA(estrutura.sugestao, [
-        "Registre as primeiras respostas da mesa para gerar uma sugestao valida.",
+        "Aguardando as primeiras marca\u00e7\u00f5es pra gerar uma sugest\u00e3o.",
       ]);
       aplicarListaAssistenteIA(estrutura.confianca, [
-        "Nivel atual: Inicial.",
-        "Sem marca\u00e7\u00f5es, o assistente ainda n\u00e3o tem base para orientar.",
+        "N\u00edvel atual: Inicial.",
       ]);
       if (estrutura.inconsistencias) {
         aplicarInconsistenciasAssistenteIA(estrutura.inconsistencias, [], []);
