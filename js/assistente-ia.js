@@ -5,7 +5,10 @@
 //   - ativo: bool        - desliga/liga toda a analise do motor
 //   - automarcacao: bool - se true, IA marca V/X automaticamente; se false,
 //                          gera apenas instrucoes manuais (pendencias)
-//   - nivelExplicacao    - "objetiva" (curta) ou "explicativa" (com razao)
+//   - nivelExplicacao    - valores internos (labels UI):
+//                          "objetiva"    (Resumido - so a sugestao)
+//                          "explicativa" (Explicado - com o motivo)
+//                          "detalhada"   (Detalhado - com raciocinio completo)
 //
 // Persistido em localStorage["assistenteIAConfiguracoes"]. Reset em
 // novaPartida() preserva o que o usuario configurou se ele quiser
@@ -36,7 +39,8 @@ function obterConfiguracaoAssistenteIA() {
           : CONFIGURACAO_PADRAO_ASSISTENTE_IA.automarcacao,
       nivelExplicacao:
         parsed.nivelExplicacao === "explicativa" ||
-        parsed.nivelExplicacao === "objetiva"
+        parsed.nivelExplicacao === "objetiva" ||
+        parsed.nivelExplicacao === "detalhada"
           ? parsed.nivelExplicacao
           : CONFIGURACAO_PADRAO_ASSISTENTE_IA.nivelExplicacao,
     };
@@ -49,7 +53,11 @@ function salvarConfiguracaoAssistenteIA(parcial) {
   const atual = obterConfiguracaoAssistenteIA();
   const novo = { ...atual, ...(parcial || {}) };
   // Sanidade: nao deixa nivelExplicacao virar algo invalido
-  if (novo.nivelExplicacao !== "objetiva" && novo.nivelExplicacao !== "explicativa") {
+  if (
+    novo.nivelExplicacao !== "objetiva" &&
+    novo.nivelExplicacao !== "explicativa" &&
+    novo.nivelExplicacao !== "detalhada"
+  ) {
     novo.nivelExplicacao = "objetiva";
   }
   localStorage.setItem(CHAVE_CONFIGURACAO_ASSISTENTE_IA, JSON.stringify(novo));
@@ -884,15 +892,80 @@ function marcacaoAutomaticaPermitidaAssistenteIA(acao) {
 }
 
 const MOTIVO_LEGIVEL_ASSISTENTE_IA = {
-  capacidade: "jogador fecha a mao com essa carta",
-  "coluna-saturada": "outras cartas dessa coluna ja foram confirmadas",
-  "linha-unica": "secao ja tem a oculta - esta carta tem 1 candidato unico",
-  "dupla-trio": "outras linhas estao confinadas em outras colunas",
-  "grupo-resposta-unico": "grupo de resposta tem so esta carta como opcao restante",
+  capacidade: "jogador fecha a mão com essa carta",
+  "coluna-saturada": "outras cartas dessa coluna já foram confirmadas",
+  "linha-unica": "seção já tem a oculta — esta carta tem 1 candidato único",
+  "dupla-trio": "outras linhas estão confinadas em outras colunas",
+  "grupo-resposta-unico": "grupo de resposta só sobrou esta carta como opção",
+  // IA-041: motivos vindos de montarResumoLinhasAssistenteIA - textos mais
+  // diretos e sem jargao tecnico
+  "ultima-sem-v": "única carta sem V em outras colunas",
+  "linha-toda-x": "todos os jogadores já descartaram",
+};
+
+// IA-041: mapeia camada tecnica pra adjetivo legivel
+const CAMADA_LEGIVEL_ASSISTENTE_IA = {
+  soberana: "garantida",
+  "estrutural-forte": "estrutural-forte",
+  dedutiva: "dedutiva",
+  heuristica: "heuristica",
 };
 
 function motivoLegivelAssistenteIA(motivo) {
   return MOTIVO_LEGIVEL_ASSISTENTE_IA[motivo] || motivo;
+}
+
+function camadaLegivelAssistenteIA(camada) {
+  return CAMADA_LEGIVEL_ASSISTENTE_IA[camada] || camada;
+}
+
+// IA-041: descreve em portugues natural a JUSTIFICATIVA de uma escolha
+// (sem rotulo nem nome - quem chama prefixa com "Tipo (Nome):"). Usado
+// no card Raciocinio Detalhado. Mantem estrutura limpa: motivo + listas
+// de descartados e em-aberto. Sem jargao de camada (info tecnica interna).
+// J1 (voce) suprimido das listas.
+function descreverEscolhaDetalhadaAssistenteIA(linha) {
+  if (!linha) return null;
+
+  const snapshot =
+    typeof obterSnapshotAssistenteIA === "function"
+      ? obterSnapshotAssistenteIA()
+      : null;
+  const nomes = (snapshot && snapshot.nomesJogadores) || [];
+
+  // Motivo legivel - ou fallback baseado em stats quando nao ha motivo
+  let motivoFrase;
+  if (linha.motivo) {
+    motivoFrase = motivoLegivelAssistenteIA(linha.motivo);
+  } else if (linha.xCount > 0 || linha.maybeCount > 0) {
+    const fragmentos = [];
+    if (linha.xCount > 0) fragmentos.push(`${linha.xCount} descarte(s)`);
+    if (linha.maybeCount > 0) fragmentos.push(`${linha.maybeCount} dúvida(s)`);
+    motivoFrase = fragmentos.join(" e ");
+  } else {
+    motivoFrase = "ainda sem evidências fortes";
+  }
+
+  // Listas de jogadores envolvidos (sem J1 - voce)
+  const descartados = [];
+  const candidatos = [];
+  (linha.estados || []).forEach((v, col) => {
+    if (ehJogadorUsuarioAssistenteIA(col)) return;
+    const nome = nomes[col] || `J${col + 1}`;
+    if (v === "X") descartados.push(nome);
+    else if (v !== "V") candidatos.push(nome);
+  });
+
+  // Monta: "motivo. Descartado por: X. Em aberto: Y."
+  const partes = [`${motivoFrase}.`];
+  if (descartados.length > 0) {
+    partes.push(`Descartado por: ${descartados.join(", ")}.`);
+  }
+  if (candidatos.length > 0) {
+    partes.push(`Em aberto: ${candidatos.join(", ")}.`);
+  }
+
+  return partes.join(" ");
 }
 
 function construirInstrucoesPendentesAssistenteIA() {
@@ -1524,11 +1597,14 @@ function garantirEstruturaAssistenteIA() {
   // IA-017: agora suportamos 4 cards (resumo, sugestao, confianca,
   // inconsistencias). 3 cards continua sendo aceito como fallback - so
   // o 4o slot fica null. Cards extras alem do 4o sao ignorados.
+  // IA-041: agora 5 slots (resumo, sugestao, confianca, inconsistencias,
+  // raciocinio detalhado). 3 cards continua sendo aceito como fallback.
   const ids = [
     "iaResumoMudancas",
     "iaProximaSugestao",
     "iaConfiancaAssistente",
     "iaInconsistenciasAssistente",
+    "iaRaciocinioDetalhado",
   ];
 
   cards.forEach((card, index) => {
@@ -1554,6 +1630,8 @@ function garantirEstruturaAssistenteIA() {
     sugestao: getEl("iaProximaSugestao"),
     confianca: getEl("iaConfiancaAssistente"),
     inconsistencias: getEl("iaInconsistenciasAssistente"),
+    raciocinio: getEl("iaRaciocinioDetalhado"),
+    raciocinioCard: getEl("iaCardRaciocinioDetalhado"),
   };
 }
 
@@ -1687,8 +1765,10 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
   const escolhas = [suspeito, arma, local];
 
   // IA-025: le o nivel de explicacao configurado
+  // IA-041: "detalhada" inclui tudo de "explicativa" + arvore de raciocinio
   const cfg = obterConfiguracaoAssistenteIA();
-  const explicativo = cfg.nivelExplicacao === "explicativa";
+  const detalhado = cfg.nivelExplicacao === "detalhada";
+  const explicativo = cfg.nivelExplicacao === "explicativa" || detalhado;
 
   // IA-027: ACUSACAO FINAL - se todos os 3 tipos tem oculta-direta identificada,
   // o crime esta solucionado.
@@ -1716,12 +1796,12 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
     if (exploratoria) {
       const itens = [
         explicativo
-          ? `Sem certezas fortes ainda. Para abrir o jogo, sugiro: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`
+          ? `Ainda sem certezas fortes. Pra abrir o jogo, vale perguntar: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`
           : `Sugest\u00e3o explorat\u00f3ria: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`,
       ];
       if (explicativo) {
         itens.push(
-          "Foco em cartas com mais candidatos abertos \u2014 pergunta tende a eliminar mais hip\u00f3teses.",
+          "Foco em cartas com mais incerteza \u2014 essa pergunta tende a eliminar mais hip\u00f3teses.",
         );
       }
       return {
@@ -1749,17 +1829,19 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
       const pesoLocal = calcularPesoOcultacaoLocal(local, linhas);
       if (pesoLocal > 0) {
         itens.push(
-          `${local.nome} ganhou prioridade porque locais costumam ser escondidos quando o jogador tamb\u00e9m pode mostrar outra carta.`,
+          `Locais costumam ser escondidos quando o jogador tem outras cartas pra mostrar \u2014 ${local.nome} \u00e9 uma boa aposta.`,
         );
       }
     }
 
     const teste = obterTestePrioritarioAssistenteIA(escolhas);
     if (teste) {
-      const verbo = teste.xCount === 1 ? "descartou" : "descartaram";
-      const sufixo = teste.xCount === 1 ? "jogador" : "jogadores";
+      const sufixo =
+        teste.xCount === 1
+          ? "jogador j\u00e1 descartou"
+          : "jogadores j\u00e1 descartaram";
       itens.push(
-        `Teste priorit\u00e1rio: ${teste.nome} (${teste.xCount} ${sufixo} j\u00e1 ${verbo} \u2014 confirmar fecha mais hip\u00f3teses).`,
+        `${teste.nome} \u00e9 um bom teste: ${teste.xCount} ${sufixo}, ent\u00e3o confirmar essa carta fecha v\u00e1rias hip\u00f3teses de uma vez.`,
       );
     }
 
@@ -1776,15 +1858,43 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
           .slice(0, 3)
           .map((item) => obterNomeJogadorAssistenteIA(item.col))
           .join(", ");
-        itens.push(`Carta sob press\u00e3o: ${linhaPressao.nome}. Candidatos atuais: ${nomes}.`);
+        itens.push(
+          `${linhaPressao.nome} est\u00e1 pressionada \u2014 s\u00f3 ${nomes} ainda pode(m) ter essa carta.`,
+        );
       }
     }
   }
+
+  // IA-041: a arvore de raciocinio agora vai pro card "Raciocinio detalhado"
+  // separado (montado em construirRaciocinioDetalhadoAssistenteIA). Aqui o
+  // card Sugestao volta a ser enxuto (max 4 itens).
 
   return {
     itens: itens.slice(0, 4),
     escolhas,
   };
+}
+
+// IA-041: monta itens do card "Raciocinio detalhado". Formato:
+// "Tipo (Nome): motivo. Descartado por: X. Em aberto: Y."
+function construirRaciocinioDetalhadoAssistenteIA(escolhas) {
+  const [suspeito, arma, local] = escolhas || [];
+  const itens = [];
+
+  const rotulados = [
+    { rotulo: "Suspeito", linha: suspeito },
+    { rotulo: "Arma", linha: arma },
+    { rotulo: "Local", linha: local },
+  ];
+
+  rotulados.forEach((e) => {
+    const desc = descreverEscolhaDetalhadaAssistenteIA(e.linha);
+    if (desc && e.linha) {
+      itens.push(`${e.rotulo} (${e.linha.nome}): ${desc}`);
+    }
+  });
+
+  return itens;
 }
 
 function construirDicasCapacidadeAssistenteIA(linhas) {
@@ -2178,6 +2288,8 @@ function atualizarAssistenteIA() {
       if (estrutura.inconsistencias) {
         aplicarListaAssistenteIA(estrutura.inconsistencias, itensDesativado);
       }
+      // IA-041: esconde card de raciocinio quando assistente desativado
+      if (estrutura.raciocinioCard) estrutura.raciocinioCard.hidden = true;
       return;
     }
 
@@ -2202,6 +2314,8 @@ function atualizarAssistenteIA() {
       if (estrutura.inconsistencias) {
         aplicarInconsistenciasAssistenteIA(estrutura.inconsistencias, [], []);
       }
+      // IA-041: esconde card de raciocinio quando nada marcado
+      if (estrutura.raciocinioCard) estrutura.raciocinioCard.hidden = true;
       return;
     }
 
@@ -2310,6 +2424,28 @@ function atualizarAssistenteIA() {
           inc.graves,
           inc.leves,
         );
+      }
+
+      // IA-041: Card "Raciocinio detalhado" - so aparece em nivel "detalhada".
+      // Esconde completamente nos outros modos pra nao poluir a UI.
+      if (estrutura.raciocinioCard) {
+        const cfgNivel = cfgUsuario.nivelExplicacao;
+        const ehDetalhado = cfgNivel === "detalhada";
+        if (ehDetalhado) {
+          estrutura.raciocinioCard.hidden = false;
+          const itensRaciocinio = construirRaciocinioDetalhadoAssistenteIA(
+            sugestao.escolhas,
+          );
+          if (estrutura.raciocinio && itensRaciocinio.length > 0) {
+            aplicarListaAssistenteIA(estrutura.raciocinio, itensRaciocinio);
+          } else if (estrutura.raciocinio) {
+            aplicarListaAssistenteIA(estrutura.raciocinio, [
+              "Sem dados suficientes ainda pra explicar o raciocínio.",
+            ]);
+          }
+        } else {
+          estrutura.raciocinioCard.hidden = true;
+        }
       }
     }, snapPosDeducao);
   } catch (erro) {

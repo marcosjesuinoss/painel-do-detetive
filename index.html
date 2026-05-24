@@ -416,6 +416,13 @@
             <h5>Inconsist&ecirc;ncias</h5>
             <p>Nenhuma inconsist&ecirc;ncia detectada. Continue marcando.</p>
           </article>
+
+          <!-- IA-041: card de raciocinio detalhado. Escondido por padrao
+               (hidden). Aparece apenas quando nivelExplicacao === "detalhada". -->
+          <article id="iaCardRaciocinioDetalhado" class="ia-menu-card" hidden>
+            <h5>Racioc&iacute;nio detalhado</h5>
+            <p>Ative o n&iacute;vel "Detalhada" nas configura&ccedil;&otilde;es para ver o racioc&iacute;nio completo.</p>
+          </article>
         </section>
 
         <button
@@ -717,12 +724,17 @@
           <label class="config-ia-radio">
             <input type="radio" name="configIANivel" value="objetiva" />
             <span class="radio-circle" aria-hidden="true"></span>
-            <span>Objetiva (curto e direto)</span>
+            <span>Resumido (s&oacute; a sugest&atilde;o)</span>
           </label>
           <label class="config-ia-radio">
             <input type="radio" name="configIANivel" value="explicativa" />
             <span class="radio-circle" aria-hidden="true"></span>
-            <span>Explicativa (inclui a raz&atilde;o)</span>
+            <span>Explicado (com o motivo)</span>
+          </label>
+          <label class="config-ia-radio">
+            <input type="radio" name="configIANivel" value="detalhada" />
+            <span class="radio-circle" aria-hidden="true"></span>
+            <span>Detalhado (com racioc&iacute;nio completo)</span>
           </label>
         </div>
 
