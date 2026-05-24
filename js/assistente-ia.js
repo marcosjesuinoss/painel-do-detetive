@@ -1302,46 +1302,154 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   return itens.slice(0, 3);
 }
 
+// ============================================================================
+// IA-027: helper - verifica se uma escolha veio de oculta-direta
+// ============================================================================
+function ehOcultaDiretaAssistenteIA(linha) {
+  if (!linha || !linha.motivo) return false;
+  return linha.motivo === "linha-toda-x" || linha.motivo === "ultima-sem-v";
+}
+
+// ============================================================================
+// IA-025: helper - teste prioritario (carta com mais X = mais perto de fechar)
+// ============================================================================
+function obterTestePrioritarioAssistenteIA(escolhas) {
+  let melhor = null;
+  for (const e of escolhas) {
+    if (!e) continue;
+    if (e.isFound) continue;
+    if (!melhor || (e.xCount || 0) > (melhor.xCount || 0)) melhor = e;
+  }
+  return melhor && melhor.xCount > 0 ? melhor : null;
+}
+
+// ============================================================================
+// IA-026: sugestao exploratoria quando nao ha tripla forte ainda
+// ============================================================================
+// Quando o motor nao tem dados suficientes para uma sugestao com score alto,
+// gera uma combinacao que MAXIMIZA INFORMACAO: pega a carta de cada tipo com
+// mais candidatos abertos (= mais incerta = pergunta tende a comprimir o
+// espaco de hipoteses melhor).
+function obterSugestaoExploratoriaAssistenteIA(linhas) {
+  const porTipo = { Suspeitos: [], Armas: [], Locais: [] };
+  for (const linha of linhas) {
+    if (linha.isFound) continue;
+    if (porTipo[linha.tipo]) porTipo[linha.tipo].push(linha);
+  }
+
+  function pegarMaisAmbigua(grupo) {
+    if (!grupo || grupo.length === 0) return null;
+    return grupo
+      .slice()
+      .sort((a, b) => (b.candidatos.length || 0) - (a.candidatos.length || 0))[0];
+  }
+
+  const sus = pegarMaisAmbigua(porTipo.Suspeitos);
+  const arm = pegarMaisAmbigua(porTipo.Armas);
+  const loc = pegarMaisAmbigua(porTipo.Locais);
+
+  if (!sus || !arm || !loc) return null;
+  return { suspeito: sus, arma: arm, local: loc };
+}
+
 function construirSugestaoAssistenteIA(resumo, linhas) {
   const suspeito = obterMelhorLinhaPorTipoAssistenteIA("Suspeitos", resumo);
   const arma = obterMelhorLinhaPorTipoAssistenteIA("Armas", resumo);
   const local = obterMelhorLinhaPorTipoAssistenteIA("Locais", resumo);
+  const escolhas = [suspeito, arma, local];
 
-  const itens = [];
-  const scoreTotal = [suspeito, arma, local].reduce(
-    (soma, item) => soma + (item?.score || 0),
-    0,
-  );
+  // IA-025: le o nivel de explicacao configurado
+  const cfg = obterConfiguracaoAssistenteIA();
+  const explicativo = cfg.nivelExplicacao === "explicativa";
 
-  if (suspeito && arma && local && scoreTotal >= 18) {
-    itens.push(`Pergunta sugerida: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`);
-  } else {
-    itens.push("Ainda n\u00e3o h\u00e1 dados suficientes para montar uma combina\u00e7\u00e3o forte completa.");
+  // IA-027: ACUSACAO FINAL - se todos os 3 tipos tem oculta-direta identificada,
+  // o crime esta solucionado.
+  if (
+    ehOcultaDiretaAssistenteIA(suspeito) &&
+    ehOcultaDiretaAssistenteIA(arma) &&
+    ehOcultaDiretaAssistenteIA(local)
+  ) {
+    const itens = [
+      `Crime solucionado! Acuse com: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`,
+    ];
+    if (explicativo) {
+      itens.push(
+        "As 3 cartas foram identificadas como ocultas (uma por se\u00e7\u00e3o). Pode fechar a partida.",
+      );
+    }
+    return { itens, escolhas };
   }
 
-  if (local) {
-    const pesoLocal = calcularPesoOcultacaoLocal(local, linhas);
-    if (pesoLocal > 0) {
+  const scoreTotal = escolhas.reduce((soma, item) => soma + (item?.score || 0), 0);
+
+  // IA-026: sem tripla forte -> sugestao exploratoria
+  if (!(suspeito && arma && local && scoreTotal >= 18)) {
+    const exploratoria = obterSugestaoExploratoriaAssistenteIA(linhas);
+    if (exploratoria) {
+      const itens = [
+        explicativo
+          ? `Sem certezas fortes ainda. Para abrir o jogo, sugiro: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`
+          : `Sugest\u00e3o explorat\u00f3ria: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`,
+      ];
+      if (explicativo) {
+        itens.push(
+          "Foco em cartas com mais candidatos abertos \u2014 pergunta tende a eliminar mais hip\u00f3teses.",
+        );
+      }
+      return {
+        itens,
+        escolhas: [exploratoria.suspeito, exploratoria.arma, exploratoria.local],
+      };
+    }
+    return {
+      itens: ["Ainda n\u00e3o h\u00e1 dados suficientes para montar uma combina\u00e7\u00e3o forte completa."],
+      escolhas,
+    };
+  }
+
+  // Tripla forte - modo objetivo ou explicativo
+  const itens = [];
+  itens.push(
+    explicativo
+      ? `Pergunta sugerida: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`
+      : `Sugest\u00e3o: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`,
+  );
+
+  // IA-025: complementos so no modo explicativo
+  if (explicativo) {
+    if (local) {
+      const pesoLocal = calcularPesoOcultacaoLocal(local, linhas);
+      if (pesoLocal > 0) {
+        itens.push(
+          `${local.nome} ganhou prioridade porque locais costumam ser escondidos quando o jogador tamb\u00e9m pode mostrar outra carta.`,
+        );
+      }
+    }
+
+    const teste = obterTestePrioritarioAssistenteIA(escolhas);
+    if (teste) {
+      const verbo = teste.xCount === 1 ? "descartou" : "descartaram";
+      const sufixo = teste.xCount === 1 ? "jogador" : "jogadores";
       itens.push(
-        `${local.nome} ganhou prioridade porque locais costumam ser escondidos quando o jogador tambem pode mostrar outra carta.`,
+        `Teste priorit\u00e1rio: ${teste.nome} (${teste.xCount} ${sufixo} j\u00e1 ${verbo} \u2014 confirmar fecha mais hip\u00f3teses).`,
       );
+    }
+
+    const linhaPressao = resumo.candidatosOcultos.find(
+      (linha) => linha.candidatos.length > 1 && !linha.isFound,
+    );
+    if (linhaPressao) {
+      const nomes = linhaPressao.candidatos
+        .slice(0, 3)
+        .map((item) => obterNomeJogadorAssistenteIA(item.col))
+        .join(", ");
+      itens.push(`Carta sob press\u00e3o: ${linhaPressao.nome}. Candidatos atuais: ${nomes}.`);
     }
   }
 
-  const linhaPressao = resumo.candidatosOcultos.find(
-    (linha) => linha.candidatos.length > 1 && !linha.isFound,
-  );
-  if (linhaPressao) {
-    const nomes = linhaPressao.candidatos
-      .slice(0, 3)
-      .map((item) => obterNomeJogadorAssistenteIA(item.col))
-      .join(", ");
-    itens.push(`Carta sob pressao: ${linhaPressao.nome}. Candidatos atuais: ${nomes}.`);
-  }
-
   return {
-    itens: itens.slice(0, 3),
-    escolhas: [suspeito, arma, local],
+    itens: itens.slice(0, 4),
+    escolhas,
   };
 }
 
