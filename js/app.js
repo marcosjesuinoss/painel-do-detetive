@@ -19,6 +19,110 @@ function executarEtapaInicial(nome, callback) {
   }
 }
 
+// ============================================================================
+// IA-031: LISTENERS DE RETOMADA DO JOGO (P9 - inicio)
+// ============================================================================
+// Registra handlers que disparam reidratacao quando o usuario volta de tela
+// bloqueada, troca de aba/app, ou foco da janela. Coalesce eventos proximos
+// via debounce simples - varios eventos viram 1 retomada.
+//
+// Nesta etapa (IA-031), o reidratarTelaJogoAoRetomar() eh um placeholder
+// minimo: so dispara atualizarAssistenteIA() quando esta na tela "jogo".
+// IA-033 vai expandir pra orquestrar validacao de distribuicao + recriar
+// tabela + repintar + restaurar snapshot IA + overlay de loading.
+
+let timerRetomadaJogoAssistenteIA = null;
+
+function agendarRetomadaJogoComCarregamento(origem) {
+  // Debounce 200ms: visibilitychange+focus+pageshow podem disparar em
+  // sequencia. Coalesce em 1 unica retomada.
+  if (timerRetomadaJogoAssistenteIA) {
+    clearTimeout(timerRetomadaJogoAssistenteIA);
+  }
+  timerRetomadaJogoAssistenteIA = setTimeout(() => {
+    timerRetomadaJogoAssistenteIA = null;
+    try {
+      reidratarTelaJogoAoRetomar(origem);
+    } catch (erro) {
+      console.error("Falha em reidratarTelaJogoAoRetomar:", erro);
+    }
+  }, 200);
+}
+
+function reidratarTelaJogoAoRetomar(origem) {
+  // IA-031: placeholder minimo. IA-033 expande pra orquestrador completo
+  // (validar distribuicao, recriar tabela, repintar, restaurar snapshot IA,
+  // overlay de loading).
+
+  // Filtro 1: so reage se o usuario esta na tela do jogo
+  const tela = document.getElementById("jogo");
+  if (!tela || !tela.classList.contains("ativa")) return;
+
+  // Filtro 2: ignora retomadas muito curtas (< 3s desde a ultima saida).
+  // Eventos como focus quando o usuario so passa o mouse sobre a janela
+  // nao precisam disparar reidratacao pesada.
+  try {
+    const ultimaSaida = parseInt(
+      localStorage.getItem("jogoUltimaSaida") || "0",
+      10,
+    );
+    const agora = Date.now();
+    if (ultimaSaida && agora - ultimaSaida < 3000) return;
+  } catch {}
+
+  // Toast visual temporario - IA-031 nao tem efeito perceptivel sem isso
+  // em mobile (sem console acessivel). Sera removido na IA-033 quando o
+  // overlay real de loading entrar em cena.
+  mostrarToastRetomadaP9TEMP(`retomada: ${origem}`);
+
+  // Acao minima da IA-031: forca update do assistente (que rerruna deducoes
+  // + render dos cards se menu visivel). Suficiente pra ressincronizar
+  // visual com localStorage no caso comum.
+  if (typeof atualizarAssistenteIA === "function") {
+    atualizarAssistenteIA();
+  }
+}
+
+// IA-031 TEMP: toast visual de debug pra validacao em mobile (sem console).
+// Sera removido quando IA-033 introduzir overlay de loading real.
+function mostrarToastRetomadaP9TEMP(texto) {
+  try {
+    const toast = document.createElement("div");
+    toast.textContent = texto;
+    toast.style.cssText = [
+      "position:fixed",
+      "bottom:20px",
+      "left:50%",
+      "transform:translateX(-50%)",
+      "background:rgba(0,0,0,0.85)",
+      "color:#fff",
+      "padding:8px 14px",
+      "border-radius:8px",
+      "font-size:13px",
+      "z-index:99999",
+      "font-family:sans-serif",
+      "pointer-events:none",
+      "transition:opacity 0.3s",
+      "opacity:1",
+      "max-width:80vw",
+      "text-align:center",
+    ].join(";");
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+    }, 1500);
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 1900);
+  } catch {}
+}
+
+function registrarSaidaJogoAssistenteIA() {
+  try {
+    localStorage.setItem("jogoUltimaSaida", String(Date.now()));
+  } catch {}
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   executarEtapaInicial("botoes-voltar", () => {
     document
@@ -122,6 +226,26 @@ document.addEventListener("DOMContentLoaded", () => {
         resetarSelecoesGlobais();
         atualizarDestaques();
       }
+    });
+  });
+
+  executarEtapaInicial("listeners-retomada", () => {
+    // IA-031: 4 fontes de evento de retomada/saida
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        agendarRetomadaJogoComCarregamento("visibilitychange-visible");
+      } else {
+        registrarSaidaJogoAssistenteIA();
+      }
+    });
+    window.addEventListener("pageshow", () => {
+      agendarRetomadaJogoComCarregamento("pageshow");
+    });
+    window.addEventListener("focus", () => {
+      agendarRetomadaJogoComCarregamento("focus");
+    });
+    window.addEventListener("pagehide", () => {
+      registrarSaidaJogoAssistenteIA();
     });
   });
 
