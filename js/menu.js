@@ -45,6 +45,13 @@ function toggleMenu() {
   menu.classList.toggle("aberto", !aberto);
   overlay.classList.toggle("ativo", !aberto);
   btn.classList.toggle("ativo", !aberto);
+
+  // IA-029: quando o menu ABRE, forca um update do assistente. Enquanto
+  // o menu esta fechado, atualizarAssistenteIA pula o render (etapa 2) -
+  // este trigger garante que ao abrir os cards refletem o estado atual.
+  if (!aberto && typeof atualizarAssistenteIA === "function") {
+    atualizarAssistenteIA();
+  }
 }
 
 function resetarMenu() {

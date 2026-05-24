@@ -202,6 +202,10 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
   if (typeof resetarOrigensDuvida === "function") {
     resetarOrigensDuvida();
   }
+  // IA-028: reseta hash do skip-render pra garantir 1o render na nova partida
+  if (typeof resetarHashRenderAssistenteIA === "function") {
+    resetarHashRenderAssistenteIA();
+  }
 
   // Garantir que privacidade inicia desativada
   const area = getEl("areaRolagemJogo");

@@ -248,13 +248,83 @@ function invalidarSnapshotAssistenteIA() {
   cacheSnapshotAssistenteIA = null;
 }
 
-function executarComCacheAssistenteIA(callback) {
-  cacheSnapshotAssistenteIA = construirSnapshotAssistenteIA();
+function executarComCacheAssistenteIA(callback, snapshotPreConstruido) {
+  // IA-028: aceita snapshot pre-construido pra evitar 2x construirSnapshot
+  // quando o caller ja precisou montar pra calcular hash de skip-render.
+  cacheSnapshotAssistenteIA =
+    snapshotPreConstruido || construirSnapshotAssistenteIA();
   try {
     return callback(cacheSnapshotAssistenteIA);
   } finally {
     cacheSnapshotAssistenteIA = null;
   }
+}
+
+// ============================================================================
+// IA-028: hash deterministico do snapshot para skip de re-render
+// ============================================================================
+// Hashea apenas campos que afetam o RENDER dos 4 cards do assistente.
+// Exclui: snap.timestamp (sempre muda). Inclui: estadoTabela, grupos, origens,
+// configuracao, pendencias (memoria), ultima mudanca (localStorage).
+//
+// ultimoHashRenderAssistenteIA so eh atualizado APOS render real - assim,
+// se o menu lateral esta fechado e pulamos o render, ao abrir o hash ainda
+// reflete o ultimo render visivel e o snapshot atual (provavelmente mudou)
+// vai disparar render.
+
+let ultimoHashRenderAssistenteIA = null;
+
+function hashSnapshotParaRenderAssistenteIA(snap) {
+  if (!snap) return "";
+  const cfg = snap.configuracao || {};
+
+  const estadoOrdenado = Object.keys(snap.estadoTabela || {})
+    .sort()
+    .map((k) => `${k}:${snap.estadoTabela[k]}`)
+    .join("|");
+
+  const origensOrdenadas = Object.keys(snap.origensDuvida || {})
+    .sort()
+    .map((k) => `${k}:${JSON.stringify(snap.origensDuvida[k])}`)
+    .join("|");
+
+  // pendenciasMarcacaoAssistenteIA esta declarado mais abaixo no arquivo;
+  // tipo-check garante no-throw mesmo se chamada cedo (raro - so via init).
+  let pendStr = "";
+  try {
+    if (
+      typeof pendenciasMarcacaoAssistenteIA !== "undefined" &&
+      Array.isArray(pendenciasMarcacaoAssistenteIA)
+    ) {
+      pendStr = pendenciasMarcacaoAssistenteIA
+        .map((p) => `${p.chave || ""}:${p.marca || ""}:${p.motivo || ""}`)
+        .join(",");
+    }
+  } catch {}
+
+  let ultimaMudStr = "";
+  try {
+    ultimaMudStr = localStorage.getItem("assistenteIAUltimaMudanca") || "";
+  } catch {}
+
+  return [
+    snap.numJogadores,
+    (snap.nomesJogadores || []).join("|"),
+    (snap.cartasPorJogador || []).join(","),
+    (snap.jogadoresMaisCartas || []).join(","),
+    cfg.ativo,
+    cfg.automarcacao,
+    cfg.nivelExplicacao,
+    JSON.stringify(snap.gruposResposta || []),
+    estadoOrdenado,
+    origensOrdenadas,
+    pendStr,
+    ultimaMudStr,
+  ].join("##");
+}
+
+function resetarHashRenderAssistenteIA() {
+  ultimoHashRenderAssistenteIA = null;
 }
 
 // ============================================================================
@@ -1940,6 +2010,18 @@ function formatarInconsistenciasAssistenteIA(graves, leves) {
   return `<ul class="ia-lista-inconsistencias">${itens.join("")}</ul>`;
 }
 
+// IA-029: render dos cards do assistente eh desperdicio quando o menu
+// lateral esta fechado (usuario nao ve). DEDUCOES continuam rodando
+// (afetam V/auto-X na tabela mesmo com menu fechado). Quando o menu
+// abre, toggleMenu() em menu.js dispara atualizarAssistenteIA().
+function menuLateralAssistenteVisivelAssistenteIA() {
+  const menu =
+    typeof getEl === "function"
+      ? getEl("menuLateral")
+      : document.getElementById("menuLateral");
+  return !!(menu && menu.classList && menu.classList.contains("aberto"));
+}
+
 function atualizarAssistenteIA() {
   try {
     // Sem PRO -> menu inteiro fica oculto via atualizarStatusPRO; nao
@@ -1950,10 +2032,15 @@ function atualizarAssistenteIA() {
     const estrutura = garantirEstruturaAssistenteIA();
     if (!estrutura) return;
 
+    // IA-029: usado pelos 2 early-returns abaixo e pelo skip do render etapa 2
+    const menuVisivel = menuLateralAssistenteVisivelAssistenteIA();
+
     // PRO ativo mas usuario desligou o assistente via popup: cards continuam
     // visiveis (pra o gear ficar acessivel) mas mostram estado "desativado".
     const cfgUsuario = obterConfiguracaoAssistenteIA();
     if (!cfgUsuario.ativo) {
+      // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
+      if (!menuVisivel) return;
       const msgDesativado = formatarListaAssistenteIA([
         "Assistente desativado.",
         "Reative no botão de configurações (engrenagem no topo).",
@@ -1974,6 +2061,8 @@ function atualizarAssistenteIA() {
     const totalMarcacoes = Object.values(estado).filter(Boolean).length;
 
     if (totalMarcacoes === 0) {
+      // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
+      if (!menuVisivel) return;
       estrutura.resumo.innerHTML = formatarListaAssistenteIA([
         "Ainda n\u00e3o h\u00e1 leitura suficiente para resumir a rodada.",
         "Comece marcando V, X e ? para liberar an\u00e1lises reais.",
@@ -1998,6 +2087,19 @@ function atualizarAssistenteIA() {
     //  - exclusoes fortes: coluna-saturada + linha-unica (IA-014)
     //  - cruzamentos fortes: dupla-trio (IA-015)
     executarTodasDeducoesAssistenteIA();
+
+    // IA-029: render dos cards eh inutil se ninguem ve. toggleMenu() chama
+    // atualizarAssistenteIA quando o menu abrir.
+    if (!menuVisivel) return;
+
+    // IA-028: skip render quando snapshot final (pos-deducao) nao mudou
+    // desde o ultimo render. Hash inclui estadoTabela, grupos, origens,
+    // config, pendencias e ultima mudanca. Snap construido aqui eh
+    // reaproveitado por executarComCacheAssistenteIA logo abaixo.
+    const snapPosDeducao = construirSnapshotAssistenteIA();
+    const hashAtual = hashSnapshotParaRenderAssistenteIA(snapPosDeducao);
+    if (hashAtual === ultimoHashRenderAssistenteIA) return;
+    ultimoHashRenderAssistenteIA = hashAtual;
 
     // Etapa 2: an\u00e1lise sobre estado FINAL - read-only, ideal para cache.
     // executarComCacheAssistenteIA garante consistencia: todas as funcoes
@@ -2080,7 +2182,7 @@ function atualizarAssistenteIA() {
           inc.leves,
         );
       }
-    });
+    }, snapPosDeducao);
   } catch (erro) {
     console.error("Assistente IA falhou ao atualizar.", erro);
   }
