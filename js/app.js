@@ -49,11 +49,10 @@ function agendarRetomadaJogoComCarregamento(origem) {
   }, 200);
 }
 
+// IA-033: orquestrador completo da reidratacao apos retomada do jogo.
+// Mostra overlay -> valida distribuicao -> recria tabela -> atualiza assistente
+// -> esconde overlay (com minimo de 300ms pra evitar flash).
 function reidratarTelaJogoAoRetomar(origem) {
-  // IA-031: placeholder minimo. IA-033 expande pra orquestrador completo
-  // (validar distribuicao, recriar tabela, repintar, restaurar snapshot IA,
-  // overlay de loading).
-
   // Filtro 1: so reage se o usuario esta na tela do jogo
   const tela = document.getElementById("jogo");
   if (!tela || !tela.classList.contains("ativa")) return;
@@ -70,75 +69,74 @@ function reidratarTelaJogoAoRetomar(origem) {
     if (ultimaSaida && agora - ultimaSaida < 3000) return;
   } catch {}
 
-  // IA-032: valida e (se necessario) reconstroi distribuicao de cartas
-  let resultadoDist = null;
-  if (typeof garantirIntegridadeDistribuicaoCartasPartida === "function") {
+  const inicio = Date.now();
+  mostrarOverlayRetomada();
+
+  // Defere o trabalho pesado pra proximo frame pra dar tempo do overlay
+  // pintar na tela antes (evita "freeze" percebido).
+  requestAnimationFrame(() => {
     try {
-      resultadoDist = garantirIntegridadeDistribuicaoCartasPartida();
-    } catch (erro) {
-      console.error("Falha em garantirIntegridadeDistribuicaoCartasPartida:", erro);
-    }
-  }
+      // 1. Valida e (se necessario) reconstroi distribuicao de cartas
+      let resultadoDist = null;
+      if (typeof garantirIntegridadeDistribuicaoCartasPartida === "function") {
+        try {
+          resultadoDist = garantirIntegridadeDistribuicaoCartasPartida();
+        } catch (erro) {
+          console.error(
+            "Falha em garantirIntegridadeDistribuicaoCartasPartida:",
+            erro,
+          );
+        }
+      }
 
-  // Toast visual temporario - IA-031 nao tem efeito perceptivel sem isso
-  // em mobile (sem console acessivel). Sera removido na IA-033 quando o
-  // overlay real de loading entrar em cena.
-  const sufixoDist = resultadoDist
-    ? ` | dist: ${resultadoDist.motivo}${resultadoDist.reconstruiu ? " (rebuild)" : ""}`
-    : "";
-  mostrarToastRetomadaP9TEMP(`retomada: ${origem}${sufixoDist}`);
+      // 2. Invalida caches da IA (snapshot + hash de skip-render)
+      if (typeof invalidarSnapshotAssistenteIA === "function") {
+        invalidarSnapshotAssistenteIA();
+      }
+      if (typeof resetarHashRenderAssistenteIA === "function") {
+        resetarHashRenderAssistenteIA();
+      }
 
-  // Se houve rebuild, invalida cache do snapshot da IA e reseta hash do skip
-  // pra forcar render fresco (snapshot le cartasPorJogador).
-  if (resultadoDist && resultadoDist.reconstruiu) {
-    if (typeof invalidarSnapshotAssistenteIA === "function") {
-      invalidarSnapshotAssistenteIA();
-    }
-    if (typeof resetarHashRenderAssistenteIA === "function") {
-      resetarHashRenderAssistenteIA();
-    }
-  }
+      // 3. Reconstroi a tabela a partir do localStorage (repinta visual)
+      if (typeof criarTabela === "function") {
+        try {
+          criarTabela();
+        } catch (erro) {
+          console.error("Falha em criarTabela durante reidratacao:", erro);
+        }
+      }
 
-  // Acao minima da IA-031: forca update do assistente (que rerruna deducoes
-  // + render dos cards se menu visivel). Suficiente pra ressincronizar
-  // visual com localStorage no caso comum.
-  if (typeof atualizarAssistenteIA === "function") {
-    atualizarAssistenteIA();
-  }
+      // 4. Forca update do assistente (rerruna deducoes + render dos cards
+      // se menu visivel)
+      if (typeof atualizarAssistenteIA === "function") {
+        atualizarAssistenteIA();
+      }
+
+      console.log(
+        `[reidratacao] origem=${origem} dist=${resultadoDist ? resultadoDist.motivo : "n/a"}${resultadoDist && resultadoDist.reconstruiu ? " (rebuild)" : ""}`,
+      );
+    } finally {
+      // Min duration 300ms pro overlay nao piscar - se o trabalho foi rapido,
+      // aguarda completar antes de esconder
+      const decorrido = Date.now() - inicio;
+      const espera = Math.max(0, 300 - decorrido);
+      setTimeout(esconderOverlayRetomada, espera);
+    }
+  });
 }
 
-// IA-031 TEMP: toast visual de debug pra validacao em mobile (sem console).
-// Sera removido quando IA-033 introduzir overlay de loading real.
-function mostrarToastRetomadaP9TEMP(texto) {
-  try {
-    const toast = document.createElement("div");
-    toast.textContent = texto;
-    toast.style.cssText = [
-      "position:fixed",
-      "bottom:20px",
-      "left:50%",
-      "transform:translateX(-50%)",
-      "background:rgba(0,0,0,0.85)",
-      "color:#fff",
-      "padding:8px 14px",
-      "border-radius:8px",
-      "font-size:13px",
-      "z-index:99999",
-      "font-family:sans-serif",
-      "pointer-events:none",
-      "transition:opacity 0.3s",
-      "opacity:1",
-      "max-width:80vw",
-      "text-align:center",
-    ].join(";");
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = "0";
-    }, 1500);
-    setTimeout(() => {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 1900);
-  } catch {}
+function mostrarOverlayRetomada() {
+  const overlay = document.getElementById("overlayRetomada");
+  if (!overlay) return;
+  overlay.hidden = false;
+  overlay.setAttribute("aria-hidden", "false");
+}
+
+function esconderOverlayRetomada() {
+  const overlay = document.getElementById("overlayRetomada");
+  if (!overlay) return;
+  overlay.hidden = true;
+  overlay.setAttribute("aria-hidden", "true");
 }
 
 function registrarSaidaJogoAssistenteIA() {
