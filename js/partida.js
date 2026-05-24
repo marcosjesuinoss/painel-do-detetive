@@ -188,12 +188,19 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
 
   // IA-020/022: nova partida sempre reseta config do assistente para
   // defaults (ativo, automarcacao, nivelExplicacao=objetiva) e tambem
-  // limpa pendencias de marcacao. NAO afeta "continuar".
+  // limpa pendencias de marcacao, grupos de resposta e origens de duvida.
+  // NAO afeta "continuar".
   if (typeof resetarConfiguracaoAssistenteIA === "function") {
     resetarConfiguracaoAssistenteIA();
   }
   if (typeof resetarPendenciasMarcacaoAssistenteIA === "function") {
     resetarPendenciasMarcacaoAssistenteIA();
+  }
+  if (typeof resetarGruposResposta === "function") {
+    resetarGruposResposta();
+  }
+  if (typeof resetarOrigensDuvida === "function") {
+    resetarOrigensDuvida();
   }
 
   // Garantir que privacidade inicia desativada

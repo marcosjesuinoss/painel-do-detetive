@@ -323,12 +323,14 @@ function atualizarCor(td, estado) {
   if (estado === "?") td.classList.add("maybe");
 }
 
-function marcarCelula(cel, tipo, modoTrinca = false) {
+function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
   if (!cel) return;
 
   const chave = cel.dataset.key;
   const row = cel.dataset.row;
+  const col = cel.dataset.col;
   const estadoSalvo = lerEstadoTabela();
+  const estadoAnterior = estadoSalvo[chave] || "";
   const autoXChaves = new Set();
 
   if (tipo === "V") {
@@ -382,10 +384,27 @@ function marcarCelula(cel, tipo, modoTrinca = false) {
 
   if (tipo === "?") {
     estadoSalvo[chave] = "?";
+    // Trinca de ? registra origem via aplicarTrincaResposta diretamente
+    // (origem="grupo"). ? manual chega aqui com origem="manual".
+    if (origem === "manual" && typeof registrarOrigemDuvidaManual === "function") {
+      registrarOrigemDuvidaManual(chave);
+    }
   }
 
 if (tipo === "") {
   delete estadoSalvo[chave];
+}
+
+// Limpeza generica: se a celula DEIXOU de ser "?", remove origens e edita
+// grupos associados. Cobre V, X e "" sobre uma celula que era "?".
+const estadoNovo = estadoSalvo[chave] || "";
+if (estadoAnterior === "?" && estadoNovo !== "?") {
+  if (typeof editarGruposRespostaPorApagamento === "function") {
+    editarGruposRespostaPorApagamento(chave, row, col);
+  }
+  if (typeof removerOrigemDuvida === "function") {
+    removerOrigemDuvida(chave);
+  }
 }
 
   localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
@@ -697,9 +716,10 @@ function atualizarBotoes() {
     return;
   }
 
-  // modo trinca
+  // modo trinca - X marca todas como nao mostradas; ? cria grupo de resposta
   if (temTrinca) {
     btnFalse?.classList.remove("botao-desativado");
+    btnMaybe?.classList.remove("botao-desativado");
     btnClear?.classList.remove("botao-desativado");
   }
 }
@@ -779,6 +799,130 @@ function aplicarTrincaX() {
     agendarAtualizacaoAssistenteIA();
   } else if (typeof atualizarAssistenteIA === "function") {
     atualizarAssistenteIA();
+  }
+}
+
+// ============================================================================
+// TRINCA DE ? : aplicarTrincaResposta
+// ============================================================================
+// Acionada quando temColuna && linhasAtivas.length === 3 e usuario clica ?.
+// Representa: "jogador da coluna mostrou UMA destas 3 cartas".
+//
+// 4 cenarios (do mais resolvido ao menos):
+// 1. Trinca ja resolvida (alguma das 3 ja tem V) -> nao faz nada
+// 2. Sem candidatas (todas as 3 ja sao X ou V) -> sem nova info
+// 3. Apenas 1 candidata -> colapsa para V (grupo OR com 1 opcao)
+// 4. 2 ou 3 candidatas -> cria grupo + marca como "?" com origem grupo
+function aplicarTrincaResposta() {
+  const jogadores = parseInt(localStorage.getItem("numJogadores") || "3", 10);
+  const estadoSalvo = lerEstadoTabela();
+  const linhasAtivas = Object.values(linhasSelecionadas).filter((l) => l !== null);
+
+  if (colunaSelecionada === null || linhasAtivas.length !== 3) {
+    return;
+  }
+
+  const col = colunaSelecionada;
+  const chaves = linhasAtivas.map((linha) => ({
+    chave: `${linha}-${col}`,
+    row: linha,
+  }));
+
+  // Cenario 1: alguma carta da trinca ja tem V -> trinca colapsada
+  const algumV = chaves.some((c) => estadoSalvo[c.chave] === "V");
+  if (algumV) {
+    avancarColunaTrinca(jogadores);
+    if (typeof agendarAtualizacaoAssistenteIA === "function") {
+      agendarAtualizacaoAssistenteIA();
+    }
+    return;
+  }
+
+  // Filtra candidatas (nao V e nao X)
+  const candidatas = chaves.filter((c) => {
+    const v = estadoSalvo[c.chave] || "";
+    return v !== "V" && v !== "X";
+  });
+
+  // Cenario 2: nenhuma candidata - sem info nova
+  if (candidatas.length === 0) {
+    avancarColunaTrinca(jogadores);
+    if (typeof agendarAtualizacaoAssistenteIA === "function") {
+      agendarAtualizacaoAssistenteIA();
+    }
+    return;
+  }
+
+  // Cenario 3: 1 candidata - colapsa para V
+  if (candidatas.length === 1) {
+    const cel = document.querySelector(`[data-key="${candidatas[0].chave}"]`);
+    if (cel) {
+      marcarCelula(cel, "V", false, "assistente");
+      if (typeof registrarMudancaAssistenteIA === "function") {
+        const nomeJog = localStorage.getItem(`nomeJogador${col + 1}`) || `J${col + 1}`;
+        const nomeCarta =
+          Array.isArray(cartas) && cartas[candidatas[0].row]
+            ? cartas[candidatas[0].row].nome
+            : null;
+        if (nomeCarta) {
+          registrarMudancaAssistenteIA({
+            tipo: "auto-grupo-resposta",
+            jogador: nomeJog,
+            carta: nomeCarta,
+          });
+        }
+      }
+    }
+    avancarColunaTrinca(jogadores);
+    return;
+  }
+
+  // Cenario 4: 2 ou 3 candidatas - cria grupo e marca como "?" com origem grupo
+  const grupoId = `grupo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const novoGrupo = {
+    id: grupoId,
+    coluna: col,
+    rows: candidatas.map((c) => c.row),
+    timestamp: Date.now(),
+  };
+
+  const grupos =
+    typeof obterGruposResposta === "function" ? obterGruposResposta() : [];
+  grupos.push(novoGrupo);
+  if (typeof salvarGruposResposta === "function") {
+    salvarGruposResposta(grupos);
+  }
+
+  // Marca as candidatas como "?" e registra origem grupo
+  candidatas.forEach((c) => {
+    estadoSalvo[c.chave] = "?";
+    const cel = document.querySelector(`[data-key="${c.chave}"]`);
+    if (cel) renderizarEstado(cel, "?");
+    if (typeof registrarOrigemDuvidaGrupo === "function") {
+      registrarOrigemDuvidaGrupo(c.chave, grupoId);
+    }
+  });
+
+  localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
+
+  avancarColunaTrinca(jogadores);
+
+  // Atualiza todos os destaques (SEM recriar tabela)
+  atualizarEstadoVisualCartasEncontradas();
+  atualizarDestaqueCartaOculta();
+  atualizarAlertaDuplicidadePRO();
+  atualizarDestaques();
+  atualizarBotoes();
+  atualizarBotaoContinuar();
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  }
+}
+
+function avancarColunaTrinca(jogadores) {
+  colunaSelecionada++;
+  if (colunaSelecionada >= jogadores) {
+    colunaSelecionada = 0;
   }
 }
 

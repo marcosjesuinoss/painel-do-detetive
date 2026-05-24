@@ -536,6 +536,127 @@ function montarResumoLinhasAssistenteIA(linhas) {
 }
 
 // ============================================================================
+// TRINCA DE ? : PERSISTENCIA DE GRUPOS DE RESPOSTA + ORIGENS DE DUVIDA
+// ============================================================================
+// Grupos de resposta representam a estrutura logica "jogador X mostrou UMA
+// das 3 cartas (A, B, C)" - sabemos a coluna e as 3 linhas, mas nao qual
+// das 3 foi mostrada. Persistidos em localStorage para sobreviver a recarga.
+//
+// Estrutura grupo:
+//   { id: string, coluna: int, rows: [int, int, int], timestamp: number }
+//
+// Origens de duvida: cada celula com "?" tem origem registrada. Permite
+// distinguir "?" manual puro (incerteza local) de "?" vindo de grupo
+// (evidencia estrutural forte).
+//
+// Estrutura origens:
+//   { "<chave>": { manual: bool, grupos: [grupoId, ...] } }
+
+const CHAVE_GRUPOS_RESPOSTA = "assistenteGruposResposta";
+const CHAVE_ORIGENS_DUVIDA = "assistenteOrigensDuvida";
+
+function obterGruposResposta() {
+  try {
+    const bruto = localStorage.getItem(CHAVE_GRUPOS_RESPOSTA);
+    if (!bruto) return [];
+    const arr = JSON.parse(bruto);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarGruposResposta(grupos) {
+  localStorage.setItem(CHAVE_GRUPOS_RESPOSTA, JSON.stringify(grupos || []));
+}
+
+function resetarGruposResposta() {
+  localStorage.removeItem(CHAVE_GRUPOS_RESPOSTA);
+}
+
+function obterOrigensDuvida() {
+  try {
+    const bruto = localStorage.getItem(CHAVE_ORIGENS_DUVIDA);
+    if (!bruto) return {};
+    const obj = JSON.parse(bruto);
+    return obj && typeof obj === "object" ? obj : {};
+  } catch {
+    return {};
+  }
+}
+
+function salvarOrigensDuvida(origens) {
+  localStorage.setItem(CHAVE_ORIGENS_DUVIDA, JSON.stringify(origens || {}));
+}
+
+function resetarOrigensDuvida() {
+  localStorage.removeItem(CHAVE_ORIGENS_DUVIDA);
+}
+
+function registrarOrigemDuvidaManual(chave) {
+  const origens = obterOrigensDuvida();
+  if (!origens[chave]) origens[chave] = { manual: false, grupos: [] };
+  origens[chave].manual = true;
+  salvarOrigensDuvida(origens);
+}
+
+function registrarOrigemDuvidaGrupo(chave, grupoId) {
+  const origens = obterOrigensDuvida();
+  if (!origens[chave]) origens[chave] = { manual: false, grupos: [] };
+  if (!Array.isArray(origens[chave].grupos)) origens[chave].grupos = [];
+  if (!origens[chave].grupos.includes(grupoId)) {
+    origens[chave].grupos.push(grupoId);
+  }
+  salvarOrigensDuvida(origens);
+}
+
+function removerOrigemDuvida(chave) {
+  const origens = obterOrigensDuvida();
+  if (origens[chave]) {
+    delete origens[chave];
+    salvarOrigensDuvida(origens);
+  }
+}
+
+// Quando uma celula "?" e apagada manualmente, remove a row do grupo
+// associado. Se o grupo encolher abaixo de 2 cartas, o grupo nao faz
+// mais sentido logico e e descartado.
+function editarGruposRespostaPorApagamento(chave, row, col) {
+  const origens = obterOrigensDuvida();
+  const origem = origens[chave];
+  if (!origem || !Array.isArray(origem.grupos) || origem.grupos.length === 0) {
+    return;
+  }
+
+  const grupos = obterGruposResposta();
+  const rowNum = parseInt(row, 10);
+  const colNum = parseInt(col, 10);
+  let mudou = false;
+
+  const novosGrupos = [];
+  for (const g of grupos) {
+    if (!origem.grupos.includes(g.id)) {
+      novosGrupos.push(g);
+      continue;
+    }
+    if (g.coluna !== colNum) {
+      novosGrupos.push(g);
+      continue;
+    }
+    const novasRows = g.rows.filter((r) => r !== rowNum);
+    if (novasRows.length < 2) {
+      // Grupo colapsa - descartar
+      mudou = true;
+      continue;
+    }
+    novosGrupos.push({ ...g, rows: novasRows });
+    mudou = true;
+  }
+
+  if (mudou) salvarGruposResposta(novosGrupos);
+}
+
+// ============================================================================
 // IA-022: MODO MANUAL (pendencias em vez de auto-marcacao)
 // ============================================================================
 // Quando config.automarcacao=false, as deducoes NAO chamam marcarCelula -

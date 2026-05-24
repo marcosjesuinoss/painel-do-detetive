@@ -101,7 +101,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnMaybe")?.addEventListener("click", () => {
-      if (celulaSelecionada) marcarCelula(celulaSelecionada, "?");
+      if (celulaSelecionada) {
+        marcarCelula(celulaSelecionada, "?");
+        return;
+      }
+
+      const linhasAtivas = Object.values(linhasSelecionadas).filter(
+        (l) => l !== null,
+      );
+
+      if (colunaSelecionada !== null && linhasAtivas.length === 3) {
+        aplicarTrincaResposta();
+      }
     });
 
     document.getElementById("btnClearSel")?.addEventListener("click", () => {
