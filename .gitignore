@@ -11,3 +11,7 @@ Thumbs.db
 # Logs
 *.log
 
+# Node / testes (IA-038)
+node_modules/
+coverage/
+
