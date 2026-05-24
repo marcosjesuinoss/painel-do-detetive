@@ -400,7 +400,7 @@ if (tipo === "") {
 const estadoNovo = estadoSalvo[chave] || "";
 if (estadoAnterior === "?" && estadoNovo !== "?") {
   if (typeof editarGruposRespostaPorApagamento === "function") {
-    editarGruposRespostaPorApagamento(chave, row, col);
+    editarGruposRespostaPorApagamento(chave, row, col, estadoNovo);
   }
   if (typeof removerOrigemDuvida === "function") {
     removerOrigemDuvida(chave);

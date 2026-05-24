@@ -645,39 +645,25 @@ function removerOrigemDuvida(chave) {
 // Quando uma celula "?" e apagada manualmente, remove a row do grupo
 // associado. Se o grupo encolher abaixo de 2 cartas, o grupo nao faz
 // mais sentido logico e e descartado.
-function editarGruposRespostaPorApagamento(chave, row, col) {
-  const origens = obterOrigensDuvida();
-  const origem = origens[chave];
-  if (!origem || !Array.isArray(origem.grupos) || origem.grupos.length === 0) {
-    return;
-  }
-
-  const grupos = obterGruposResposta();
-  const rowNum = parseInt(row, 10);
-  const colNum = parseInt(col, 10);
-  let mudou = false;
-
-  const novosGrupos = [];
-  for (const g of grupos) {
-    if (!origem.grupos.includes(g.id)) {
-      novosGrupos.push(g);
-      continue;
-    }
-    if (g.coluna !== colNum) {
-      novosGrupos.push(g);
-      continue;
-    }
-    const novasRows = g.rows.filter((r) => r !== rowNum);
-    if (novasRows.length < 2) {
-      // Grupo colapsa - descartar
-      mudou = true;
-      continue;
-    }
-    novosGrupos.push({ ...g, rows: novasRows });
-    mudou = true;
-  }
-
-  if (mudou) salvarGruposResposta(novosGrupos);
+function editarGruposRespostaPorApagamento(chave, row, col, novoEstado) {
+  // Sprint G fix v2: grupos sao IMUTAVEIS apos criacao - persistem ate
+  // resetarGruposResposta() (nova partida). Esta funcao agora eh no-op.
+  //
+  // Motivacao:
+  // - Iteracao 1 da Fase 1 removia rows e descartava grupo com <2 rows.
+  //   Quebrava deducao grupo-resposta-unico (grupo virava 1 row e era descartado).
+  // - Iteracao 2 descartava grupo so quando alguma row virava V.
+  //   Quebrava inconsistencia grupo-impossivel no caso: dedu marca V auto na 3a,
+  //   grupo eh descartado, usuario sobrescreve V->X e nao temos mais o grupo
+  //   pra detectar que ficou impossivel.
+  // - Solucao final: nunca descartar automaticamente. A deducao filtra
+  //   candidatos por estado atual (grupo resolvido = 0 candidatos = ignorado),
+  //   e a inconsistencia ve V em alguma row -> nao alerta.
+  //
+  // Mantida a assinatura (chave, row, col, novoEstado) por compatibilidade
+  // com call site em tabela.js marcarCelula. removerOrigemDuvida continua
+  // sendo chamado separadamente quando celula deixa de ser "?".
+  return;
 }
 
 // ============================================================================
