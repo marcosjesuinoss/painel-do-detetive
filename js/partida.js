@@ -37,6 +37,131 @@ function salvarDistribuicaoCartasPartida(cartasPorJogador, jogadoresMaisCartas) 
   salvar("assistenteJogadoresMaisCartas", JSON.stringify(jogadoresMaisCartas || []));
 }
 
+// ============================================================================
+// IA-032 (P9): garantirIntegridadeDistribuicaoCartasPartida()
+// ============================================================================
+// Valida e (se necessario) reconstroi assistenteCartasPorJogador no localStorage
+// quando o jogo eh retomado apos pausa. Critico em 5/7 jogadores onde a
+// distribuicao depende de selecao manual do usuario.
+//
+// Retorno: { valido, motivo, reconstruiu }
+//   - valido: true se ao final dos checks/repairs o estado eh consistente
+//   - motivo: string descrevendo o estado ("ok", "reconstruido-deterministico",
+//             "reconstruido-coerencia", "fallback-degradado", "sem-partida",
+//             "configuracao-invalida")
+//   - reconstruiu: true se gravou de volta no localStorage (caller pode
+//                  decidir invalidar caches/recriar UI)
+//
+// Esta funcao NAO modifica pendencias, tabela ou IA - eh apenas storage repair.
+// IA-033 chama isso como parte da orquestracao de reidratacao.
+
+function garantirIntegridadeDistribuicaoCartasPartida() {
+  const numJogadores = parseInt(localStorage.getItem("numJogadores") || "0", 10);
+  if (!numJogadores || numJogadores < 3 || numJogadores > 8) {
+    return { valido: true, motivo: "sem-partida", reconstruiu: false };
+  }
+
+  const configuracao = obterConfiguracaoDistribuicaoCartas(numJogadores);
+  if (!configuracao) {
+    return { valido: false, motivo: "configuracao-invalida", reconstruiu: false };
+  }
+
+  // Le cartasPorJogador atual
+  let cartasPorJogador = null;
+  try {
+    const raw = JSON.parse(
+      localStorage.getItem("assistenteCartasPorJogador") || "null",
+    );
+    if (Array.isArray(raw) && raw.length === numJogadores) {
+      const parsed = raw.map((v) => parseInt(v, 10));
+      if (parsed.every((v) => Number.isFinite(v) && v > 0)) {
+        cartasPorJogador = parsed;
+      }
+    }
+  } catch {}
+
+  // Caso 1: distribuicao deterministica (3/4/6/8 jogadores)
+  if (!configuracao.precisaSelecionar) {
+    const esperado = configuracao.cartasPorJogador;
+    const igual =
+      cartasPorJogador && esperado.every((v, i) => v === cartasPorJogador[i]);
+    if (igual) {
+      return { valido: true, motivo: "ok", reconstruiu: false };
+    }
+    localStorage.setItem(
+      "assistenteCartasPorJogador",
+      JSON.stringify(esperado),
+    );
+    localStorage.setItem("assistenteJogadoresMaisCartas", JSON.stringify([]));
+    return {
+      valido: true,
+      motivo: "reconstruido-deterministico",
+      reconstruiu: true,
+    };
+  }
+
+  // Caso 2: 5 ou 7 jogadores - precisa selecao manual (assistenteJogadoresMaisCartas)
+  let maisCartas = [];
+  try {
+    const raw = JSON.parse(
+      localStorage.getItem("assistenteJogadoresMaisCartas") || "[]",
+    );
+    if (Array.isArray(raw)) {
+      maisCartas = raw
+        .map((v) => parseInt(v, 10))
+        .filter((v) => Number.isFinite(v) && v >= 0 && v < numJogadores);
+    }
+  } catch {}
+
+  const maisCartasValido =
+    maisCartas.length === configuracao.quantidadeMaisCartas &&
+    new Set(maisCartas).size === maisCartas.length; // sem duplicatas
+
+  if (cartasPorJogador && maisCartasValido) {
+    // Cross-check: cartasPorJogador deve refletir os indices em maisCartas
+    const esperado = Array(numJogadores).fill(configuracao.cartasMenor);
+    maisCartas.forEach((i) => {
+      esperado[i] = configuracao.cartasMaior;
+    });
+    const igual = esperado.every((v, i) => v === cartasPorJogador[i]);
+    if (igual) {
+      return { valido: true, motivo: "ok", reconstruiu: false };
+    }
+    // Incoerencia entre as 2 chaves - prioriza maisCartas como verdade
+    localStorage.setItem(
+      "assistenteCartasPorJogador",
+      JSON.stringify(esperado),
+    );
+    return {
+      valido: true,
+      motivo: "reconstruido-coerencia",
+      reconstruiu: true,
+    };
+  }
+
+  // Fallback degradado: maisCartas perdido ou invalido. Assume os N primeiros
+  // jogadores ficam com mais cartas. Usuario pode ter que refazer a selecao
+  // manualmente se isso nao corresponder ao jogo real, mas pelo menos o
+  // assistente sai do estado quebrado.
+  const maisCartasFallback = [];
+  for (let i = 0; i < configuracao.quantidadeMaisCartas; i++) {
+    maisCartasFallback.push(i);
+  }
+  const esperado = Array(numJogadores).fill(configuracao.cartasMenor);
+  maisCartasFallback.forEach((i) => {
+    esperado[i] = configuracao.cartasMaior;
+  });
+  localStorage.setItem(
+    "assistenteCartasPorJogador",
+    JSON.stringify(esperado),
+  );
+  localStorage.setItem(
+    "assistenteJogadoresMaisCartas",
+    JSON.stringify(maisCartasFallback),
+  );
+  return { valido: true, motivo: "fallback-degradado", reconstruiu: true };
+}
+
 function obterNomeJogadorPartida(indice) {
   return ler("nomeJogador" + (indice + 1)) || "J" + (indice + 1);
 }
@@ -92,22 +217,27 @@ function abrirPopupDistribuicaoCartas(numJogadores, configuracao) {
 
   if (!titulo || !subtitulo || !lista || !texto || !btnConfirmar) return;
 
+  // Fix pre-existente: obterConfiguracaoDistribuicaoCartas() NAO inclui
+  // numJogadores no retorno. Usar o parametro recebido aqui, nao
+  // configuracao.numJogadores (que estava undefined - quebrava o loop).
+  const numJog = parseInt(numJogadores, 10);
+
   configuracaoDistribuicaoPendente = {
     ...configuracao,
-    numJogadores: parseInt(numJogadores, 10),
+    numJogadores: numJog,
   };
   jogadoresMaisCartasSelecionados = new Set();
 
   titulo.textContent = "Quais jogadores estao com mais cartas?";
   subtitulo.textContent =
-    configuracao.numJogadores === 5
+    numJog === 5
       ? "Em partidas com 5 jogadores, 4 jogadores ficam com 5 cartas e 1 jogador fica com 4."
       : "Em partidas com 7 jogadores, 3 jogadores ficam com 4 cartas e 4 jogadores ficam com 3.";
   texto.textContent = `Selecione ${configuracao.quantidadeMaisCartas} jogador(es).`;
 
   lista.innerHTML = "";
 
-  for (let i = 0; i < configuracao.numJogadores; i++) {
+  for (let i = 0; i < numJog; i++) {
     const botao = document.createElement("button");
     botao.type = "button";
     botao.className = "padrao item-jogador-cartas";
@@ -127,6 +257,25 @@ function prepararDistribuicaoCartasPartida(numJogadores) {
 
   if (!configuracao.precisaSelecionar) {
     salvarDistribuicaoCartasPartida(configuracao.cartasPorJogador, []);
+    return true;
+  }
+
+  // FREE: o popup so existe pra alimentar o assistente (PRO). Sem PRO,
+  // salva uma distribuicao default (primeiros N jogadores com mais cartas)
+  // e segue direto pra partida. Usuario nao perde nada porque nao tem
+  // assistente pra usar essa info.
+  const proAtivo = typeof isPRO === "function" && isPRO();
+  if (!proAtivo) {
+    const num = parseInt(numJogadores, 10);
+    const maisCartas = [];
+    for (let i = 0; i < configuracao.quantidadeMaisCartas; i++) {
+      maisCartas.push(i);
+    }
+    const dist = Array(num).fill(configuracao.cartasMenor);
+    maisCartas.forEach((i) => {
+      dist[i] = configuracao.cartasMaior;
+    });
+    salvarDistribuicaoCartasPartida(dist, maisCartas);
     return true;
   }
 

@@ -841,7 +841,13 @@
   margin-top: 0;
 }
 
-.item-jogador-cartas.ativo {
+/* Fix visual: feedback de selecao do popup de distribuicao. Especificidades:
+   - body.modo-pro:not(.light) button.padrao = (0,3,2)
+   - body.modo-pro.light button.padrao = (0,3,2)
+   Precisamos (0,4,2) pra vencer em ambos os modos PRO. */
+.item-jogador-cartas.ativo,
+body.modo-pro:not(.light) button.item-jogador-cartas.ativo,
+body.modo-pro.light button.item-jogador-cartas.ativo {
   background: var(--gradient-botao);
   color: #fff;
 }

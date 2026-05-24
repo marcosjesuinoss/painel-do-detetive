@@ -70,10 +70,34 @@ function reidratarTelaJogoAoRetomar(origem) {
     if (ultimaSaida && agora - ultimaSaida < 3000) return;
   } catch {}
 
+  // IA-032: valida e (se necessario) reconstroi distribuicao de cartas
+  let resultadoDist = null;
+  if (typeof garantirIntegridadeDistribuicaoCartasPartida === "function") {
+    try {
+      resultadoDist = garantirIntegridadeDistribuicaoCartasPartida();
+    } catch (erro) {
+      console.error("Falha em garantirIntegridadeDistribuicaoCartasPartida:", erro);
+    }
+  }
+
   // Toast visual temporario - IA-031 nao tem efeito perceptivel sem isso
   // em mobile (sem console acessivel). Sera removido na IA-033 quando o
   // overlay real de loading entrar em cena.
-  mostrarToastRetomadaP9TEMP(`retomada: ${origem}`);
+  const sufixoDist = resultadoDist
+    ? ` | dist: ${resultadoDist.motivo}${resultadoDist.reconstruiu ? " (rebuild)" : ""}`
+    : "";
+  mostrarToastRetomadaP9TEMP(`retomada: ${origem}${sufixoDist}`);
+
+  // Se houve rebuild, invalida cache do snapshot da IA e reseta hash do skip
+  // pra forcar render fresco (snapshot le cartasPorJogador).
+  if (resultadoDist && resultadoDist.reconstruiu) {
+    if (typeof invalidarSnapshotAssistenteIA === "function") {
+      invalidarSnapshotAssistenteIA();
+    }
+    if (typeof resetarHashRenderAssistenteIA === "function") {
+      resetarHashRenderAssistenteIA();
+    }
+  }
 
   // Acao minima da IA-031: forca update do assistente (que rerruna deducoes
   // + render dos cards se menu visivel). Suficiente pra ressincronizar
