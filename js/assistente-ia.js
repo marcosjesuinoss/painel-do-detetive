@@ -778,6 +778,16 @@ function aplicarOuAdiarMarcacaoAssistenteIA(acao) {
     marcarCelula(cel, acao.marca);
     return true;
   }
+
+  // IA-043: nao gerar pendencia pra J1 (voce). Suas proprias cartas voce
+  // sempre sabe - se a IA deduziu algo sobre suas cartas, voce ja sabia
+  // a resposta. Nao polui a lista de pendencias com instrucoes inuteis.
+  if (
+    typeof acao.col === "number" &&
+    ehJogadorUsuarioAssistenteIA(acao.col)
+  ) {
+    return false;
+  }
   // Modo manual: dedupe por chave+marca antes de adicionar
   const jaExiste = pendenciasMarcacaoAssistenteIA.some(
     (p) => p.chave === acao.chave && p.marca === acao.marca,
@@ -897,10 +907,16 @@ function construirInstrucoesPendentesAssistenteIA() {
     `A IA detectou ${pendenciasMarcacaoAssistenteIA.length} marca${pendenciasMarcacaoAssistenteIA.length === 1 ? "cao" : "coes"} sugerida${pendenciasMarcacaoAssistenteIA.length === 1 ? "" : "s"} (marcação automática desligada):`,
   );
 
+  // IA-043: filtra pendencias do J1 (voce) - voce ja sabe suas cartas,
+  // nao tem o que marcar pra si mesmo via instrucao do assistente.
+  const pendenciasFiltradas = pendenciasMarcacaoAssistenteIA.filter(
+    (p) => !ehJogadorUsuarioAssistenteIA(p.col),
+  );
+
   const LIMITE_LISTA = 4;
-  const mostrar = Math.min(pendenciasMarcacaoAssistenteIA.length, LIMITE_LISTA);
+  const mostrar = Math.min(pendenciasFiltradas.length, LIMITE_LISTA);
   for (let i = 0; i < mostrar; i++) {
-    const p = pendenciasMarcacaoAssistenteIA[i];
+    const p = pendenciasFiltradas[i];
     const carta =
       Array.isArray(cartas) && cartas[p.row] ? cartas[p.row].nome : `linha ${p.row}`;
     const jogador = snapshot.nomesJogadores[p.col] || `J${p.col + 1}`;
@@ -910,8 +926,8 @@ function construirInstrucoesPendentesAssistenteIA() {
     }
     itens.push(texto + ".");
   }
-  if (pendenciasMarcacaoAssistenteIA.length > LIMITE_LISTA) {
-    const resto = pendenciasMarcacaoAssistenteIA.length - LIMITE_LISTA;
+  if (pendenciasFiltradas.length > LIMITE_LISTA) {
+    const resto = pendenciasFiltradas.length - LIMITE_LISTA;
     itens.push(`+ ${resto} marca${resto === 1 ? "cao" : "coes"} adicional${resto === 1 ? "" : "is"}.`);
   }
 
@@ -1018,6 +1034,7 @@ function deduzirCartasPorCapacidadeAssistenteIA() {
         registrarMudancaAssistenteIA({
           tipo: "auto-capacidade",
           jogador: obterNomeJogadorAssistenteIA(coluna),
+          col: coluna, // IA-043: usado pra suprimir narracao do J1
           cartas: nomesCartas,
           limite: cartasPorJogador[coluna],
         });
@@ -1540,6 +1557,14 @@ function garantirEstruturaAssistenteIA() {
   };
 }
 
+// IA-043: J1 (coluna 0) eh sempre o usuario do app. O assistente nao
+// precisa avisar o usuario sobre coisas que ele ja sabe sobre si mesmo.
+// Mensagens sobre estado/acoes do J1 sao suprimidas, exceto inconsistencias
+// graves (onde o usuario pode ter errado a marcacao em si mesmo).
+function ehJogadorUsuarioAssistenteIA(col) {
+  return col === 0;
+}
+
 function registrarMudancaAssistenteIA(payload) {
   localStorage.setItem(
     "assistenteIAUltimaMudanca",
@@ -1562,24 +1587,32 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   const ultima = obterResumoMudancaAssistenteIA();
   const itens = [];
 
+  // IA-043: suprime narracao quando a mudanca eh sobre o J1 (voce) - voce
+  // ja sabe o que aconteceu nas proprias marcacoes. Mantemos para J2+.
+  const ultimaEhJ1 =
+    ultima && typeof ultima.col === "number" &&
+    ehJogadorUsuarioAssistenteIA(ultima.col);
+
   // IA-005: branch "trinca-x" mantida dormente (sem produtor atual).
   // Detector de trinca-de-X esta no spec (secao 19 do BACKLOG_IA.md, item
   // P11+). Quando for restaurado, ele emite payload { tipo: "trinca-x", ... }
   // e esta branch passa a narrar automaticamente.
-  if (ultima?.tipo === "trinca-x" && Array.isArray(ultima.cartas) && ultima.cartas.length) {
-    itens.push(`Trinca eliminada para ${ultima.jogador}: ${ultima.cartas.join(", ")}.`);
-  } else if (ultima?.tipo === "V" && ultima.carta && ultima.jogador) {
-    itens.push(`${ultima.jogador} foi confirmado com ${ultima.carta}.`);
-  } else if (ultima?.tipo === "X" && ultima.carta && ultima.jogador) {
-    itens.push(`${ultima.jogador} foi descartado para ${ultima.carta}.`);
-  } else if (ultima?.tipo === "?" && ultima.carta && ultima.jogador) {
-    itens.push(`${ultima.carta} segue em aberto para ${ultima.jogador}.`);
-  } else if (ultima?.tipo === "auto-capacidade" && ultima.jogador && Array.isArray(ultima.cartas)) {
-    const prefixo =
-      ultima.cartas.length === 1
-        ? `${ultima.jogador} fechou a propria mao e confirmou ${ultima.cartas[0]}.`
-        : `${ultima.jogador} fechou a propria mao e confirmou: ${ultima.cartas.join(", ")}.`;
-    itens.push(prefixo);
+  if (!ultimaEhJ1) {
+    if (ultima?.tipo === "trinca-x" && Array.isArray(ultima.cartas) && ultima.cartas.length) {
+      itens.push(`Trinca eliminada para ${ultima.jogador}: ${ultima.cartas.join(", ")}.`);
+    } else if (ultima?.tipo === "V" && ultima.carta && ultima.jogador) {
+      itens.push(`${ultima.jogador} foi confirmado com ${ultima.carta}.`);
+    } else if (ultima?.tipo === "X" && ultima.carta && ultima.jogador) {
+      itens.push(`${ultima.jogador} foi descartado para ${ultima.carta}.`);
+    } else if (ultima?.tipo === "?" && ultima.carta && ultima.jogador) {
+      itens.push(`${ultima.carta} segue em aberto para ${ultima.jogador}.`);
+    } else if (ultima?.tipo === "auto-capacidade" && ultima.jogador && Array.isArray(ultima.cartas)) {
+      const prefixo =
+        ultima.cartas.length === 1
+          ? `${ultima.jogador} fechou a propria mao e confirmou ${ultima.cartas[0]}.`
+          : `${ultima.jogador} fechou a propria mao e confirmou: ${ultima.cartas.join(", ")}.`;
+      itens.push(prefixo);
+    }
   }
 
   const encontradas = linhas.filter((linha) => linha.isFound).length;
@@ -1734,11 +1767,17 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
       (linha) => linha.candidatos.length > 1 && !linha.isFound,
     );
     if (linhaPressao) {
-      const nomes = linhaPressao.candidatos
-        .slice(0, 3)
-        .map((item) => obterNomeJogadorAssistenteIA(item.col))
-        .join(", ");
-      itens.push(`Carta sob press\u00e3o: ${linhaPressao.nome}. Candidatos atuais: ${nomes}.`);
+      // IA-043: J1 (voce) nao eh candidato util - voce nao se pergunta
+      const candidatosSemJ1 = linhaPressao.candidatos.filter(
+        (item) => !ehJogadorUsuarioAssistenteIA(item.col),
+      );
+      if (candidatosSemJ1.length > 0) {
+        const nomes = candidatosSemJ1
+          .slice(0, 3)
+          .map((item) => obterNomeJogadorAssistenteIA(item.col))
+          .join(", ");
+        itens.push(`Carta sob press\u00e3o: ${linhaPressao.nome}. Candidatos atuais: ${nomes}.`);
+      }
     }
   }
 
@@ -1759,6 +1798,9 @@ function construirDicasCapacidadeAssistenteIA(linhas) {
   const dicas = [];
 
   for (let col = 0; col < jogadores; col++) {
+    // IA-043: pula J1 (voce) - voce ja sabe quantas cartas tem
+    if (ehJogadorUsuarioAssistenteIA(col)) continue;
+
     const limite = cartasPorJogador[col];
     let confirmadas = 0;
     let possiveis = 0;
@@ -1898,32 +1940,41 @@ function classificarInconsistenciasAssistenteIA(linhas) {
       const nomeJog = nomes[col] || `J${col + 1}`;
 
       // 4. coluna-excesso: V > limite
+      // IA-043: foco vira lista das celulas V dessa coluna (em vez da coluna
+      // toda) - destaca exatamente as marcacoes que excedem o limite.
       if (vCount > limite) {
+        const chavesV = [];
+        linhas.forEach((linha) => {
+          if (linha.estados[col] === "V") {
+            chavesV.push(`${linha.row}-${col}`);
+          }
+        });
         graves.push({
           codigo: "coluna-excesso",
           nivel: "grave",
           mensagem: `${nomeJog} tem ${vCount} V marcados mas a mao so permite ${limite}.`,
-          foco: { tipo: "coluna", coluna: col },
+          foco: { tipo: "celulas", chaves: chavesV },
         });
       }
 
-      // 5. coluna-impossivel-aberta: faltam cartas mas abertas e menor que faltam
+      // 5/6. IA-043: unificadas. Antes eram 2 alertas que disparavam juntos
+      // quando coluna fechava com V abaixo do limite (coluna-impossivel-aberta
+      // + coluna-insuficiente). Agora:
+      //   - coluna-fechada-abaixo: abertas=0 + V<limite (mensagem unificada)
+      //   - coluna-impossivel-aberta: ainda tem abertas mas insuficientes
       const faltam = limite - vCount;
-      if (faltam > 0 && abertas < faltam && vCount <= limite) {
+      if (abertas === 0 && vCount < limite) {
+        graves.push({
+          codigo: "coluna-fechada-abaixo",
+          nivel: "grave",
+          mensagem: `${nomeJog} fechou a mao com ${vCount} carta(s) confirmada(s), mas precisa de ${limite} (faltam ${faltam}).`,
+          foco: { tipo: "coluna", coluna: col },
+        });
+      } else if (faltam > 0 && abertas < faltam && vCount <= limite) {
         graves.push({
           codigo: "coluna-impossivel-aberta",
           nivel: "grave",
           mensagem: `${nomeJog} precisa de ${faltam} carta(s) mas so restam ${abertas} celula(s) aberta(s).`,
-          foco: { tipo: "coluna", coluna: col },
-        });
-      }
-
-      // 6. coluna-insuficiente: coluna fechada (sem abertas) com V < limite
-      if (abertas === 0 && vCount < limite) {
-        graves.push({
-          codigo: "coluna-insuficiente",
-          nivel: "grave",
-          mensagem: `${nomeJog} esta com ${vCount} carta(s) confirmada(s) mas a mao precisa de ${limite}.`,
           foco: { tipo: "coluna", coluna: col },
         });
       }

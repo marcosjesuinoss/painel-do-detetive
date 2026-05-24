@@ -456,7 +456,8 @@ if (tipo === "V") {
         ? obterNomeJogadorAssistenteIA(colIdx)
         : localStorage.getItem(`nomeJogador${colIdx + 1}`) || `J${colIdx + 1}`;
     if (carta && jogador) {
-      registrarMudancaAssistenteIA({ tipo, carta, jogador });
+      // IA-043: col usado pra suprimir narracao quando jogador eh J1 (voce)
+      registrarMudancaAssistenteIA({ tipo, carta, jogador, col: colIdx });
     }
   }
 
@@ -859,6 +860,7 @@ function aplicarTrincaResposta() {
           registrarMudancaAssistenteIA({
             tipo: "auto-grupo-resposta",
             jogador: nomeJog,
+            col, // IA-043: usado pra suprimir narracao do J1
             carta: nomeCarta,
           });
         }
