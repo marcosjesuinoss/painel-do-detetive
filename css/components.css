@@ -67,7 +67,7 @@
 #tabela {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
@@ -76,7 +76,7 @@
   -webkit-backdrop-filter: blur(10px);
 
   border-radius: 22px;
-  padding: 8px 7px;
+  padding: 4px 4px;
 
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.34),
@@ -91,10 +91,12 @@
 .linha-grid {
   display: grid;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .celula {
+  /* Polish H: padding/font/altura adaptam por jogadores (via data-jogadores
+     no body) - regras abaixo sobrescrevem. Default = caso 5-6 jogadores. */
   padding: 4px 5px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -119,7 +121,10 @@
 
 .celula.nome {
   justify-content: flex-start;
-  padding-left: 7px;
+  /* Polish H: padronizado pelo layout de 8 jogadores (a pedido do usuario).
+     Mesma fonte/padding em todas as quantidades pra "Chefe de cozinha" e
+     "Estacao de trem" caberem sempre igual. */
+  padding-left: 8px;
   padding-right: 5px;
   position: relative;
   text-overflow: ellipsis;
@@ -128,7 +133,7 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.16)),
     rgba(0, 0, 0, 0.14);
   font-weight: 600;
-  font-size: 11.5px;
+  font-size: 10.5px;
 }
 
 .referencia-cor {
@@ -501,6 +506,34 @@
   font-size: 9px;
   padding-left: 2px;
   padding-right: 2px;
+}
+
+/* Polish: selecao de coluna deve destacar o header do jogador tambem.
+   O gradient padrao do header vence o .sel-col por especificidade
+   (#tabela na regra), entao precisa override especifico aqui. */
+#tabela .linha-grid:first-child .celula.sel-col:not(.nome) {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.32),
+    rgba(255, 255, 255, 0.18)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 1px 0 rgba(0, 0, 0, 0.10);
+}
+/* Light - tom mais escuro no header selecionado.
+   Gradient mais uniforme (sem clarao no topo) + inset reduzido pra nao
+   lavar o texto branco do nome do jogador. */
+.light #tabela .linha-grid:first-child .celula.sel-col:not(.nome) {
+  background: linear-gradient(
+    180deg,
+    rgba(71, 85, 105, 0.92),
+    rgba(71, 85, 105, 0.85)
+  );
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.14);
 }
 
 /* ===== PROFUNDIDADE SUAVE NAS C??LULAS ===== */
@@ -1397,15 +1430,16 @@ body.modo-pro .play:active {
   }
 }
 
-/* Carta encontrada: nome apagado */
+/* Carta encontrada: nome desfocado via COR (nao opacity) pra permitir que
+   a celula receba destaque de selecao normalmente. O texto fica apagado
+   mas o fundo da celula reage a sel-row/selecionada sem competir com
+   opacity do elemento pai. */
 .celula.nome.carta-encontrada {
-  opacity: 0.48;
-  filter: saturate(0.42);
+  color: rgba(232, 238, 246, 0.38);
 }
 
 .light .celula.nome.carta-encontrada {
-  opacity: 0.52;
-  filter: saturate(0.5);
+  color: rgba(31, 41, 55, 0.42);
 }
 /* Duplicidade no PRO */
 .celula.alerta-duplicidade-v {
@@ -1451,6 +1485,83 @@ body.modo-pro .play:active {
 /* Centralizacao e tamanho dos icones nas celulas */
 #tabela .celula[data-key] {
   padding: 0;
+}
+
+/* Polish: cantos absolutos da grid acompanham o radius do container.
+   Primeira linha-grid (header de jogadores): primeira celula = canto sup
+   esquerdo, ultima = canto sup direito. Ultima linha-grid: idem inferior. */
+#tabela .linha-grid:first-child .celula:first-child {
+  border-top-left-radius: 18px;
+}
+#tabela .linha-grid:first-child .celula:last-child {
+  border-top-right-radius: 18px;
+}
+#tabela .linha-grid:last-child .celula:first-child {
+  border-bottom-left-radius: 18px;
+}
+#tabela .linha-grid:last-child .celula:last-child {
+  border-bottom-right-radius: 18px;
+}
+
+/* Polish H: densidade adaptativa por numero de jogadores.
+   - 3-4 jogadores: células mais espaçosas (mais ar, melhor toque)
+   - 5-6 jogadores: default (sem override)
+   - 7-8 jogadores: compactas (cabem todas sem rolagem horizontal)
+   IMPORTANTE: .celula.nome NAO entra nas regras de padding pra preservar
+   o padding-left que afasta nomes longos da borda. Altura/font sim. */
+
+/* === 3-4 jogadores: espacoso === */
+body[data-jogadores="3"] #tabela .celula,
+body[data-jogadores="4"] #tabela .celula {
+  height: 36px;
+}
+body[data-jogadores="3"] #tabela .celula:not(.nome),
+body[data-jogadores="4"] #tabela .celula:not(.nome) {
+  font-size: 13px;
+  padding: 5px 6px;
+}
+/* 3-4 jogadores: nome usa o default (sem override) - tudo igualado */
+body[data-jogadores="3"] #tabela .celula[data-key] .estado-icon,
+body[data-jogadores="4"] #tabela .celula[data-key] .estado-icon {
+  width: 26px;
+  height: 26px;
+}
+body[data-jogadores="3"] #tabela .celula[data-key] .estado-x,
+body[data-jogadores="4"] #tabela .celula[data-key] .estado-x {
+  width: 22px;
+  height: 22px;
+}
+body[data-jogadores="3"] #tabela .celula[data-key] .estado-duvida,
+body[data-jogadores="4"] #tabela .celula[data-key] .estado-duvida {
+  width: 23px;
+  height: 23px;
+}
+
+/* === 7-8 jogadores: compacto === */
+body[data-jogadores="7"] #tabela .celula,
+body[data-jogadores="8"] #tabela .celula {
+  height: 26px;
+}
+body[data-jogadores="7"] #tabela .celula:not(.nome),
+body[data-jogadores="8"] #tabela .celula:not(.nome) {
+  font-size: 11px;
+  padding: 3px 4px;
+}
+/* 7-8 jogadores: nome usa o default (sem override) - tudo igualado */
+body[data-jogadores="7"] #tabela .celula[data-key] .estado-icon,
+body[data-jogadores="8"] #tabela .celula[data-key] .estado-icon {
+  width: 20px;
+  height: 20px;
+}
+body[data-jogadores="7"] #tabela .celula[data-key] .estado-x,
+body[data-jogadores="8"] #tabela .celula[data-key] .estado-x {
+  width: 17px;
+  height: 17px;
+}
+body[data-jogadores="7"] #tabela .celula[data-key] .estado-duvida,
+body[data-jogadores="8"] #tabela .celula[data-key] .estado-duvida {
+  width: 18px;
+  height: 18px;
 }
 
 /* Polish A: tint super-sutil de fundo refletindo o estado da celula.

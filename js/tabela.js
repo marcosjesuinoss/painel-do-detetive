@@ -144,11 +144,20 @@ function criarTabela() {
   // 🔥 Ativa modo compacto se tiver 7 ou mais jogadores
   document.body.classList.toggle("modo-compacto", jogadores >= 7);
 
+  // Polish H: densidade adaptativa - data attribute permite CSS ajustar
+  // padding/font/altura baseado no numero de jogadores. 3-4 = espacoso,
+  // 5-6 = medio (default), 7-8 = compacto.
+  document.body.dataset.jogadores = String(jogadores);
+
   const area = document.getElementById("tabela");
   area.innerHTML = "";
 
   const estadoSalvo = lerEstadoTabela();
-  const template = `31% repeat(${jogadores}, 1fr)`;
+  // Polish H: largura fixa pra coluna de nomes - independente de quantos
+  // jogadores. Antes era 31% (proporcional, ficava menor com menos jogadores
+  // gerando overflow nos nomes longos). Agora 110px (equivale ao 31% que
+  // 8 jogadores produzia em mobile).
+  const template = `110px repeat(${jogadores}, 1fr)`;
 
   const header = document.createElement("div");
   header.className = "linha-grid";
