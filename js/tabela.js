@@ -440,6 +440,26 @@ if (tipo === "V") {
 } else {
   renderizarEstado(cel, estadoSalvo[chave] || "");
 }
+
+  // Polish F: marcacoes feitas pela IA usam animacao mais suave
+  // (distingue visualmente "fui eu" de "foi a IA" + alivia GPU em cascades)
+  if (origem === "assistente") {
+    const svg = cel.querySelector(".estado-icon");
+    if (svg) {
+      const classMap = {
+        V: ["check-anim", "check-auto-anim"],
+        X: ["x-anim", "x-auto-anim"],
+        "?": ["q-anim", "q-auto-anim"],
+      };
+      const par = classMap[tipo];
+      if (par) {
+        svg.classList.remove(par[0]);
+        void svg.offsetWidth;
+        svg.classList.add(par[1]);
+      }
+    }
+  }
+
   atualizarEstadoVisualCartasEncontradas();
   atualizarDestaqueCartaOculta();
   atualizarAlertaDuplicidadePRO();
@@ -852,9 +872,10 @@ function aplicarTrincaResposta() {
   });
   const algumV = chaves.some((c) => estadoSalvo[c.chave] === "V");
 
-  // Cenario A: nenhuma candidata - todas ja sao V/X, so avanca coluna
+  // Cenario A: nenhuma candidata - todas ja sao V/X, sem nova info.
+  // Limpa selecao (palpite ja foi feito, prepara pro proximo).
   if (candidatas.length === 0) {
-    avancarColunaTrinca(jogadores);
+    limparSelecoes();
     if (typeof agendarAtualizacaoAssistenteIA === "function") {
       agendarAtualizacaoAssistenteIA();
     }
@@ -882,7 +903,8 @@ function aplicarTrincaResposta() {
         }
       }
     }
-    avancarColunaTrinca(jogadores);
+    // Trinca concluida (palpite respondido). Limpa selecao em vez de avancar.
+    limparSelecoes();
     return;
   }
 
@@ -899,11 +921,11 @@ function aplicarTrincaResposta() {
     }
     localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
 
-    avancarColunaTrinca(jogadores);
+    // Trinca concluida (palpite respondido). Limpa selecao em vez de avancar.
+    limparSelecoes();
     atualizarEstadoVisualCartasEncontradas();
     atualizarDestaqueCartaOculta();
     atualizarAlertaDuplicidadePRO();
-    atualizarDestaques();
     atualizarBotoes();
     atualizarBotaoContinuar();
     if (typeof agendarAtualizacaoAssistenteIA === "function") {
@@ -933,7 +955,17 @@ function aplicarTrincaResposta() {
   candidatas.forEach((c) => {
     estadoSalvo[c.chave] = "?";
     const cel = document.querySelector(`[data-key="${c.chave}"]`);
-    if (cel) renderizarEstado(cel, "?");
+    if (cel) {
+      renderizarEstado(cel, "?");
+      // Polish F: trinca usa animacao suave (varias celulas animam juntas,
+      // o suave alivia o GPU)
+      const svg = cel.querySelector(".estado-icon");
+      if (svg) {
+        svg.classList.remove("q-anim");
+        void svg.offsetWidth;
+        svg.classList.add("q-auto-anim");
+      }
+    }
     if (typeof registrarOrigemDuvidaGrupo === "function") {
       registrarOrigemDuvidaGrupo(c.chave, grupoId);
     }
@@ -941,13 +973,14 @@ function aplicarTrincaResposta() {
 
   localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
 
-  avancarColunaTrinca(jogadores);
+  // Trinca concluida (palpite respondido com "uma das 3"). Limpa selecao
+  // pra um proximo palpite, em vez de avancar coluna.
+  limparSelecoes();
 
   // Atualiza todos os destaques (SEM recriar tabela)
   atualizarEstadoVisualCartasEncontradas();
   atualizarDestaqueCartaOculta();
   atualizarAlertaDuplicidadePRO();
-  atualizarDestaques();
   atualizarBotoes();
   atualizarBotaoContinuar();
   if (typeof agendarAtualizacaoAssistenteIA === "function") {
