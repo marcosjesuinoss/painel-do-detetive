@@ -346,12 +346,14 @@ function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
     estadoSalvo[chave] = "V";
 
     // Auto-X no resto da linha (carta com 1 dono unico, outros nao podem ter).
-    // Respeita o toggle "Marcacao automatica" do popup config do assistente:
-    // se PRO ativo + config.automarcacao=false, NAO faz auto-X.
-    let permitirAutoX = true;
+    // Recurso eh exclusivo do PRO (dedução automatica). Em FREE nao acontece.
+    // Em PRO: respeita o toggle "Marcacao automatica" do popup config do
+    // assistente - se desligado, tambem nao faz auto-X.
+    let permitirAutoX = false;
     try {
       const isProAtivo = typeof isPRO === "function" && isPRO();
       if (isProAtivo) {
+        permitirAutoX = true;
         const cfgRaw = localStorage.getItem("assistenteIAConfiguracoes");
         if (cfgRaw) {
           const cfg = JSON.parse(cfgRaw);
