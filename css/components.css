@@ -1487,6 +1487,14 @@ body.modo-pro .play:active {
   padding: 0;
 }
 
+/* Polish E: sticky header - apenas o header de jogadores fica fixo no
+   topo ao rolar. Headers de secao (Suspeitos/Armas/Locais) rolam normal. */
+#tabela .linha-grid:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
 /* Polish: cantos absolutos da grid acompanham o radius do container.
    Primeira linha-grid (header de jogadores): primeira celula = canto sup
    esquerdo, ultima = canto sup direito. Ultima linha-grid: idem inferior. */
