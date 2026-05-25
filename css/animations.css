@@ -81,28 +81,61 @@
   }
 }
 
-@keyframes aparecerX {
+/* Polish F: cada estado tem personalidade visual distinta */
+
+/* V = celebratorio - pop forte com undershoot final (extra bounce confiante) */
+@keyframes aparecerCheck {
   0% {
-    transform: scale(0.5);
+    transform: scale(0.3) rotate(-8deg);
     opacity: 0;
   }
-  70% {
-    transform: scale(1.1);
+  55% {
+    transform: scale(1.30) rotate(3deg);
+    opacity: 1;
+  }
+  78% {
+    transform: scale(0.95) rotate(-1deg);
   }
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0);
     opacity: 1;
   }
 }
 
-/* animacoes e estilo dos icones de estado */
-@keyframes aparecerDuvida {
+/* X = decidido - snap rapido com rotacao agressiva (negacao firme) */
+@keyframes aparecerX {
   0% {
-    transform: scale(0.7);
+    transform: scale(0.3) rotate(-25deg);
     opacity: 0;
   }
+  55% {
+    transform: scale(1.25) rotate(5deg);
+    opacity: 1;
+  }
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* ? = tentativo - wobble com 2 oscilacoes (sugere incerteza) */
+@keyframes aparecerDuvida {
+  0% {
+    transform: scale(0.4) translateY(3px);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.20) translateY(-2px);
+    opacity: 1;
+  }
+  65% {
+    transform: scale(0.92) translateY(1px);
+  }
+  82% {
+    transform: scale(1.06) translateY(-0.5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
@@ -166,18 +199,27 @@
   stroke: none;
 }
 
+/* V: spring confiante + desenho do traco em paralelo (sente "acertou") */
+.check-anim {
+  transform-origin: center;
+  animation: aparecerCheck 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 .check-anim .estado-traco {
   stroke-dasharray: 30;
   stroke-dashoffset: 30;
-  animation: desenharCheck 0.28s ease forwards;
+  animation: desenharCheck 0.32s ease-out forwards;
 }
 
+/* X: snap firme com duracao moderada (sente "descartou") */
 .x-anim {
-  animation: aparecerX 0.24s ease;
+  transform-origin: center;
+  animation: aparecerX 0.40s cubic-bezier(0.34, 1.55, 0.64, 1);
 }
 
+/* ?: wobble lento (sente "incerto") */
 .q-anim {
-  animation: aparecerDuvida 0.2s ease;
+  transform-origin: center;
+  animation: aparecerDuvida 0.48s cubic-bezier(0.34, 1.45, 0.64, 1);
 }
 
 @keyframes xDoFundo {
