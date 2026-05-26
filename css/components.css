@@ -1820,10 +1820,10 @@ body[data-jogadores="8"] #tabela .celula[data-key] .estado-duvida {
 }
 
 .light #tabela .celula.nome.carta-oculta {
-  color: #f59e0b;
+  color: #b45309;
   text-shadow:
-    0 0 6px rgba(245, 158, 11, 0.28),
-    0 0 10px rgba(245, 158, 11, 0.2);
+    0 0 6px rgba(180, 83, 9, 0.30),
+    0 0 10px rgba(180, 83, 9, 0.20);
 }
 
 /* Esconder barra de rolagem (mantendo scroll funcional) */
