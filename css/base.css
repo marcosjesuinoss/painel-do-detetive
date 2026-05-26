@@ -13,8 +13,8 @@
 
   --radius: 14px;
   --shadow-soft: 0 6px 0 rgba(0, 0, 0, 0.38);
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
+  --transition-fast: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* light mode base tones */
