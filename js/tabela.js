@@ -746,6 +746,7 @@ function limparSelecoes() {
   };
 
   atualizarDestaques();
+  atualizarBotoes();
 }
 
 function resetarSelecoesGlobais() {
@@ -758,6 +759,7 @@ function resetarSelecoesGlobais() {
   };
 
   atualizarDestaques();
+  atualizarBotoes();
 }
 
 function atualizarBotoes() {
@@ -772,6 +774,7 @@ function atualizarBotoes() {
   const temColuna = colunaSelecionada !== null;
   const linhasAtivas = Object.values(linhasSelecionadas).filter(l => l !== null);
   const temTrinca = temColuna && linhasAtivas.length === 3;
+  const temAlgumaSelecao = temCelula || temColuna || linhasAtivas.length > 0;
 
   // reset visual
   [btnTrue, btnFalse, btnMaybe, btnClear].forEach(btn => {
@@ -779,12 +782,17 @@ function atualizarBotoes() {
     btn.classList.add("botao-desativado");
   });
 
-  // modo célula única
+  // Clear sempre habilitado quando ha qualquer selecao ativa
+  // (cell, coluna ou linhas - inclusive combos parciais como 1col+2lin).
+  if (temAlgumaSelecao) {
+    btnClear?.classList.remove("botao-desativado");
+  }
+
+  // modo célula única: V/X/? habilitados
   if (temCelula) {
     btnTrue?.classList.remove("botao-desativado");
     btnFalse?.classList.remove("botao-desativado");
     btnMaybe?.classList.remove("botao-desativado");
-    btnClear?.classList.remove("botao-desativado");
     return;
   }
 
@@ -792,7 +800,6 @@ function atualizarBotoes() {
   if (temTrinca) {
     btnFalse?.classList.remove("botao-desativado");
     btnMaybe?.classList.remove("botao-desativado");
-    btnClear?.classList.remove("botao-desativado");
   }
 }
 

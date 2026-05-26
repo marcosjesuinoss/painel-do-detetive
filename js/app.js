@@ -332,17 +332,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnClearSel")?.addEventListener("click", () => {
-      // Prioridade: QUALQUER selecao de linha ou coluna -> reseta selecoes
-      // (nao toca em celulas). Apaga conteudo da celula APENAS quando ha
-      // uma unica celula isolada selecionada (sem linhas/colunas ativas).
-      const temColuna = colunaSelecionada !== null;
-      const temLinha = Object.values(linhasSelecionadas).some((l) => l !== null);
-
-      if (temColuna || temLinha) {
-        resetarSelecoesGlobais();
-        atualizarDestaques();
-      } else if (celulaSelecionada) {
+      // Prioridade em DUAS etapas:
+      //  1) Se ha uma celula selecionada (mesmo com linha/coluna juntas),
+      //     primeiro apaga o conteudo da celula.
+      //  2) Proximo clique (ja sem celula), reseta selecoes de linha/coluna.
+      if (celulaSelecionada) {
         marcarCelula(celulaSelecionada, "");
+      } else {
+        const temColuna = colunaSelecionada !== null;
+        const temLinha = Object.values(linhasSelecionadas).some((l) => l !== null);
+        if (temColuna || temLinha) {
+          resetarSelecoesGlobais();
+          atualizarDestaques();
+        }
       }
     });
   });
