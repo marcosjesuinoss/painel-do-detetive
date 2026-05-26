@@ -138,6 +138,25 @@ function gerarCartas() {
    TABELA
 ===================================== */
 
+// Polish: cabecalho da tabela pode ser travado (sticky - default) ou
+// destravado (rola junto). Preferencia persiste em localStorage.
+function ehCabecalhoTravado() {
+  // Default true se nunca foi setado
+  const v = localStorage.getItem("cabecalhoTravado");
+  return v === null ? true : v === "true";
+}
+
+function aplicarEstadoCabecalhoTravado() {
+  const travado = ehCabecalhoTravado();
+  document.body.classList.toggle("cabecalho-destravado", !travado);
+}
+
+function toggleCabecalhoTravado() {
+  const novo = !ehCabecalhoTravado();
+  localStorage.setItem("cabecalhoTravado", String(novo));
+  aplicarEstadoCabecalhoTravado();
+}
+
 function criarTabela() {
   const jogadores = parseInt(localStorage.getItem("numJogadores") || 3);
 
@@ -148,6 +167,9 @@ function criarTabela() {
   // padding/font/altura baseado no numero de jogadores. 3-4 = espacoso,
   // 5-6 = medio (default), 7-8 = compacto.
   document.body.dataset.jogadores = String(jogadores);
+
+  // Polish: aplica preferencia de cabecalho travado/destravado (sticky)
+  aplicarEstadoCabecalhoTravado();
 
   const area = document.getElementById("tabela");
   area.innerHTML = "";
@@ -164,8 +186,26 @@ function criarTabela() {
   header.style.gridTemplateColumns = template;
 
   const titulo = document.createElement("div");
-  titulo.className = "celula";
-  titulo.innerHTML = "<strong>Cartas</strong>";
+  titulo.className = "celula celula-titulo-cartas";
+  titulo.innerHTML = `
+    <button type="button" class="btn-trava-cabecalho" aria-label="Travar/destravar cabeçalho ao rolar" title="Travar/destravar cabeçalho">
+      <svg viewBox="0 0 24 24" width="14" height="14" class="icone-trava-on" aria-hidden="true">
+        <path fill="currentColor" d="M16.5 11h-1V8.5C15.5 5.46 13.04 3 10 3S4.5 5.46 4.5 8.5V11h-1c-.83 0-1.5.67-1.5 1.5v8c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-8c0-.83-.67-1.5-1.5-1.5zM6.5 8.5C6.5 6.57 8.07 5 10 5s3.5 1.57 3.5 3.5V11h-7V8.5z"/>
+      </svg>
+      <svg viewBox="0 0 24 24" width="14" height="14" class="icone-trava-off" aria-hidden="true">
+        <path fill="currentColor" d="M10 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S5 3.24 5 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H3V10h13v10z"/>
+      </svg>
+    </button>
+    <strong>Cartas</strong>
+  `;
+  // Clique no botao alterna travado/destravado e persiste
+  const btnTrava = titulo.querySelector(".btn-trava-cabecalho");
+  if (btnTrava) {
+    btnTrava.onclick = (e) => {
+      e.stopPropagation();
+      toggleCabecalhoTravado();
+    };
+  }
   header.appendChild(titulo);
 
   for (let j = 1; j <= jogadores; j++) {

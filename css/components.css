@@ -1550,6 +1550,62 @@ body.modo-pro .play:active {
   top: 0;
   z-index: 20;
 }
+/* Polish: usuario pode destravar o cabecalho via botao na celula "Cartas"
+   - rola junto com o conteudo em vez de ficar fixo. */
+body.cabecalho-destravado #tabela .linha-grid:first-child {
+  position: static;
+}
+
+/* Celula "Cartas" com botao de trava: estiliza posicao */
+#tabela .celula.celula-titulo-cartas {
+  position: relative;
+  justify-content: center;
+  gap: 4px;
+}
+/* Botao com aparencia 100% de icone (sem fundo, sem borda, sem efeitos
+   de clique) - so o cadeado aparece. */
+#tabela .btn-trava-cabecalho,
+#tabela .btn-trava-cabecalho:hover,
+#tabela .btn-trava-cabecalho:focus,
+#tabela .btn-trava-cabecalho:active,
+#tabela .btn-trava-cabecalho:focus-visible {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Travado (default): mostra cadeado fechado, oculta aberto */
+#tabela .btn-trava-cabecalho .icone-trava-off {
+  display: none;
+}
+/* Destravado: mostra cadeado aberto, oculta fechado + opacity reduzida */
+body.cabecalho-destravado #tabela .btn-trava-cabecalho {
+  opacity: 0.40;
+}
+body.cabecalho-destravado #tabela .btn-trava-cabecalho .icone-trava-on {
+  display: none;
+}
+body.cabecalho-destravado #tabela .btn-trava-cabecalho .icone-trava-off {
+  display: block;
+}
 
 /* Polish: cantos absolutos da grid acompanham o radius do container.
    Primeira linha-grid (header de jogadores): primeira celula = canto sup
