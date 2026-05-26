@@ -724,24 +724,56 @@ function removerOrigemDuvida(chave) {
 // associado. Se o grupo encolher abaixo de 2 cartas, o grupo nao faz
 // mais sentido logico e e descartado.
 function editarGruposRespostaPorApagamento(chave, row, col, novoEstado) {
-  // Sprint G fix v2: grupos sao IMUTAVEIS apos criacao - persistem ate
-  // resetarGruposResposta() (nova partida). Esta funcao agora eh no-op.
+  // Logica diferenciada pelo novoEstado (intencao do usuario):
   //
-  // Motivacao:
-  // - Iteracao 1 da Fase 1 removia rows e descartava grupo com <2 rows.
-  //   Quebrava deducao grupo-resposta-unico (grupo virava 1 row e era descartado).
-  // - Iteracao 2 descartava grupo so quando alguma row virava V.
-  //   Quebrava inconsistencia grupo-impossivel no caso: dedu marca V auto na 3a,
-  //   grupo eh descartado, usuario sobrescreve V->X e nao temos mais o grupo
-  //   pra detectar que ficou impossivel.
-  // - Solucao final: nunca descartar automaticamente. A deducao filtra
-  //   candidatos por estado atual (grupo resolvido = 0 candidatos = ignorado),
-  //   e a inconsistencia ve V em alguma row -> nao alerta.
+  // - V: no-op. Grupo "resolvido" implicitamente - deducao filtra V e nao
+  //   gera mais candidatos pro grupo. Manter o grupo permite que a
+  //   inconsistencia 'grupo-impossivel' funcione se usuario depois
+  //   sobrescrever V->X.
   //
-  // Mantida a assinatura (chave, row, col, novoEstado) por compatibilidade
-  // com call site em tabela.js marcarCelula. removerOrigemDuvida continua
-  // sendo chamado separadamente quando celula deixa de ser "?".
-  return;
+  // - X: no-op. A carta foi descartada mas o grupo segue valido - deducao
+  //   filtra X dos candidatos automaticamente. Outras cartas do grupo
+  //   continuam podendo ser a resposta.
+  //
+  // - "" (vazio): usuario apagou manualmente um "?". Semantica: "errei em
+  //   marcar essa carta". A row eh REMOVIDA do grupo - nao eh mais
+  //   considerada candidata possivel. Se a remocao esvaziar o grupo,
+  //   o grupo eh descartado.
+  if (novoEstado !== "") return;
+
+  const origens = obterOrigensDuvida();
+  const origem = origens[chave];
+  if (!origem || !Array.isArray(origem.grupos) || origem.grupos.length === 0) {
+    return;
+  }
+
+  const grupos = obterGruposResposta();
+  const colNum = parseInt(col, 10);
+  const rowNum = parseInt(row, 10);
+  const grupoIds = new Set(origem.grupos);
+  let mudou = false;
+
+  const novosGrupos = [];
+  for (const g of grupos) {
+    if (!grupoIds.has(g.id) || g.coluna !== colNum) {
+      novosGrupos.push(g);
+      continue;
+    }
+    const novasRows = g.rows.filter((r) => r !== rowNum);
+    if (novasRows.length === 0) {
+      // Grupo ficou vazio - descarta
+      mudou = true;
+      continue;
+    }
+    if (novasRows.length !== g.rows.length) {
+      novosGrupos.push({ ...g, rows: novasRows });
+      mudou = true;
+    } else {
+      novosGrupos.push(g);
+    }
+  }
+
+  if (mudou) salvarGruposResposta(novosGrupos);
 }
 
 // ============================================================================
