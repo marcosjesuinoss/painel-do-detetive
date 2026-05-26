@@ -135,11 +135,13 @@
       </div>
     </div>
 
-    <!-- IA-033: overlay de loading durante reidratacao do jogo apos retomada -->
+    <!-- IA-033: overlay de loading durante reidratacao do jogo apos retomada.
+         Texto setado dinamicamente em mostrarOverlayRetomada (varia por PRO). -->
     <div id="overlayRetomada" class="overlay-retomada" hidden aria-hidden="true">
       <div class="overlay-retomada-conteudo">
         <div class="overlay-retomada-spinner"></div>
-        <p class="overlay-retomada-texto">Restaurando partida...</p>
+        <p class="overlay-retomada-titulo">Aguarde</p>
+        <p class="overlay-retomada-texto">Carregando informa&ccedil;&otilde;es da tabela...</p>
       </div>
     </div>
 
@@ -199,18 +201,20 @@
 
     <!-- ================= PERSONALIZAR ================= -->
     <div id="personalizar" class="tela">
-      <button class="padrao btn-voltar" data-destino="novoJogo" type="button">
-        Voltar
-      </button>
+      <div class="container">
+        <button class="padrao btn-voltar" data-destino="novoJogo" type="button">
+          Voltar
+        </button>
 
-      <h2 class="titulo-central">Personalizar jogadores</h2>
+        <h2 class="titulo-central">Personalizar jogadores</h2>
 
-      <div id="editarJogadores"></div>
-      <div id="editarCartas"></div>
+        <div id="editarJogadores"></div>
+        <div id="editarCartas"></div>
 
-      <button id="btnIniciarPersonalizado" class="play" type="button">
-        Iniciar Partida
-      </button>
+        <button id="btnIniciarPersonalizado" class="play" type="button">
+          Iniciar Partida
+        </button>
+      </div>
     </div>
 
     <!-- ================= JOGO ================= -->

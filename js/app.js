@@ -183,8 +183,30 @@ function retomarJogoComCarregamento(origem) {
 function mostrarOverlayRetomada() {
   const overlay = document.getElementById("overlayRetomada");
   if (!overlay) return;
+
+  // Texto adapta ao modo (PRO menciona o assistente, FREE soh tabela).
+  // Re-aplicado sempre - se PRO mudou desde a ultima exibicao, atualiza.
+  const txt = overlay.querySelector(".overlay-retomada-texto");
+  if (txt) {
+    const isProAtivo = typeof isPRO === "function" && isPRO();
+    txt.textContent = isProAtivo
+      ? "Carregando informações da tabela e iniciando assistente de IA..."
+      : "Carregando informações da tabela...";
+  }
+
   overlay.hidden = false;
   overlay.setAttribute("aria-hidden", "false");
+
+  // Fix iOS Safari: forca restart da animacao do spinner. Em transicoes
+  // como troca de tema, o navegador pode pausar animacoes CSS - o truque
+  // de remover/restaurar a propriedade animation re-dispara.
+  const spinner = overlay.querySelector(".overlay-retomada-spinner");
+  if (spinner) {
+    spinner.style.animation = "none";
+    // Forca reflow pra garantir que a remocao "tomou efeito"
+    void spinner.offsetWidth;
+    spinner.style.animation = ""; // remove o override inline, volta ao CSS
+  }
 }
 
 function esconderOverlayRetomada() {
