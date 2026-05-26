@@ -332,11 +332,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnClearSel")?.addEventListener("click", () => {
-      if (celulaSelecionada) {
-        marcarCelula(celulaSelecionada, "");
-      } else {
+      // Prioridade: QUALQUER selecao de linha ou coluna -> reseta selecoes
+      // (nao toca em celulas). Apaga conteudo da celula APENAS quando ha
+      // uma unica celula isolada selecionada (sem linhas/colunas ativas).
+      const temColuna = colunaSelecionada !== null;
+      const temLinha = Object.values(linhasSelecionadas).some((l) => l !== null);
+
+      if (temColuna || temLinha) {
         resetarSelecoesGlobais();
         atualizarDestaques();
+      } else if (celulaSelecionada) {
+        marcarCelula(celulaSelecionada, "");
       }
     });
   });
