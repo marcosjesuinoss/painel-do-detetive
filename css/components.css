@@ -410,21 +410,22 @@ body:not(.modo-pro) .menu-acao svg {
 }
 
 .popup-minhas-cartas h3 {
-  margin: 0 0 6px;
+  margin: 0 0 2px;
+  font-size: 17px;
 }
 
 .popup-minhas-cartas .popup-texto {
   text-align: center;
-  font-size: 13px;
-  opacity: 0.85;
-  margin: 0 0 8px;
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 0 0 4px;
 }
 
 .contador-cartas-minhas {
   text-align: center;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  margin: 6px 0 14px;
+  margin: 2px 0 8px;
   color: var(--accent);
   letter-spacing: 1px;
 }
@@ -435,49 +436,65 @@ body:not(.modo-pro) .menu-acao svg {
   font-weight: 400;
 }
 
+/* Grade vertical com 3 secoes empilhadas (Suspeitos, Armas, Locais).
+   Cada secao usa grid de 4 colunas pras cartas. Compactado pra evitar
+   scroll na maioria dos dispositivos. */
 .grade-minhas-cartas {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 62vh;
   overflow-y: auto;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   padding: 2px;
 }
 
-.coluna-cartas-minhas h4 {
+/* Faixa horizontal de fundo com tom accent + barra lateral pra destacar
+   as 3 categorias (Suspeitos / Armas / Locais) */
+.secao-cartas-minhas h4 {
   font-size: 11px;
-  margin: 0 0 6px;
-  opacity: 0.6;
-  text-align: center;
+  margin: 0 0 7px;
+  padding: 5px 10px;
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  text-align: left;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-weight: 600;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
 
-.coluna-cartas-minhas ul {
+.secao-cartas-minhas ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 5px;
 }
 
+/* min-height uniforme + flex centering = todos os botoes do mesmo
+   tamanho visual. Nomes curtos centralizam, nomes longos quebram
+   pra 2 linhas dentro do mesmo box. */
 .carta-minha {
   width: 100%;
+  min-height: 38px;
   margin: 0;
-  padding: 8px 4px;
-  font-size: 12px;
+  padding: 4px 3px;
+  font-size: 10.5px;
   font-weight: 500;
   background: var(--card);
   color: var(--text);
   border: 2px solid transparent;
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.1;
   box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition:
     background var(--transition-fast),
     color var(--transition-fast),
@@ -490,10 +507,45 @@ body:not(.modo-pro) .menu-acao svg {
   box-shadow: none;
 }
 
-.carta-minha.selecionada {
-  background: linear-gradient(145deg, var(--accent-soft), var(--accent));
-  color: white;
-  border-color: var(--accent-strong);
+/* Selecionada: usa o mesmo esquema visual do popup "quem tem mais cartas"
+   (.item-jogador-cartas.ativo) - gradiente do tema + texto branco. Mesma
+   especificidade alta pra vencer o button.padrao do PRO em ambos temas. */
+.carta-minha.selecionada,
+body.modo-pro:not(.light) .carta-minha.selecionada,
+body.modo-pro.light .carta-minha.selecionada {
+  background: var(--gradient-botao);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* FREE: visual mais simples (sem gradiente sutil, borda fina, raio menor) */
+body:not(.modo-pro) .carta-minha {
+  border-width: 1px;
+  border-radius: 7px;
+}
+
+body:not(.modo-pro) .contador-cartas-minhas {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+/* PRO: nao selecionada herda o look do button.padrao PRO (gradiente sutil
+   + borda accent), igual aos itens do popup de distribuicao */
+body.modo-pro .carta-minha {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(148, 163, 184, 0.09));
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.18);
+  border-radius: 10px;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.modo-pro.light .carta-minha {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(225, 233, 241, 0.98));
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  box-shadow:
+    0 3px 8px rgba(71, 85, 105, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .carta-minha.bloqueada {
@@ -518,14 +570,16 @@ body:not(.modo-pro) .menu-acao svg {
   margin: 0;
 }
 
-/* Telas estreitas: nomes maiores podem quebrar - ajusta padding/font */
+/* Telas estreitas: reduz ainda mais pra cabe 4 colunas confortavelmente */
 @media (max-width: 380px) {
   .carta-minha {
-    font-size: 11px;
-    padding: 7px 3px;
+    font-size: 10px;
+    min-height: 36px;
+    padding: 3px 2px;
+    border-radius: 8px;
   }
-  .grade-minhas-cartas {
-    gap: 6px;
+  .secao-cartas-minhas ul {
+    gap: 4px;
   }
 }
 

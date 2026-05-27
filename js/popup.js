@@ -121,12 +121,12 @@ function abrirPopupMinhasCartas() {
 
   const tipos = ["Suspeitos", "Armas", "Locais"];
   tipos.forEach((tipo) => {
-    const coluna = document.createElement("div");
-    coluna.className = "coluna-cartas-minhas";
+    const secao = document.createElement("div");
+    secao.className = "secao-cartas-minhas";
 
     const h4 = document.createElement("h4");
     h4.textContent = tipo;
-    coluna.appendChild(h4);
+    secao.appendChild(h4);
 
     const ul = document.createElement("ul");
     cartas.forEach((c, idx) => {
@@ -141,8 +141,8 @@ function abrirPopupMinhasCartas() {
       li.appendChild(btn);
       ul.appendChild(li);
     });
-    coluna.appendChild(ul);
-    grade.appendChild(coluna);
+    secao.appendChild(ul);
+    grade.appendChild(secao);
   });
 
   atualizarBotaoConfirmarMinhasCartas();
@@ -195,31 +195,42 @@ function confirmarMinhasCartas() {
 
   const jogadores = parseInt(localStorage.getItem("numJogadores") || "3", 10);
 
-  // 1 entrada na pilha de undo (cobre todas as marcacoes em batch)
-  if (typeof registrarSnapshotUndo === "function") {
-    registrarSnapshotUndo();
-  }
-
-  // Aplica em batch direto no estado, sem passar por marcarCelula
-  // (que registraria 1 snapshot por celula e estouraria o limite do undo).
-  // Marca V em col 0 + X nas demais colunas das linhas selecionadas.
+  // Marcacoes do popup NAO entram na pilha de undo (decisao do produto:
+  // sao informacoes que o usuario forneceu explicitamente sobre a propria
+  // mao - desfazer 1 a 1 ou via "Limpar tabuleiro" pra refazer).
+  //
+  // Aplica em batch direto no estado, sem passar por marcarCelula.
+  // - Linhas SELECIONADAS: V em col 0 + X nas demais colunas da linha
+  //   (ninguem mais pode ter aquela carta).
+  // - Linhas NAO SELECIONADAS: X em col 0 (J1 nao tem essa carta - eh
+  //   informacao certa, ja que o usuario escolheu suas N cartas).
   const estado = lerEstadoTabela();
-  cartasMinhasSelecionadas.forEach((rowIdx) => {
-    estado[`${rowIdx}-0`] = "V";
-    for (let col = 1; col < jogadores; col++) {
-      estado[`${rowIdx}-${col}`] = "X";
+  const totalCartas = Array.isArray(cartas) ? cartas.length : 0;
+
+  for (let row = 0; row < totalCartas; row++) {
+    if (cartasMinhasSelecionadas.has(row)) {
+      estado[`${row}-0`] = "V";
+      for (let col = 1; col < jogadores; col++) {
+        estado[`${row}-${col}`] = "X";
+      }
+    } else {
+      // Preenche J1 com X mesmo nas cartas nao selecionadas
+      estado[`${row}-0`] = "X";
     }
-  });
+  }
   localStorage.setItem("estadoTabela", JSON.stringify(estado));
 
-  // Re-renderiza apenas as celulas afetadas
-  cartasMinhasSelecionadas.forEach((rowIdx) => {
-    for (let col = 0; col < jogadores; col++) {
-      const chave = `${rowIdx}-${col}`;
+  // Re-renderiza todas as celulas afetadas (linhas selecionadas: todas
+  // as colunas; nao selecionadas: apenas col 0)
+  for (let row = 0; row < totalCartas; row++) {
+    const ehSelecionada = cartasMinhasSelecionadas.has(row);
+    const colMax = ehSelecionada ? jogadores : 1;
+    for (let col = 0; col < colMax; col++) {
+      const chave = `${row}-${col}`;
       const cel = document.querySelector(`[data-key="${chave}"]`);
       if (cel) renderizarEstado(cel, estado[chave]);
     }
-  });
+  }
 
   // Helpers de UI dependentes de V/X
   if (typeof atualizarEstadoVisualCartasEncontradas === "function") {
