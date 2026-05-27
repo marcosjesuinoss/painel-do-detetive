@@ -34,6 +34,12 @@ function confirmarLimpar() {
   localStorage.removeItem("estadoTabela");
   localStorage.removeItem("assistenteIAUltimaMudanca");
 
+  // Limpar tabuleiro reseta a pilha de undo - nao faz sentido permitir
+  // desfazer uma limpeza explicita (usuario ja confirmou no popup)
+  if (typeof resetarPilhaUndo === "function") {
+    resetarPilhaUndo();
+  }
+
   if (typeof resetarGruposResposta === "function") {
     resetarGruposResposta();
   }

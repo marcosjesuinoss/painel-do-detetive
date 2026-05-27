@@ -363,18 +363,10 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
     resetarHashRenderAssistenteIA();
   }
 
-  // Garantir que privacidade inicia desativada
-  const area = getEl("areaRolagemJogo");
-  if (area) area.classList.remove("privado");
-
-  privacidadeAtiva = false;
-
-  const icone = getEl("iconePrivacidade");
-  if (icone) {
-    icone.innerHTML = `
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-      <circle cx="12" cy="12" r="3"/>
-    `;
+  // Reseta pilha de undo - nova partida nao deve permitir desfazer
+  // jogadas da partida anterior
+  if (typeof resetarPilhaUndo === "function") {
+    resetarPilhaUndo();
   }
 
   resetarSelecoesGlobais();

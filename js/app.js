@@ -260,17 +260,13 @@ document.addEventListener("DOMContentLoaded", () => {
     atualizarBotaoContinuar();
   });
 
-  executarEtapaInicial("icone-privacidade", () => {
-    const area = getEl("areaRolagemJogo");
-    const icone = getEl("iconePrivacidade");
-
-    if (area && icone) {
-      const ativo = area.classList.contains("privado");
-
-      icone.innerHTML = ativo
-        ? '<path d="M17.94 17.94A10.94 10.94 0 0112 19C5 19 1 12 1 12a21.77 21.77 0 015.06-6.94"/><path d="M1 1l22 22"/>'
-        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-    }
+  executarEtapaInicial("botao-undo", () => {
+    document.getElementById("btnUndo")?.addEventListener("click", () => {
+      if (typeof aplicarUndo === "function") aplicarUndo();
+    });
+    // Estado inicial do botao reflete pilha persistida (ex.: usuario fechou
+    // o app no meio do jogo - ao voltar, undo continua disponivel)
+    if (typeof atualizarBotaoUndo === "function") atualizarBotaoUndo();
   });
 
   executarEtapaInicial("service-worker", () => {

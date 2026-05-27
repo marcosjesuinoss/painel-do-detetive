@@ -1,7 +1,6 @@
 /* =====================================
    UTILITÁRIOS
 ===================================== */
-let privacidadeAtiva = false; // usado por menu.js
 
 function getEl(id) {
   return document.getElementById(id);

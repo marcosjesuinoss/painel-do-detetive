@@ -200,12 +200,6 @@
   display: block; /* remove baseline inline */
 }
 
-#iconePrivacidade {
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
-}
-
 #areaRolagemJogo {
   position: absolute;
   top: 0;
@@ -325,8 +319,20 @@
   opacity: 0.7;
 }
 
-.privado {
-  filter: blur(25px);
+/* ===== ANIMACAO DE UNDO ===== */
+/* Pulse sutil nas celulas que mudaram apos um undo - usa o accent do
+   tema atual (FREE verde / PRO amarelo) e some em ~0.7s. */
+@keyframes celulaUndoPulse {
+  0% {
+    box-shadow: inset 0 0 0 3px rgba(var(--accent-rgb), 0.85);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(var(--accent-rgb), 0);
+  }
+}
+
+.celula-undo-pulse {
+  animation: celulaUndoPulse 0.7s ease-out;
 }
 
 /* ===== SOBRE PREMIUM ===== */

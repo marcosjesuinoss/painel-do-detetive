@@ -1,37 +1,6 @@
 ﻿/* =====================================
-   MENU & PRIVACIDADE
+   MENU
 ===================================== */
-
-function togglePrivacidade() {
-  const area = getEl("areaRolagemJogo");
-  const icone = getEl("iconePrivacidade");
-
-  if (!area) return;
-  area.classList.toggle("privado");
-  privacidadeAtiva = area.classList.contains("privado");
-
-  if (!icone) return;
-
-  icone.style.opacity = "0";
-  icone.style.transform = "scale(0.8)";
-
-  setTimeout(() => {
-    if (privacidadeAtiva) {
-      icone.innerHTML = `
-        <path d="M17.94 17.94A10.94 10.94 0 0112 19C5 19 1 12 1 12a21.77 21.77 0 015.06-6.94"/>
-        <path d="M1 1l22 22"/>
-      `;
-    } else {
-      icone.innerHTML = `
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      `;
-    }
-
-    icone.style.opacity = "1";
-    icone.style.transform = "scale(1)";
-  }, 150);
-}
 
 function toggleMenu() {
   const menu = getEl("menuLateral");

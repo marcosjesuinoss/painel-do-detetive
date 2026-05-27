@@ -20,6 +20,168 @@ function lerEstadoTabela() {
 }
 
 /* =====================================
+   PILHA DE UNDO (desfazer ultima jogada)
+=====================================
+   Cada acao do usuario (V/X/?/Limpar celula, trinca de X, trinca de ?)
+   empurra um snapshot do estado ANTERIOR na pilha. Undo pop+restaura.
+   - FREE: 5 jogadas (pilha max 5)
+   - PRO:  10 jogadas (pilha max 10)
+   Snapshot inclui estadoTabela + grupos do assistente + origens de
+   duvida. NAO inclui pendencias (sao derivadas, recalculadas) nem
+   selecoes/cadeado do header (UI, nao estado de jogo).
+   Limpar tabuleiro e Novo jogo resetam a pilha. */
+const CHAVE_PILHA_UNDO = "pilhaUndo";
+const LIMITE_UNDO_FREE = 5;
+const LIMITE_UNDO_PRO = 10;
+
+function obterLimiteUndo() {
+  return (typeof isPRO === "function" && isPRO())
+    ? LIMITE_UNDO_PRO
+    : LIMITE_UNDO_FREE;
+}
+
+function obterPilhaUndo() {
+  try {
+    const raw = localStorage.getItem(CHAVE_PILHA_UNDO);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarPilhaUndo(pilha) {
+  try {
+    localStorage.setItem(CHAVE_PILHA_UNDO, JSON.stringify(pilha));
+  } catch {}
+}
+
+function resetarPilhaUndo() {
+  localStorage.removeItem(CHAVE_PILHA_UNDO);
+  atualizarBotaoUndo();
+}
+
+function capturarSnapshotUndo() {
+  return {
+    estadoTabela: lerEstadoTabela(),
+    grupos: typeof obterGruposResposta === "function"
+      ? obterGruposResposta()
+      : [],
+    origens: typeof obterOrigensDuvida === "function"
+      ? obterOrigensDuvida()
+      : {},
+  };
+}
+
+function registrarSnapshotUndo() {
+  const snap = capturarSnapshotUndo();
+  const pilha = obterPilhaUndo();
+  pilha.push(snap);
+  const limite = obterLimiteUndo();
+  while (pilha.length > limite) pilha.shift();
+  salvarPilhaUndo(pilha);
+  atualizarBotaoUndo();
+}
+
+function aplicarUndo() {
+  const pilha = obterPilhaUndo();
+  if (pilha.length === 0) return;
+
+  const snap = pilha.pop();
+  salvarPilhaUndo(pilha);
+
+  // Detecta quais celulas mudaram (pra animar pulse)
+  const estadoAtual = lerEstadoTabela();
+  const estadoRestaurado = snap.estadoTabela || {};
+  const chavesMudadas = new Set();
+  const todasChaves = new Set([
+    ...Object.keys(estadoAtual),
+    ...Object.keys(estadoRestaurado),
+  ]);
+  todasChaves.forEach((k) => {
+    if ((estadoAtual[k] || "") !== (estadoRestaurado[k] || "")) {
+      chavesMudadas.add(k);
+    }
+  });
+
+  // Restaura estados
+  localStorage.setItem("estadoTabela", JSON.stringify(estadoRestaurado));
+  if (typeof salvarGruposResposta === "function") {
+    salvarGruposResposta(snap.grupos || []);
+  }
+  if (typeof salvarOrigensDuvida === "function") {
+    salvarOrigensDuvida(snap.origens || {});
+  }
+  // Pendencias do assistente sao derivadas - serao recalculadas
+  if (typeof resetarPendenciasMarcacaoAssistenteIA === "function") {
+    resetarPendenciasMarcacaoAssistenteIA();
+  }
+  // Invalida cache de snapshot do assistente pra refletir mudancas
+  if (typeof invalidarSnapshotAssistenteIA === "function") {
+    invalidarSnapshotAssistenteIA();
+  }
+
+  // Limpa selecoes (linha/coluna/celula) mas NAO recria a tabela inteira:
+  // criarTabela() refaz todas as celulas do zero e re-dispara as animacoes
+  // de entrada (check-anim, x-anim, q-anim) em TODAS as celulas marcadas,
+  // mesmo as que nao mudaram. Em vez disso, atualizamos apenas as celulas
+  // afetadas pelo undo e removemos as classes de anim de entrada delas.
+  resetarSelecoesGlobais();
+
+  chavesMudadas.forEach((k) => {
+    const cel = document.querySelector(`[data-key="${k}"]`);
+    if (!cel) return;
+    renderizarEstado(cel, estadoRestaurado[k] || "");
+    // Remove animacoes de entrada (foi o undo, nao uma marcacao nova)
+    const icone = cel.querySelector(".estado-icon");
+    if (icone) {
+      icone.classList.remove("check-anim", "x-anim", "q-anim");
+    }
+    // Aplica pulse (sinal visual de "essa celula voltou")
+    cel.classList.remove("celula-undo-pulse");
+    void cel.offsetWidth;
+    cel.classList.add("celula-undo-pulse");
+  });
+
+  // Helpers de UI que dependem de V/X (mas nao re-renderizam celulas):
+  // destaque de carta oculta, alerta de duplicidade PRO, estado visual de
+  // cartas encontradas, destaques de selecao.
+  if (typeof atualizarEstadoVisualCartasEncontradas === "function") {
+    atualizarEstadoVisualCartasEncontradas();
+  }
+  if (typeof atualizarDestaqueCartaOculta === "function") {
+    atualizarDestaqueCartaOculta();
+  }
+  if (typeof atualizarAlertaDuplicidadePRO === "function") {
+    atualizarAlertaDuplicidadePRO();
+  }
+  if (typeof atualizarDestaques === "function") {
+    atualizarDestaques();
+  }
+  if (typeof atualizarBotoes === "function") {
+    atualizarBotoes();
+  }
+
+  atualizarBotaoUndo();
+  atualizarBotaoContinuar();
+  if (typeof agendarAtualizacaoAssistenteIA === "function") {
+    agendarAtualizacaoAssistenteIA();
+  }
+}
+
+function atualizarBotaoUndo() {
+  const btn = document.getElementById("btnUndo");
+  if (!btn) return;
+  const pilha = obterPilhaUndo();
+  if (pilha.length === 0) {
+    btn.classList.add("botao-desativado");
+  } else {
+    btn.classList.remove("botao-desativado");
+  }
+}
+
+/* =====================================
    CONFIGURAÇÕES DO JOGO
 ===================================== */
 
@@ -381,6 +543,14 @@ function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
   const estadoSalvo = lerEstadoTabela();
   const estadoAnterior = estadoSalvo[chave] || "";
   const autoXChaves = new Set();
+
+  // UNDO: registra snapshot ANTES da modificacao, apenas para acoes
+  // manuais do usuario. Acoes da IA (origem="assistente") nao entram
+  // na pilha. Tambem evita push quando o valor nao vai mudar de fato
+  // (ex.: clicar V numa celula que ja eh V).
+  if (origem === "manual" && estadoAnterior !== tipo) {
+    registrarSnapshotUndo();
+  }
 
   if (tipo === "V") {
     estadoSalvo[chave] = "V";
@@ -849,6 +1019,9 @@ function aplicarTrincaX() {
     return;
   }
 
+  // UNDO: trinca de X conta como 1 jogada do usuario
+  registrarSnapshotUndo();
+
   // 🔹 Atualiza apenas as 3 células visuais
   linhasAtivas.forEach(linha => {
 
@@ -930,6 +1103,12 @@ function aplicarTrincaResposta() {
     }
     return;
   }
+
+  // UNDO: a partir daqui modifica estado/grupos (cenarios B/C/D).
+  // Snapshot fora de cenario A pra nao poluir a pilha sem mudanca.
+  // Cenario B chama marcarCelula(V, "assistente"), que NAO registra
+  // snapshot proprio (origem != manual) - este push aqui cobre.
+  registrarSnapshotUndo();
 
   // Cenario B: 1 candidata SEM V no resto -> colapsa para V (outros sao X)
   if (candidatas.length === 1 && !algumV) {

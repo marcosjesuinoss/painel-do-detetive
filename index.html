@@ -225,27 +225,23 @@
 
       <!-- RODAPE FIXO -->
       <div class="rodape-jogo">
-        <!-- PRIVACIDADE -->
+        <!-- UNDO (desfazer ultima jogada) -->
         <button
-          id="btnPrivacidade"
-          class="padrao botao-auto"
+          id="btnUndo"
+          class="padrao botao-auto botao-desativado"
           type="button"
-          onclick="togglePrivacidade()"
-          aria-label="Alternar modo privacidade"
+          aria-label="Desfazer &uacute;ltima jogada"
         >
           <svg
-            id="iconePrivacidade"
-            width="22"
-            height="22"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
+            stroke-width="2.2"
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
+            <path d="M3 7v6h6" />
+            <path d="M21 17a9 9 0 0 0-15-6.7L3 13" />
           </svg>
         </button>
 
