@@ -373,4 +373,12 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
   criarTabela();
   atualizarBotaoContinuar();
   mostrarTela("jogo");
+
+  // Popup "Minhas cartas" so em partida nova - usuario seleciona quais
+  // cartas estao na propria mao. Confirmar marca V em J1 + X nas outras
+  // colunas dessas linhas (auto-marcacao). Tem botao "Pular" pra quem
+  // nao quer usar. Em "Continuar partida" o popup NAO aparece.
+  if (typeof abrirPopupMinhasCartas === "function") {
+    abrirPopupMinhasCartas();
+  }
 }

@@ -400,6 +400,135 @@ body:not(.modo-pro) .menu-acao svg {
   margin-top: 14px;
 }
 
+/* ===== POPUP "MINHAS CARTAS" =====
+   Grade 3 colunas (Suspeitos / Armas / Locais). Cada carta eh um
+   botao toggle. Atinge limite -> outras cartas bloqueadas (shake
+   leve no tap). Confirmar so habilita com count exato. */
+.popup-minhas-cartas {
+  max-width: 560px;
+  width: 92%;
+}
+
+.popup-minhas-cartas h3 {
+  margin: 0 0 6px;
+}
+
+.popup-minhas-cartas .popup-texto {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.contador-cartas-minhas {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 6px 0 14px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.contador-cartas-minhas .contador-sep {
+  opacity: 0.5;
+  margin: 0 4px;
+  font-weight: 400;
+}
+
+.grade-minhas-cartas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding: 2px;
+}
+
+.coluna-cartas-minhas h4 {
+  font-size: 11px;
+  margin: 0 0 6px;
+  opacity: 0.6;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.coluna-cartas-minhas ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.carta-minha {
+  width: 100%;
+  margin: 0;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--card);
+  color: var(--text);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.15;
+  box-shadow: none;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.carta-minha:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+.carta-minha.selecionada {
+  background: linear-gradient(145deg, var(--accent-soft), var(--accent));
+  color: white;
+  border-color: var(--accent-strong);
+}
+
+.carta-minha.bloqueada {
+  animation: cartaMinhaShake 0.32s ease-in-out;
+}
+
+@keyframes cartaMinhaShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+.popup-acoes-minhas-cartas {
+  display: flex;
+  gap: 10px;
+}
+
+.popup-acoes-minhas-cartas button {
+  flex: 1;
+  margin: 0;
+}
+
+/* Telas estreitas: nomes maiores podem quebrar - ajusta padding/font */
+@media (max-width: 380px) {
+  .carta-minha {
+    font-size: 11px;
+    padding: 7px 3px;
+  }
+  .grade-minhas-cartas {
+    gap: 6px;
+  }
+}
+
 /* POPUPS */
 .popup-overlay {
   position: fixed;

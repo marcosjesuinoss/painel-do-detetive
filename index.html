@@ -1108,6 +1108,46 @@
       </div>
     </div>
 
+    <!-- POPUP "Minhas cartas" - aparece ao iniciar uma partida nova.
+         Usuario seleciona as N cartas da propria mao (N = cartasPorJogador[0]).
+         Confirmar marca V em col 0 + X em todas as outras cols dessas linhas
+         (auto-marcacao das proprias cartas). Conta como 1 jogada no undo. -->
+    <div
+      id="popupMinhasCartas"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupMinhasCartas"
+      aria-hidden="true"
+    >
+      <div class="popup-box popup-minhas-cartas">
+        <h3 id="tituloPopupMinhasCartas">Suas cartas</h3>
+        <p id="textoPopupMinhasCartas" class="popup-texto">
+          Selecione as cartas que est&atilde;o na sua m&atilde;o.
+        </p>
+        <div class="contador-cartas-minhas">
+          <span id="contadorCartasMinhasAtual">0</span>
+          <span class="contador-sep">/</span>
+          <span id="contadorCartasMinhasTotal">0</span>
+        </div>
+        <div id="gradeMinhasCartas" class="grade-minhas-cartas"></div>
+        <div class="popup-acoes-minhas-cartas">
+          <button class="padrao" type="button" onclick="pularMinhasCartas()">
+            Pular
+          </button>
+          <button
+            id="btnConfirmarMinhasCartas"
+            class="play botao-confirmar botao-desativado"
+            type="button"
+            onclick="confirmarMinhasCartas()"
+            disabled
+          >
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="js/utils.js?v=69" defer></script>
     <script src="js/jogadores.js?v=69" defer></script>
     <script src="js/telas.js?v=69" defer></script>
