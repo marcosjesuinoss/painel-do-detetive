@@ -2402,8 +2402,13 @@ function atualizarAssistenteIA() {
       if (temGrave) {
         const qtd = inc.graves.length;
         const plural = qtd > 1 ? "inconsistencias graves" : "inconsistencia grave";
+        const autoAtiva = ehAutomarcacaoAtivaAssistenteIA();
+        const linhaPausa = autoAtiva
+          ? "Marcacao automatica pausada ate as inconsistencias serem resolvidas."
+          : "Sugestoes pausadas ate as inconsistencias serem resolvidas.";
         aplicarListaAssistenteIA(estrutura.sugestao, [
           `Corrija ${qtd} ${plural} antes de continuar.`,
+          linhaPausa,
           "Veja os detalhes no card 'Inconsistencias' (clique em cada item para destacar na tabela).",
         ]);
       } else if (temPendencias) {
