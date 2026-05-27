@@ -154,6 +154,10 @@
   left: 0;
   width: 100%;
   height: 70px;
+  /* Acima do menu (z 200) e do overlay (z 100). Garante que o botao
+     Menu permanece clicavel mesmo com o bottom sheet aberto - eh o
+     proprio botao que vira X e fecha o menu. */
+  z-index: 300;
 
   background: var(--bg);
 
@@ -178,11 +182,6 @@
   margin: 0; /* remove qualquer deslocamento */
 
   line-height: 0; /* remove desalinhamento interno */
-}
-
-#iconeMenu {
-  width: 24px;
-  height: 24px;
 }
 
 #btnMenu {
@@ -230,25 +229,175 @@
   pointer-events: auto;
 }
 
-/* MENU LATERAL */
+/* MENU - bottom sheet flutuante que sobe acima do rodape. NAO cobre os
+   botoes V/X/?/Limpar/Undo/Menu - o proprio botao Menu vira X quando
+   o menu esta aberto (troca de icone via CSS). */
 .menu-lateral {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 86%;
-  max-width: 420px;
-  height: 100vh;
+  bottom: 78px; /* 70px do rodape + 8px de respiro */
+  left: 8px;
+  right: 8px;
+  max-height: calc(100vh - 90px);
   background: var(--bg);
   z-index: 200;
-  padding: 22px 16px;
-  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.4);
+  padding: 16px;
+  border-radius: 18px;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
 
-  transform: translateX(100%);
-  transition: transform var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  transform: translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--transition-normal),
+    opacity var(--transition-normal);
 }
 
 .menu-lateral.aberto {
-  transform: translateX(0);
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tablet+: ocupa ~70% alinhado a direita (emana do botao Menu) */
+@media (min-width: 600px) {
+  .menu-lateral {
+    left: auto;
+    width: 70%;
+    max-width: 480px;
+  }
+}
+
+/* Botao Menu (rodape): troca icone hamburger <-> X via .ativo */
+#btnMenu .icone-menu-aberto {
+  display: none;
+}
+#btnMenu.ativo .icone-menu-fechado {
+  display: none;
+}
+#btnMenu.ativo .icone-menu-aberto {
+  display: block;
+}
+
+/* Quando o menu esta aberto, os demais botoes do rodape (V/X/?/Limpar/
+   Undo) somem com fade pra evitar marcacoes acidentais. So o proprio
+   btnMenu (agora como X) continua visivel/clicavel pra fechar. */
+body.menu-aberto .rodape-jogo .botao-auto:not(#btnMenu) {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+/* Acoes do menu - layout depende de PRO vs FREE */
+.menu-acoes {
+  margin-top: 0;
+}
+
+.menu-acao {
+  /* Zerar margin pra o gap do container .menu-acoes ditar 100% do
+     espacamento (sem isso, o button { margin-top: 12px } do base.css
+     se acumula em cima do gap e quebra a uniformidade) */
+  margin: 0;
+  background: var(--card);
+  color: var(--text);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition:
+    background var(--transition-normal),
+    color var(--transition-normal),
+    transform var(--transition-fast);
+  touch-action: manipulation;
+}
+
+.menu-acao:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.menu-acao svg {
+  flex-shrink: 0;
+}
+
+/* PRO: 3 colunas com icone em cima + label embaixo.
+   Visual igual aos demais botoes PRO (.padrao) - gradiente, borda accent
+   sutil, sombra. Reproduz body.modo-pro button.padrao do tema escuro e
+   adiciona variante light pra acompanhar. */
+body.modo-pro .menu-acoes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+body.modo-pro .menu-acao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  font-size: 11.5px;
+  text-align: center;
+  line-height: 1.15;
+  min-height: 76px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(148, 163, 184, 0.08));
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.12);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.modo-pro .menu-acao svg {
+  width: 22px;
+  height: 22px;
+}
+
+body.modo-pro.light .menu-acao {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(225, 233, 241, 0.96));
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 8px 18px rgba(71, 85, 105, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+/* FREE: empilhado, icone esquerda + label direita (1 botao por linha) */
+body:not(.modo-pro) .menu-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body:not(.modo-pro) .menu-acao {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  text-align: left;
+}
+
+body:not(.modo-pro) .menu-acao svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* CTA Ativar PRO embaixo - mesmo espacamento do gap entre .menu-acao
+   pra uniformidade visual (FREE) */
+#btnMenuPRO {
+  margin-top: 14px;
 }
 
 /* POPUPS */
@@ -2019,16 +2168,13 @@ body.modo-pro.light .card-pro.pro-ativo .pro-sobre-titulo {
 
 
 
-.menu-lateral {
-  overflow-y: auto;
-}
-
 .menu-lateral::-webkit-scrollbar {
   display: none;
 }
 
-.menu-lateral button {
-  margin-top: 8px;
+/* Espacamento antes do bloco do assistente, quando presente (so PRO) */
+body.modo-pro #assistenteIAMenu {
+  margin-top: 14px;
 }
 
 
@@ -3090,7 +3236,6 @@ body.modo-pro.light .accordion .item.ativo .titulo {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
-body.modo-pro.light .menu-lateral button,
 body.modo-pro.light #inicio button {
   margin-top: 10px;
 }

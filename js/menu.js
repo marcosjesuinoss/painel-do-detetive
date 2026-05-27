@@ -14,6 +14,16 @@ function toggleMenu() {
   menu.classList.toggle("aberto", !aberto);
   overlay.classList.toggle("ativo", !aberto);
   btn.classList.toggle("ativo", !aberto);
+  // body.menu-aberto -> CSS oculta os demais botoes do rodape (V/X/?/
+  // Limpar/Undo) pra evitar marcacoes enquanto o menu esta aberto.
+  document.body.classList.toggle("menu-aberto", !aberto);
+
+  // ESC fecha o menu (acessibilidade). Listener so ativo enquanto aberto.
+  if (!aberto) {
+    document.addEventListener("keydown", _fecharMenuPorEsc);
+  } else {
+    document.removeEventListener("keydown", _fecharMenuPorEsc);
+  }
 
   // IA-029: quando o menu ABRE, forca um update do assistente. Enquanto
   // o menu esta fechado, atualizarAssistenteIA pula o render (etapa 2) -
@@ -23,11 +33,21 @@ function toggleMenu() {
   }
 }
 
+function _fecharMenuPorEsc(ev) {
+  if (ev.key !== "Escape") return;
+  const menu = getEl("menuLateral");
+  if (menu && menu.classList.contains("aberto")) {
+    toggleMenu();
+  }
+}
+
 function resetarMenu() {
   ["menuLateral", "overlayMenu", "btnMenu"].forEach((id) => {
     const el = getEl(id);
     if (el) el.classList.remove("aberto", "ativo");
   });
+  document.body.classList.remove("menu-aberto");
+  document.removeEventListener("keydown", _fecharMenuPorEsc);
 }
 
 function irParaInicio() {

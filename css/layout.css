@@ -23,14 +23,6 @@
   -webkit-overflow-scrolling: touch; /* scroll mais suave no iPhone */
 }
 
-#btnMenu {
-  transition: transform var(--transition-normal);
-}
-
-#btnMenu.ativo {
-  transform: rotate(90deg);
-}
-
 #areaRolagemJogo {
   will-change: filter;
 }
