@@ -2290,8 +2290,12 @@ function menuLateralAssistenteVisivelAssistenteIA() {
 function atualizarAssistenteIA() {
   try {
     // Sem PRO -> menu inteiro fica oculto via atualizarStatusPRO; nao
-    // precisamos renderizar nada.
-    if (typeof isPRO === "function" && !isPRO()) return;
+    // precisamos renderizar nada. Garante limpeza do badge de inconsistencia
+    // (caso usuario desativou PRO com inconsistencia ainda na tela).
+    if (typeof isPRO === "function" && !isPRO()) {
+      document.body.classList.remove("tem-inconsistencia-grave");
+      return;
+    }
     if (!Array.isArray(cartas) || cartas.length === 0) return;
 
     const estrutura = garantirEstruturaAssistenteIA();
@@ -2304,6 +2308,8 @@ function atualizarAssistenteIA() {
     // visiveis (pra o gear ficar acessivel) mas mostram estado "desativado".
     const cfgUsuario = obterConfiguracaoAssistenteIA();
     if (!cfgUsuario.ativo) {
+      // Limpa badge - assistente off, sem deteccao de inconsistencia
+      document.body.classList.remove("tem-inconsistencia-grave");
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
       // IA-030: replaceChildren via aplicarListaAssistenteIA
@@ -2359,6 +2365,22 @@ function atualizarAssistenteIA() {
     //  - cruzamentos fortes: dupla-trio (IA-015)
     executarTodasDeducoesAssistenteIA();
 
+    // Badge de inconsistencia grave (rodape) - precisa atualizar SEMPRE,
+    // mesmo com menu fechado, senao o badge fica congelado ate o usuario
+    // abrir o menu. Roda fora do skip-render do IA-029. Operacao barata
+    // (1 classificacao das linhas) e tira o pulo de cache porque o estado
+    // mudou apos a etapa 1 de deducoes.
+    try {
+      executarComCacheAssistenteIA(() => {
+        const linhasAtuais = obterLinhasAssistenteIA();
+        const incAtual = classificarInconsistenciasAssistenteIA(linhasAtuais);
+        document.body.classList.toggle(
+          "tem-inconsistencia-grave",
+          incAtual.graves.length > 0,
+        );
+      });
+    } catch {}
+
     // IA-029: render dos cards eh inutil se ninguem ve. toggleMenu() chama
     // atualizarAssistenteIA quando o menu abrir.
     if (!menuVisivel) return;
@@ -2388,6 +2410,11 @@ function atualizarAssistenteIA() {
       const inc = classificarInconsistenciasAssistenteIA(linhas);
       const temGrave = inc.graves.length > 0;
       const temLeve = inc.leves.length > 0;
+
+      // Badge vermelho no btnMenu (rodape) quando houver inconsistencia
+      // grave - alerta visivel sem precisar abrir o menu. Apenas em PRO
+      // (FREE nao roda IA). Atualiza body.tem-inconsistencia-grave.
+      document.body.classList.toggle("tem-inconsistencia-grave", temGrave);
 
       // Card "O que mudou" - mantem normal
       // IA-030: replaceChildren via aplicarListaAssistenteIA
