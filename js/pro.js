@@ -45,36 +45,42 @@ function atualizarStatusPRO() {
   const proDados = lerPRO();
   const statusEl = getEl("statusPRO");
   const statusTexto = getEl("statusTexto");
-  const btnAtivar = getEl("btnAtivarPRO");
   const btnCancelar = getEl("btnCancelarPRO");
   const btnMenuPRO = getEl("btnMenuPRO");
   const assistenteIAMenu = getEl("assistenteIAMenu");
-  const precoBox = document.querySelector("#pro .preco-box");
-  const infoPro = document.querySelector("#pro .info-pro");
+  // Wrapper das secoes que so aparecem no estado INATIVO (preco + CTA +
+  // bullets) e a checklist de beneficios (so faz sentido quando o usuario
+  // ainda nao comprou - se ja comprou, ele ja sabe o que tem).
+  const ctaSection = getEl("proCtaSection");
+  const checklist = getEl("beneficiosGridPRO");
+  const checklistLabel = getEl("proChecklistLabel");
+  const obrigadoCard = getEl("proObrigadoCard");
 
-  if (!statusEl || !statusTexto || !btnAtivar || !btnCancelar) return;
+  if (!statusEl || !statusTexto || !btnCancelar) return;
 
-  const statusIcon = statusEl.querySelector(".status-icon");
   const statusH2 = statusEl.querySelector("h2");
 
   if (proDados.ativo) {
-    // PRO ATIVO
+    // PRO ATIVO (s8) - hero celebrativo + checklist com tom "seus recursos" +
+    // card de agradecimento + cancelar discreto. Tela cheia mas com foco em
+    // confirmar valor (em vez de vender).
     statusEl.classList.remove("inativo");
     statusEl.classList.add("ativo");
 
-    if (statusIcon) statusIcon.textContent = "ATIVO";
-    if (statusH2) statusH2.textContent = "Modo PRO Ativo!";
+    if (statusH2) statusH2.textContent = "Modo PRO Ativo";
 
     if (proDados.dataAtivacao) {
-      statusTexto.textContent = `Ativado em ${new Date(proDados.dataAtivacao).toLocaleDateString("pt-BR")}`;
+      const data = new Date(proDados.dataAtivacao).toLocaleDateString("pt-BR");
+      statusTexto.textContent = `Ativado em ${data}.`;
     } else {
-      statusTexto.textContent = "Modo PRO ativo com recursos exclusivos liberados";
+      statusTexto.textContent = "Aproveite os recursos exclusivos do PRO.";
     }
 
-    btnAtivar.style.display = "none";
-    btnCancelar.style.display = "block";
-    if (precoBox) precoBox.style.display = "none";
-    if (infoPro) infoPro.style.display = "none";
+    btnCancelar.style.display = "inline-block";
+    if (ctaSection) ctaSection.style.display = "none";
+    if (checklist) checklist.style.display = "";
+    if (checklistLabel) checklistLabel.textContent = "Seus recursos ativos";
+    if (obrigadoCard) obrigadoCard.style.display = "";
 
     if (btnMenuPRO) {
       btnMenuPRO.style.display = "none";
@@ -90,19 +96,19 @@ function atualizarStatusPRO() {
 
     aplicarEfeitosPRO();
   } else {
-    // PRO INATIVO
+    // PRO INATIVO - mostra hero + checklist + CTA com preco + bullets
     statusEl.classList.add("inativo");
     statusEl.classList.remove("ativo");
 
-    if (statusIcon) statusIcon.textContent = "";
     if (statusH2) statusH2.textContent = "Desbloqueie o Poder Total";
     statusTexto.textContent =
       "Ative o Modo PRO e ganhe acesso a recursos exclusivos";
 
-    btnAtivar.style.display = "block";
     btnCancelar.style.display = "none";
-    if (precoBox) precoBox.style.display = "block";
-    if (infoPro) infoPro.style.display = "block";
+    if (ctaSection) ctaSection.style.display = "";
+    if (checklist) checklist.style.display = "";
+    if (checklistLabel) checklistLabel.textContent = "Recursos exclusivos";
+    if (obrigadoCard) obrigadoCard.style.display = "none";
 
     if (btnMenuPRO) {
       btnMenuPRO.textContent = "Ativar Modo PRO";

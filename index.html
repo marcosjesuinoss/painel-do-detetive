@@ -171,7 +171,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.2.0</footer>
+      <footer>Vers&atilde;o 1.3.0</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -602,50 +602,83 @@
         Voltar
       </button>
 
-      <div class="container">
-        <!-- STATUS PRO -->
-        <div id="statusPRO" class="status-pro inativo">
+      <div class="container pro-container">
+        <!-- HERO - icone SVG + titulo + descricao. Troca de aparencia
+             via classes .ativo / .inativo controladas por atualizarStatusPRO -->
+        <div id="statusPRO" class="pro-hero inativo">
+          <div class="pro-hero-icone">
+            <svg class="pro-hero-svg-inativo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 20h20" />
+              <path d="M5 20V9l5 4 2-9 2 9 5-4v11" />
+            </svg>
+            <svg class="pro-hero-svg-ativo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
           <span class="status-icon" aria-hidden="true"></span>
           <h2>Desbloqueie o Poder Total</h2>
-          <p id="statusTexto" class="status-descricao">
+          <p id="statusTexto" class="pro-hero-texto">
             Ative o Modo PRO e ganhe acesso a recursos exclusivos
           </p>
         </div>
 
-        <!-- BENEFICIOS -->
-        <div id="beneficiosGridPRO" class="beneficios-grid">
-          <!-- Recursos PRO inseridos via JavaScript -->
+        <!-- LABEL antes da checklist (texto muda conforme PRO ativo/inativo) -->
+        <h3 id="proChecklistLabel" class="pro-checklist-label">
+          Recursos exclusivos
+        </h3>
+
+        <!-- CHECKLIST DE BENEFICIOS - sempre visivel (em PRO ativo vira
+             "Seus recursos ativos" com tom celebrativo) -->
+        <ul id="beneficiosGridPRO" class="pro-checklist">
+          <!-- itens injetados via renderizarBeneficiosPRO -->
+        </ul>
+
+        <!-- CARD "OBRIGADO" - so visivel quando PRO ativo -->
+        <div id="proObrigadoCard" class="pro-obrigado" style="display: none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          <h3>Obrigado por apoiar o app!</h3>
+          <p>Seu apoio mant&eacute;m o projeto vivo e em evolu&ccedil;&atilde;o constante.</p>
         </div>
 
-        <!-- PRECO E BOTOES -->
-        <div class="preco-section">
+        <!-- SECAO DE CTA: preco + botao + bullets - ocultada quando PRO ativo -->
+        <div id="proCtaSection" class="pro-cta-section">
           <div class="preco-box">
-            <p class="preco-label">Acesso Vitalicio</p>
+            <p class="preco-label">Acesso Vital&iacute;cio</p>
             <div class="preco-valor"><strong>R$ 19,90</strong></div>
             <p class="preco-info">Pagamento &uacute;nico, sem recorr&ecirc;ncia</p>
           </div>
 
           <button
             id="btnAtivarPRO"
-            class="play btn-pro-grande"
+            class="btn-pro-cta"
             type="button"
             onclick="abrirAtivarPRO()"
           >
-            Ativar PRO Agora
+            <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
+            <span class="btn-pro-cta-label">Ativar PRO Agora</span>
           </button>
 
-          <button
-            id="btnCancelarPRO"
-            class="padrao btn-cancelar-pro"
-            type="button"
-            style="display: none"
-            onclick="abrirCancelarPRO()"
-          >
-            Cancelar Assinatura
-          </button>
-
-          <p class="info-pro">Contribua com o desenvolvimento do app!</p>
+          <ul class="pro-bullets" aria-label="Garantias">
+            <li>Sem mensalidade</li>
+            <li>Acesso vital&iacute;cio</li>
+            <li>Funciona offline</li>
+            <li>Atualiza&ccedil;&otilde;es futuras</li>
+          </ul>
         </div>
+
+        <!-- Botao Cancelar - so aparece quando PRO ativo, visualmente discreto -->
+        <button
+          id="btnCancelarPRO"
+          class="btn-cancelar-pro-link"
+          type="button"
+          style="display: none"
+          onclick="abrirCancelarPRO()"
+        >
+          Cancelar assinatura
+        </button>
       </div>
     </div>
 
@@ -835,7 +868,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.2.0</div>
+      <div class="versao-app">Vers&atilde;o 1.3.0</div>
     </div>
 
     <!-- ================= AJUDA ================= -->

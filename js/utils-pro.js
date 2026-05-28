@@ -197,9 +197,12 @@ function listarRecursosPROAtivos() {
 
   const ordemPreferencial = [
     "ia",
-    "alertaCartaEncontrada",
+    "sugestoes",
+    "marcacaoAutomatica",
     "alertaDuplicidade",
+    "trincaDuvida",
     "temas",
+    "undoEstendido",
     "semAnuncios",
   ];
 
@@ -223,15 +226,81 @@ function listarRecursosPROAtivos() {
 }
 
 function obterVisualRecursoPRO(featureId) {
+  // SVG inline (Feather-style, stroke). String pronta pra injetar.
+  const SVG_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
   const visuais = {
-    ia: { icone: "&#129302;" },
-    alertaCartaEncontrada: { icone: "&#128161;" },
-    alertaDuplicidade: { icone: "&#9888;" },
-    temas: { icone: "&#10024;" },
-    semAnuncios: { icone: "&#127919;" },
+    // IA - cpu/cerebro
+    ia: {
+      svg: `<svg ${SVG_ATTRS}>
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <rect x="9" y="9" width="6" height="6" />
+        <line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" />
+        <line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" />
+        <line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" />
+        <line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" />
+      </svg>`,
+    },
+    // Sugestoes inteligentes - balao de chat com asterisco (insight)
+    sugestoes: {
+      svg: `<svg ${SVG_ATTRS}>
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="10" y1="11" x2="14" y2="11" />
+      </svg>`,
+    },
+    // Marcacao automatica - check em sequencia
+    marcacaoAutomatica: {
+      svg: `<svg ${SVG_ATTRS}>
+        <polyline points="9 11 12 14 22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>`,
+    },
+    // Deteccao de inconsistencias - triangulo de alerta
+    alertaDuplicidade: {
+      svg: `<svg ${SVG_ATTRS}>
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>`,
+    },
+    // Trinca de "?" - layers (3 sobrepostos)
+    trincaDuvida: {
+      svg: `<svg ${SVG_ATTRS}>
+        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+        <polyline points="2 17 12 22 22 17" />
+        <polyline points="2 12 12 17 22 12" />
+      </svg>`,
+    },
+    // Undo estendido - seta circular de rotacao
+    undoEstendido: {
+      svg: `<svg ${SVG_ATTRS}>
+        <path d="M3 7v6h6" />
+        <path d="M21 17a9 9 0 0 0-15-6.7L3 13" />
+      </svg>`,
+    },
+    // Temas premium - paleta
+    temas: {
+      svg: `<svg ${SVG_ATTRS}>
+        <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+        <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+        <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+        <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.62-.38-1.01 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z" />
+      </svg>`,
+    },
+    // Sem anuncios - placa cortada
+    semAnuncios: {
+      svg: `<svg ${SVG_ATTRS}>
+        <rect x="2" y="4" width="20" height="14" rx="2" ry="2" />
+        <line x1="2" y1="20" x2="22" y2="20" />
+        <line x1="5" y1="4" x2="19" y2="18" />
+      </svg>`,
+    },
   };
 
-  return visuais[featureId] || { icone: "&#11088;" };
+  return visuais[featureId] || {
+    svg: `<svg ${SVG_ATTRS}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>`,
+  };
 }
 
 function listarRecursosPROComVisual() {
@@ -259,27 +328,28 @@ function renderizarBeneficiosPRO() {
 
   if (recursos.length === 0) {
     container.innerHTML = `
-      <div class="card-beneficio">
-        <span class="badge-pro">PRO</span>
-        <div class="icone-beneficio">&#9888;</div>
-        <h3>Recursos indisponiveis</h3>
-        <p>Nao foi possivel carregar os recursos PRO no momento.</p>
-      </div>
+      <li class="pro-checklist-item pro-checklist-vazio">
+        Recursos PRO indisponiveis no momento.
+      </li>
     `;
     return;
   }
 
+  // Checklist vertical (estilo Stripe/Linear) - cada item tem icone SVG
+  // da feature + check accent + nome + descricao. Renderizado como <ul>.
   container.innerHTML = recursos
-    .map(
-      (recurso) => `
-        <div class="card-beneficio" data-feature="${recurso.id}">
-          <span class="badge-pro">PRO</span>
-          <div class="icone-beneficio">${recurso.icone}</div>
-          <h3>${recurso.nome}</h3>
-          <p>${recurso.descricao}</p>
+    .map((recurso) => `
+      <li class="pro-checklist-item" data-feature="${recurso.id}">
+        <span class="pro-checklist-icone">${recurso.svg || ""}</span>
+        <div class="pro-checklist-conteudo">
+          <strong class="pro-checklist-nome">${recurso.nome}</strong>
+          <span class="pro-checklist-descricao">${recurso.descricao}</span>
         </div>
-      `,
-    )
+        <svg class="pro-checklist-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </li>
+    `)
     .join("");
 }
 

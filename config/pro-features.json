@@ -1,33 +1,51 @@
 {
   "features": {
-    "temas": {
-      "ativo": true,
-      "nome": "Temas Sofisticados",
-      "descricao": "Acesso a temas visuais premium com gradientes e efeitos avançados",
-      "dependencias": []
-    },
     "ia": {
       "ativo": true,
       "nome": "Assistente IA",
-      "descricao": "IA para ajudar na dedução de pistas e investigação",
+      "descricao": "Análise automática e dedução de cartas em tempo real",
       "dependencias": []
     },
-    "semAnuncios": {
+    "sugestoes": {
       "ativo": true,
-      "nome": "Sem Anúncios",
-      "descricao": "Experiência livre de anúncios e distrações",
+      "nome": "Sugestões inteligentes",
+      "descricao": "Próxima pergunta certeira para acelerar suas vitórias",
+      "dependencias": []
+    },
+    "marcacaoAutomatica": {
+      "ativo": true,
+      "nome": "Marcação automática",
+      "descricao": "Ao marcar V, dispara X em cascata na linha automaticamente",
       "dependencias": []
     },
     "alertaDuplicidade": {
       "ativo": true,
-      "nome": "Alerta de Duplicidade",
-      "descricao": "Destaca em vermelho suave quando uma mesma linha recebe 2 marcações \"V\"",
+      "nome": "Detecção de inconsistências",
+      "descricao": "Alerta visual quando há erro lógico nas marcações",
       "dependencias": []
     },
-    "alertaCartaEncontrada": {
+    "trincaDuvida": {
       "ativo": true,
-      "nome": "Alerta de carta encontrada",
-      "descricao": "Aplica indicação visual quando uma carta já foi encontrada no tabuleiro",
+      "nome": "Conjunto de possibilidades",
+      "descricao": "Registre quando alguém mostrou uma carta entre 3 possíveis",
+      "dependencias": []
+    },
+    "undoEstendido": {
+      "ativo": true,
+      "nome": "Voltar estendido",
+      "descricao": "Desfaça até 10 jogadas",
+      "dependencias": []
+    },
+    "temas": {
+      "ativo": true,
+      "nome": "Temas premium",
+      "descricao": "6 temas exclusivos com cores e gradientes refinados",
+      "dependencias": []
+    },
+    "semAnuncios": {
+      "ativo": true,
+      "nome": "Sem anúncios",
+      "descricao": "Experiência limpa, sem interrupções",
       "dependencias": []
     }
   },

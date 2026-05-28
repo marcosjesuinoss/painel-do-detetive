@@ -931,264 +931,426 @@ body.modo-pro.light .carta-minha {
     box-shadow var(--transition-fast);
 }
 
-/* ===== TELA PRO - STATUS ===== */
-.status-pro {
-  background: var(--card);
-  padding: 16px 20px;
-  border-radius: 16px;
-  text-align: center;
-  margin-bottom: 22px;
+/* ============================================================
+   TELA PRO - REPAGINADA (Direcao A: premium dourado clean)
+   Hero com icone SVG, checklist vertical estilo Stripe/Linear,
+   CTA com shimmer, bullets de garantia e cancelar discreto. A
+   paleta usa --accent (varia conforme tema) com fundo neutro pra
+   nao virar carnaval.
+   ============================================================ */
 
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.status-pro.inativo {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.1),
-    rgba(139, 92, 246, 0.1)
-  );
-  border: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.status-pro.ativo {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--accent-rgb), 0.15),
-    rgba(59, 130, 246, 0.1)
-  );
-  border: 2px solid rgba(var(--accent-rgb), 0.4);
-  animation: pulsoAtivo 3s ease-in-out infinite;
-}
-
-@keyframes pulsoAtivo {
-  0%,
-  100% {
-    box-shadow:
-      0 12px 30px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-  50% {
-    box-shadow:
-      0 12px 30px rgba(var(--accent-rgb), 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-}
-
-/* IA-009: removida regra legada .status-icon (font-size 48px + balancoIcon)
-   que pertencia a um design antigo de emoji grande. O badge atual usa
-   .status-pro.ativo .status-icon (linha ~1851) com pill + proBadgeFloat
-   + proBadgeGlow. @keyframes balancoIcon removido tambem (sem outros usos). */
-
-.status-descricao {
-  font-size: 14px;
-  opacity: 0.8;
-  margin-top: 10px;
-}
-
-/* ===== GRID DE BENEFICIOS ===== */
-.beneficios-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.card-beneficio {
-  background: var(--card);
-  padding: 14px 16px;
-  border-radius: 14px;
-  text-align: left;
-
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-
-  transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
-
-  position: relative;
-
+.pro-container {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 4px;
-  min-height: 0;
+  gap: 18px;
+  padding-bottom: 32px;
 }
 
-.card-beneficio:active,
-.card-beneficio:focus-visible {
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.icone-beneficio {
-  font-size: 22px;
-  margin-bottom: 2px;
-  display: block;
-}
-
-.card-beneficio h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text);
-  text-align: left;
-}
-
-.card-beneficio p {
-  font-size: 12px;
-  opacity: 0.78;
-  line-height: 1.4;
-  margin-bottom: 0;
-  text-align: left;
-}
-
-.badge-pro {
-  display: inline-block;
-  align-self: flex-start;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-}
-
-/* ===== SE???fO DE PRE??O ===== */
-.preco-section {
+/* === HERO === */
+.pro-hero {
   background: var(--card);
-  padding: 25px;
-  border-radius: 20px;
-
-  border: 2px solid rgba(59, 130, 246, 0.3);
-  box-shadow:
-    0 12px 30px rgba(59, 130, 246, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
+  padding: 22px 20px;
+  border-radius: 18px;
   text-align: center;
-  margin-bottom: 20px;
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow accent atras do icone */
+.pro-hero::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.22), transparent 65%);
+  pointer-events: none;
+}
+
+.pro-hero.ativo {
+  border-color: rgba(var(--accent-rgb), 0.42);
+}
+
+.pro-hero-icone {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin: 4px auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.18), rgba(var(--accent-rgb), 0.08));
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--accent);
+  box-shadow:
+    0 0 24px rgba(var(--accent-rgb), 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.pro-hero-icone svg {
+  width: 28px;
+  height: 28px;
+}
+
+.pro-hero.inativo .pro-hero-svg-ativo,
+.pro-hero.ativo .pro-hero-svg-inativo {
+  display: none;
+}
+
+.pro-hero h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  position: relative;
+}
+
+.pro-hero-texto {
+  font-size: 13px;
+  opacity: 0.82;
+  margin: 0;
+  line-height: 1.45;
+  position: relative;
+}
+
+/* Pill "ATIVO" - so aparece quando PRO ativo. Hoje continua sendo o
+   .status-icon antigo, mas estilizado pra nova identidade. */
+.pro-hero .status-icon {
+  display: none;
+}
+
+.pro-hero.ativo .status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  position: relative;
+}
+
+.pro-hero.ativo .status-icon::after {
+  content: "ATIVO";
+}
+
+/* === LABEL DA CHECKLIST (muda texto em PRO ativo vs inativo) === */
+.pro-checklist-label {
+  margin: 4px 2px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  opacity: 0.7;
+  color: var(--text);
+}
+
+/* === CHECKLIST DE BENEFICIOS === */
+.pro-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Quando PRO ativo, intensifica o check pra reforcar "sao seus" */
+.pro-hero.ativo ~ .pro-checklist .pro-checklist-check,
+body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
+  color: var(--accent);
+  filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.5));
+}
+
+.pro-checklist-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  background: var(--card);
+  border: 1px solid rgba(var(--accent-rgb), 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.pro-checklist-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pro-checklist-icone svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pro-checklist-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pro-checklist-nome {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.pro-checklist-descricao {
+  font-size: 11.5px;
+  opacity: 0.7;
+  line-height: 1.35;
+}
+
+.pro-checklist-check {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* === SECAO CTA (preco + botao + bullets) === */
+.pro-cta-section {
+  background: var(--card);
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  box-shadow:
+    0 12px 28px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-align: center;
 }
 
 .preco-box {
-  margin-bottom: 20px;
+  margin: 0 0 16px;
 }
 
 .preco-label {
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.7;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
+  letter-spacing: 1.4px;
+  margin: 0 0 4px;
+  font-weight: 600;
 }
 
 .preco-valor {
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 800;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 6px;
+  margin: 0 0 4px;
+  line-height: 1.1;
 }
 
 .preco-info {
   font-size: 12px;
-  opacity: 0.7;
+  opacity: 0.68;
   font-weight: 500;
+  margin: 0;
 }
 
-.info-pro {
-  font-size: 12px;
-  opacity: 0.6;
-  margin-top: 14px;
-  font-style: italic;
-}
-
-/* ===== BOT?.ES PRO ===== */
-.btn-pro-grande {
+/* === BOTAO CTA com shimmer === */
+.btn-pro-cta {
+  position: relative;
   width: 100%;
   padding: 14px 20px;
-  margin-bottom: 12px;
-
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  margin: 0;
   border: none;
-  color: white;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  color: #fff;
   font-size: 16px;
-
-  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
-
+  overflow: hidden;
+  box-shadow:
+    0 10px 24px rgba(var(--accent-rgb), 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
-
-  box-shadow:
-    0 8px 20px rgba(59, 130, 246, 0.3),
-    0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn-pro-grande:active,
-.btn-pro-grande:focus-visible {
-  transform: translateY(-2px);
+.btn-pro-cta:active,
+.btn-pro-cta:focus-visible {
+  transform: translateY(-1px);
   box-shadow:
-    0 12px 28px rgba(59, 130, 246, 0.4),
-    0 2px 6px rgba(0, 0, 0, 0.15);
+    0 14px 30px rgba(var(--accent-rgb), 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
-.btn-pro-grande:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.5);
+.btn-pro-cta:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.5);
   outline-offset: 2px;
 }
 
-.btn-cancelar-pro {
-  width: 100%;
-  padding: 14px 20px;
-  margin-bottom: 12px;
+.btn-pro-cta-label {
+  position: relative;
+  z-index: 1;
+}
 
-  background: linear-gradient(145deg, rgba(220, 38, 38, 0.18), rgba(127, 29, 29, 0.14));
-  border: 1px solid rgba(248, 113, 113, 0.42);
-  color: #fee2e2;
-  font-weight: 600;
-  font-size: 14px;
+/* Faixa de brilho que cruza o botao a cada ~4s - efeito "premium" sutil */
+.btn-pro-cta-shimmer {
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: proCtaShimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
 
-  border-radius: 12px;
+@keyframes proCtaShimmer {
+  0%, 65%, 100% {
+    left: -60%;
+  }
+  85% {
+    left: 130%;
+  }
+}
+
+/* === BULLETS DE GARANTIA === */
+.pro-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  font-size: 12px;
+  opacity: 0.85;
+  text-align: left;
+}
+
+.pro-bullets li {
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.4;
+}
+
+.pro-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") no-repeat center / contain;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") no-repeat center / contain;
+}
+
+/* === BOTAO CANCELAR (discreto, estilo link) === */
+.btn-cancelar-pro-link {
+  display: inline-block;
+  width: auto;
+  align-self: center;
+  margin: 8px auto 0;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text);
+  opacity: 0.55;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
-
-  box-shadow:
-    0 10px 22px rgba(127, 29, 29, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: opacity var(--transition-fast);
 }
 
-.btn-cancelar-pro:active,
-.btn-cancelar-pro:focus-visible {
-  background: linear-gradient(145deg, rgba(239, 68, 68, 0.24), rgba(127, 29, 29, 0.18));
-  border-color: rgba(248, 113, 113, 0.58);
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 26px rgba(127, 29, 29, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.btn-cancelar-pro-link:hover,
+.btn-cancelar-pro-link:focus-visible {
+  opacity: 0.85;
+  background: transparent;
+  box-shadow: none;
 }
 
-.btn-cancelar-pro:focus-visible {
-  outline: 2px solid rgba(220, 38, 38, 0.5);
-  outline-offset: 2px;
+.btn-cancelar-pro-link:active {
+  transform: none;
+  box-shadow: none;
+}
+
+/* === CARD "OBRIGADO" - so aparece com PRO ativo === */
+.pro-obrigado {
+  text-align: center;
+  padding: 20px 18px;
+  background: var(--card);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 20px rgba(var(--accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.pro-obrigado::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.pro-obrigado svg {
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.4));
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.pro-obrigado h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text);
+  position: relative;
+}
+
+.pro-obrigado p {
+  font-size: 12.5px;
+  margin: 0;
+  opacity: 0.78;
+  line-height: 1.45;
+  position: relative;
 }
 
 /* ===== POPUP PRO ===== */
