@@ -148,7 +148,12 @@
     <!-- ================= INICIO ================= -->
     <div id="inicio" class="tela ativa">
       <div class="container">
-        <div class="logo">&#128269;</div>
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </div>
 
         <h1>Painel do Detetive</h1>
 
@@ -692,7 +697,11 @@
       aria-hidden="true"
     >
       <div class="popup-box popup-pro">
-        <div class="popup-icon">&#10024;</div>
+        <div class="popup-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </div>
         <h3 id="tituloPopupAtivarPRO">Confirmar Ativa&ccedil;&atilde;o</h3>
         <p>Voc&ecirc; est&aacute; prestes a ativar o Modo PRO!</p>
         <p class="payload-preco">R$ 19,90 (Acesso Vital&iacute;cio)</p>
@@ -718,7 +727,13 @@
       aria-hidden="true"
     >
       <div class="popup-box popup-pro">
-        <div class="popup-icon">&#9888;</div>
+        <div class="popup-icon popup-icon-alerta" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
         <h3 id="tituloPopupCancelarPRO">Cancelar PRO?</h3>
         <p>Voc&ecirc; perder&aacute; acesso aos recursos exclusivos.</p>
         <p style="font-size: 12px; opacity: 0.7">
@@ -837,9 +852,28 @@
         <p>Compat&iacute;vel com m&uacute;ltiplas vers&otilde;es do jogo.</p>
 
         <div class="sobre-destaque">
-          &#10024; Mais estrat&eacute;gia<br />
-          &#128221; Menos confus&atilde;o<br />
-          &#127918; Mais divers&atilde;o
+          <div class="sobre-destaque-item">
+            <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            <span>Mais estrat&eacute;gia</span>
+          </div>
+          <div class="sobre-destaque-item">
+            <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 11 12 14 22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            <span>Menos confus&atilde;o</span>
+          </div>
+          <div class="sobre-destaque-item">
+            <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <line x1="9" y1="9" x2="9.01" y2="9" />
+              <line x1="15" y1="9" x2="15.01" y2="9" />
+            </svg>
+            <span>Mais divers&atilde;o</span>
+          </div>
         </div>
       </div>
 
@@ -893,7 +927,12 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#127919; Objetivo
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+              Objetivo
             </div>
             <div class="conteudo" id="ajudaObjetivo">
               Descobrir <strong>quem cometeu o crime</strong>,
@@ -912,7 +951,13 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#129513; Componentes
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Componentes
             </div>
             <div class="conteudo" id="ajudaComponentes">
               - 1 tabuleiro<br />
@@ -936,7 +981,10 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#128736;&#65039; Preparacao
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              Prepara&ccedil;&atilde;o
             </div>
             <div class="conteudo" id="ajudaPreparacao">
               1. Separe cartas em montes divididos em suspeitos, armas e
@@ -960,7 +1008,15 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#127922; Como Jogar
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8" cy="8" r="1.2" fill="currentColor" />
+                <circle cx="16" cy="8" r="1.2" fill="currentColor" />
+                <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+                <circle cx="8" cy="16" r="1.2" fill="currentColor" />
+                <circle cx="16" cy="16" r="1.2" fill="currentColor" />
+              </svg>
+              Como Jogar
             </div>
             <div class="conteudo" id="ajudaComoJogar">
               1. Defina qual pe&atilde;o ser&aacute; de qual jogador.<br /><br />
@@ -1000,7 +1056,14 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#9878;&#65039; Acusacao
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="3" x2="12" y2="21" />
+                <line x1="5" y1="6" x2="19" y2="6" />
+                <path d="M5 6l-3 7h6L5 6z" />
+                <path d="M19 6l-3 7h6L19 6z" />
+                <path d="M9 21h6" />
+              </svg>
+              Acusa&ccedil;&atilde;o
             </div>
             <div class="conteudo" id="ajudaAcusacao">
               Em qualquer momento da partida, se algum jogador acredita que sabe
@@ -1023,7 +1086,11 @@
               onclick="toggleAccordion(this)"
               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(this);}"
             >
-              &#127937; Fim do Jogo
+              <svg class="icone-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                <line x1="4" y1="22" x2="4" y2="15" />
+              </svg>
+              Fim do Jogo
             </div>
             <div class="conteudo" id="ajudaFimJogo">
               O jogo termina quando algu&eacute;m acerta a acusa&ccedil;&atilde;o. Se todos errarem,

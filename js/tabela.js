@@ -526,14 +526,6 @@ cel.onclick = () => {
   }
 }
 
-function atualizarCor(td, estado) {
-  td.classList.remove("ok", "no", "maybe");
-
-  if (estado === "✔") td.classList.add("ok");
-  if (estado === "✖") td.classList.add("no");
-  if (estado === "?") td.classList.add("maybe");
-}
-
 function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
   if (!cel) return;
 

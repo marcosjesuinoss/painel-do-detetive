@@ -41,10 +41,18 @@
   margin-top: 60px;
 }
 
-/* LUPA */
+/* LUPA - icone SVG da tela inicial */
 .logo {
-  font-size: 44px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 8px;
+  color: var(--accent);
+}
+
+.logo svg {
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-rgb), 0.35));
 }
 
 #inicio h1 {
