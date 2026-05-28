@@ -550,14 +550,25 @@ body:not(.modo-pro) .menu-acao svg {
 }
 
 /* Selecionada: usa o mesmo esquema visual do popup "quem tem mais cartas"
-   (.item-jogador-cartas.ativo) - gradiente do tema + texto branco. Mesma
-   especificidade alta pra vencer o button.padrao do PRO em ambos temas. */
-.carta-minha.selecionada,
-body.modo-pro:not(.light) .carta-minha.selecionada,
-body.modo-pro.light .carta-minha.selecionada {
+   (.item-jogador-cartas.ativo) - gradiente do tema + texto branco.
+   :not() encadeados pra vencer a regra generica .light .selecionada:not(.ok)
+   :not(.no):not(.maybe) do theme.css (que aplicava bg azul + inset glow
+   branco + borda azul). Precisa zerar box-shadow tambem (a regra do theme
+   tem inset white glow que vazava como "luz branca" em volta do botao
+   mesmo apos sobrescrever bg/border). */
+.carta-minha.selecionada:not(.ok):not(.no):not(.maybe),
+.light .carta-minha.selecionada:not(.ok):not(.no):not(.maybe),
+body.modo-pro:not(.light) .carta-minha.selecionada:not(.ok):not(.no):not(.maybe),
+body.modo-pro.light .carta-minha.selecionada:not(.ok):not(.no):not(.maybe) {
   background: var(--gradient-botao);
   color: #fff;
   border-color: transparent;
+  /* Shadow dupla: drop accent (profundidade) + inset top highlight
+     (acabamento glass/polish). Mesmo padrao dos botoes PRO play -
+     faz a luz/dark ficarem com mesmo nivel de sofisticacao visual. */
+  box-shadow:
+    0 6px 14px rgba(var(--accent-rgb), 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 /* FREE: visual mais simples (sem gradiente sutil, borda fina, raio menor) */
