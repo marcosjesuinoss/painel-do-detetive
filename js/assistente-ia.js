@@ -1529,9 +1529,28 @@ function deduzirCruzamentosFortesAssistenteIA() {
 // pode tornar uma coluna saturada, ativando exclusoes-fortes, que por sua
 // vez pode confinar linhas e ativar dupla-trio.
 
+// Flag: pula a proxima rodada de deducoes da IA. Usado pelo undo pra
+// evitar que a IA re-deduza imediatamente o que o usuario acabou de
+// reverter (ex.: na trinca cenario B, o V eh uma conclusao logica
+// derivada dos Xs ao redor - a IA conseguiria re-deduzir sozinha,
+// "anulando" o efeito visual do undo). Pula UMA vez e auto-reseta.
+let _pularProximaDeducaoIA = false;
+
+function pularProximaDeducaoIA() {
+  _pularProximaDeducaoIA = true;
+}
+
 function executarTodasDeducoesAssistenteIA() {
   // IA-022: limpa pendencias antes de cada rodada
   resetarPendenciasMarcacaoAssistenteIA();
+
+  // Skip pos-undo: o usuario acabou de reverter algo, nao queremos que a
+  // IA re-deduza o mesmo na mesma rodada. Limpa pendencias mas sai sem
+  // executar deducoes. A proxima acao do usuario re-habilita normalmente.
+  if (_pularProximaDeducaoIA) {
+    _pularProximaDeducaoIA = false;
+    return false;
+  }
 
   // Modo manual: roda cada deducao apenas 1 vez (sem aplicar, estado nao
   // muda - loop nao agregaria nada). Pendencias sao coletadas.

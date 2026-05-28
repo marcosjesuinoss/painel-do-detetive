@@ -165,6 +165,15 @@ function aplicarUndo() {
 
   atualizarBotaoUndo();
   atualizarBotaoContinuar();
+
+  // Sinaliza pra IA pular a proxima rodada de deducoes - evita que ela
+  // re-deduza imediatamente o que o usuario acabou de reverter (ex.:
+  // trinca cenario B, em que o V eh uma conclusao logica do estado de Xs
+  // ao redor). Os cards do assistente ainda re-renderizam normalmente.
+  // Qualquer acao subsequente do usuario re-habilita as deducoes.
+  if (typeof pularProximaDeducaoIA === "function") {
+    pularProximaDeducaoIA();
+  }
   if (typeof agendarAtualizacaoAssistenteIA === "function") {
     agendarAtualizacaoAssistenteIA();
   }
@@ -912,6 +921,15 @@ function limparSelecoes() {
 }
 
 function resetarSelecoesGlobais() {
+  // Limpa a classe .selecionada de qualquer celula que ainda esteja
+  // marcada no DOM. Necessario pra casos como undo, onde a tabela NAO
+  // eh recriada (entao a classe orfa permanece visivel). Nos demais
+  // callers (Novo Jogo / Limpar tabuleiro) a tabela eh recriada via
+  // criarTabela e essa limpeza eh idempotente.
+  document.querySelectorAll("#tabela .celula.selecionada").forEach((el) => {
+    el.classList.remove("selecionada");
+  });
+
   celulaSelecionada = null;
   colunaSelecionada = null;
   linhasSelecionadas = {
