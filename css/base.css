@@ -40,6 +40,14 @@
      duplicidade, etc. Centraliza em vez de hardcoded em varios lugares. */
   --cor-aviso: 220, 38, 38;
 
+  /* === BOTAO TOKENS === Padroes para botoes (.padrao, .play, etc).
+     Antes cada classe definia suas proprias dimensoes desalinhadas. */
+  --btn-padding-y: 14px;
+  --btn-padding-x: 16px;
+  --btn-font-size: var(--text-lg);
+  --btn-font-weight: 700;
+  --btn-radius: var(--radius-md);
+
   --transition-fast: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -122,12 +130,12 @@ input {
 
 button {
   width: 100%;
-  padding: 14px;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   margin-top: 12px;
-  border-radius: var(--radius);
+  border-radius: var(--btn-radius);
   border: none;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
   cursor: pointer;
   box-shadow: var(--shadow-soft);
   transition:
@@ -154,5 +162,5 @@ button:active {
 
 .section {
   background: var(--card);
-  font-weight: bold;
+  font-weight: 700;
 }

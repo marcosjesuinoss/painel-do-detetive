@@ -30,7 +30,7 @@
   background: var(--card);
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
 
   transition:
     background var(--transition-fast),
@@ -1918,7 +1918,7 @@ body.modo-pro .play:active {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(100, 200, 255, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
   opacity: 0;
   transition: opacity var(--transition-fast);
   z-index: -1;
@@ -1926,11 +1926,8 @@ body.modo-pro .play:active {
 
 .card-tema-sistema:active,
 .card-tema-sistema:focus-visible {
-  border-color: rgba(100, 200, 255, 0.4);
-  transform: translateY(-2px);
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .card-tema-sistema:active::before,
@@ -1943,14 +1940,14 @@ body.modo-pro .play:active {
 }
 
 .card-tema-sistema.selecionado {
-  border: 2px solid rgba(100, 200, 255, 0.6);
+  border: 2px solid rgba(var(--accent-rgb), 0.6);
   background: linear-gradient(
     135deg,
-    rgba(100, 200, 255, 0.12),
-    rgba(100, 150, 255, 0.06)
+    rgba(var(--accent-rgb), 0.12),
+    rgba(var(--accent-rgb), 0.06)
   );
   box-shadow:
-    0 8px 20px rgba(100, 200, 255, 0.2),
+    0 8px 20px rgba(var(--accent-rgb), 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 
   animation: pulsoTemaSistema 2s ease-in-out infinite;
@@ -1960,12 +1957,12 @@ body.modo-pro .play:active {
   0%,
   100% {
     box-shadow:
-      0 8px 20px rgba(100, 200, 255, 0.2),
+      0 8px 20px rgba(var(--accent-rgb), 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
   50% {
     box-shadow:
-      0 8px 20px rgba(100, 200, 255, 0.4),
+      0 8px 20px rgba(var(--accent-rgb), 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 }
@@ -2983,14 +2980,16 @@ body.modo-pro #assistenteIAMenu {
 
 
 
+/* PRO :active/:focus-visible em botoes padrao/play - usa accent e
+   sombra padronizada. NOTA: o transform :active vence por ordem CSS,
+   entao scale(0.96) eh o que o usuario sente ao tocar. */
 body.modo-pro button.padrao:active,
 body.modo-pro button.padrao:focus-visible,
 body.modo-pro button.play:active,
 body.modo-pro button.play:focus-visible {
-  border-color: rgba(100, 200, 255, 0.4);
-  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb), 0.4);
   box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.2),
+    var(--shadow-md),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
