@@ -55,9 +55,12 @@
   filter: drop-shadow(0 2px 8px rgba(var(--accent-rgb), 0.35));
 }
 
+/* Tela inicial: h1 mais "hero" - cresce um pouco do h1 base, mantem peso
+   maximo e text-shadow pra dar identidade de logo. As outras telas
+   usam o h1/h2 padrao da type scale (base.css). */
 #inicio h1 {
   margin: 0 0 18px;
-  font-size: 31px;
+  font-size: calc(var(--h1) + 4px);
   line-height: 1.02;
   letter-spacing: 0.02em;
   font-weight: 900;

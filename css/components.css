@@ -28,7 +28,7 @@
   padding: 14px;
   margin-top: 10px;
   background: var(--card);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: bold;
 
@@ -108,7 +108,7 @@
   white-space: nowrap;
   overflow: hidden;
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
 
@@ -241,7 +241,7 @@
   background: var(--bg);
   z-index: 200;
   padding: 16px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -629,7 +629,7 @@ body.modo-pro.light .carta-minha {
     font-size: 10px;
     min-height: 36px;
     padding: 3px 2px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
   }
   .secao-cartas-minhas ul {
     gap: 4px;
@@ -724,7 +724,7 @@ body.modo-pro.light .carta-minha {
 .card-sobre {
   background: var(--card);
   padding: 22px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   margin-top: 25px;
   line-height: 1.6;
   font-size: 14px;
@@ -821,7 +821,7 @@ body.modo-pro.light .carta-minha {
 .card-pro {
   background: var(--card);
   padding: 20px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   margin-top: 18px;
   text-align: center;
 
@@ -987,7 +987,7 @@ body.modo-pro.light .carta-minha {
 .pro-hero {
   background: var(--card);
   padding: 22px 20px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   text-align: center;
   border: 1px solid rgba(var(--accent-rgb), 0.18);
   box-shadow:
@@ -1118,7 +1118,7 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
   padding: 11px 14px;
   background: var(--card);
   border: 1px solid rgba(var(--accent-rgb), 0.1);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
@@ -1170,7 +1170,7 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
 .pro-cta-section {
   background: var(--card);
   padding: 22px 20px 18px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(var(--accent-rgb), 0.22);
   box-shadow:
     0 12px 28px rgba(var(--accent-rgb), 0.14),
@@ -1437,9 +1437,10 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
 }
 
 .payload-preco {
-  color: #3b82f6;
-  font-size: 14px;
+  color: var(--accent);
+  font-size: var(--text-md);
   margin: 12px 0;
+  font-weight: 700;
 }
 
 .popup-acoes {
@@ -1464,7 +1465,7 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
 }
 
 .popup-acoes .play {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--gradient-botao);
   color: white;
 }
 
@@ -1618,20 +1619,20 @@ body.forcar-repaint-pos-retomada {
   }
 }
 
-/* ===== BOT?.ES PRINCIPAIS COM MODO PRO ===== */
+/* ===== BOTOES PRINCIPAIS COM MODO PRO ===== */
 body.modo-pro .play {
-  background: var(--gradient-botao, linear-gradient(135deg, #3b82f6, #8b5cf6));
+  background: var(--gradient-botao);
   color: white;
 
   box-shadow:
-    0 8px 20px rgba(59, 130, 246, 0.3),
+    0 8px 20px rgba(var(--accent-rgb), 0.3),
     0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 body.modo-pro .play:active,
 body.modo-pro .play:focus-visible {
   box-shadow:
-    0 12px 28px rgba(59, 130, 246, 0.4),
+    0 12px 28px rgba(var(--accent-rgb), 0.4),
     0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
@@ -1643,7 +1644,7 @@ body.modo-pro .play:active {
 .secao-temas-aparencia {
   background: var(--card);
   border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px;
   margin-bottom: 30px;
 
@@ -1749,7 +1750,7 @@ body.modo-pro .play:active {
 .tema-preview {
   width: 100%;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin-bottom: 2px;
 
   box-shadow:
@@ -1853,7 +1854,7 @@ body.modo-pro .play:active {
 }
 
 .titulo-aparencia {
-  font-size: 18px;
+  font-size: var(--h2);
   text-align: center;
   margin-bottom: 20px;
   color: var(--text);
@@ -1864,7 +1865,7 @@ body.modo-pro .play:active {
 .secao-temas-sistema {
   background: var(--card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px;
   margin-bottom: 20px;
 
@@ -1895,7 +1896,7 @@ body.modo-pro .play:active {
 .card-tema-sistema {
   background: rgba(255, 255, 255, 0.04);
   border: 2px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 10px;
   text-align: center;
   cursor: pointer;
@@ -2024,7 +2025,7 @@ body.modo-pro .play:active {
   display: block;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 12px;
 }
 
@@ -2458,15 +2459,15 @@ body[data-jogadores="8"] #tabela .celula[data-key] .estado-duvida {
 /* IA-009: removida duplicata .status-icon { display: none } - redundante
    com a definicao em .status-icon (linha ~1847) abaixo. */
 
-/* Refino do 2o bloco da tela Sobre quando PRO ativo */
+/* Refino do 2o bloco da tela Sobre quando PRO ativo - usa accent do tema */
 .card-pro.pro-ativo {
   background:
-    linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.08)),
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.06)),
     var(--card);
-  border: 1px solid rgba(96, 165, 250, 0.35);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.2),
-    0 0 18px rgba(59, 130, 246, 0.18),
+    0 0 18px rgba(var(--accent-rgb), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   text-align: left;
 }
@@ -2518,8 +2519,8 @@ body.modo-pro.light .card-pro.pro-ativo .pro-sobre-titulo {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #60a5fa, #34d399);
-  box-shadow: 0 0 8px rgba(96, 165, 250, 0.45);
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.45);
 }
 
 /* Light mode refinements for PRO themes */
@@ -2570,7 +2571,7 @@ body.modo-pro.light .card-pro.pro-ativo .pro-sobre-titulo {
 .assistente-ia-menu {
   margin-top: 12px;
   padding: 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(15, 23, 42, 0.35);
   border: 1px solid rgba(148, 163, 184, 0.2);
   display: grid;
@@ -2653,7 +2654,7 @@ body.modo-pro #assistenteIAMenu {
   line-height: 1;
   flex: 0 0 auto;
   align-self: center;
-  background: rgba(59, 130, 246, 0.25);
+  background: rgba(var(--accent-rgb), 0.22);
   border: 1px solid rgba(148, 163, 184, 0.4);
   color: #e2e8f0;
   box-shadow: none;
@@ -2881,12 +2882,12 @@ body.modo-pro #assistenteIAMenu {
 
 .assistente-ia-menu {
   background:
-    linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.08)),
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.06)),
     var(--card);
-  border: 1px solid rgba(96, 165, 250, 0.28);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.18),
-    0 0 18px rgba(59, 130, 246, 0.1),
+    0 0 18px rgba(var(--accent-rgb), 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding: 12px;
   gap: 10px;
@@ -2903,7 +2904,7 @@ body.modo-pro #assistenteIAMenu {
 .ia-menu-card {
   background: rgba(15, 23, 42, 0.36);
   border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 11px 12px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
@@ -2925,8 +2926,8 @@ body.modo-pro #assistenteIAMenu {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #60a5fa, #34d399);
-  box-shadow: 0 0 8px rgba(96, 165, 250, 0.35);
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.35);
 }
 
 .ia-menu-card p,
@@ -2939,12 +2940,12 @@ body.modo-pro #assistenteIAMenu {
 
 .light .assistente-ia-menu {
   background:
-    linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.06)),
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.05)),
     var(--card);
-  border: 1px solid rgba(96, 165, 250, 0.22);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
   box-shadow:
     0 10px 26px rgba(71, 85, 105, 0.12),
-    0 0 14px rgba(59, 130, 246, 0.08),
+    0 0 14px rgba(var(--accent-rgb), 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
@@ -3204,7 +3205,7 @@ body.modo-pro .play:focus-visible {
 .regra-alerta {
   background: rgba(var(--accent-rgb), 0.08);
   border: 1px solid rgba(var(--accent-rgb), 0.22);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 12px 14px;
 }
 
@@ -3253,7 +3254,7 @@ body.modo-pro .play:focus-visible {
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   padding: 18px 14px 28px;
 }
 
@@ -3353,7 +3354,7 @@ body.modo-pro .play:focus-visible {
 }
 
 .light .card-tema-sistema::before {
-  background: rgba(59, 130, 246, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .light .card-tema-sistema h4 {
@@ -3366,7 +3367,7 @@ body.modo-pro .play:focus-visible {
 
 .light .card-tema-sistema:active,
 .light .card-tema-sistema:focus-visible {
-  border-color: rgba(59, 130, 246, 0.34);
+  border-color: rgba(var(--accent-rgb), 0.34);
   transform: translateY(-2px);
   box-shadow:
     0 6px 16px rgba(71, 85, 105, 0.12),
@@ -3374,10 +3375,10 @@ body.modo-pro .play:focus-visible {
 }
 
 .light .card-tema-sistema.selecionado {
-  border: 2px solid rgba(59, 130, 246, 0.52);
-  background: linear-gradient(135deg, rgba(100, 200, 255, 0.12), rgba(100, 150, 255, 0.06));
+  border: 2px solid rgba(var(--accent-rgb), 0.52);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.06));
   box-shadow:
-    0 8px 20px rgba(59, 130, 246, 0.18),
+    0 8px 20px rgba(var(--accent-rgb), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -3794,7 +3795,7 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
 }
 
 .ia-inconsistencia {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -3835,7 +3836,7 @@ body.modo-pro:not(.light) #btnCancelarPRO:focus-visible {
   font-size: 13px;
   font-weight: normal;
   line-height: 1.35;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin: 0;
   /* Override do button global (base.css) que adiciona shadow-soft e
      translateY no :active. Botoes da lista de inconsistencias sao
