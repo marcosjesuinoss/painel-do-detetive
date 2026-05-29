@@ -3293,29 +3293,20 @@ body.modo-pro .play:focus-visible {
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.tela#ajuda .btn-voltar {
+/* Botao Voltar padrao em TODAS as telas que tem titulo solto fora de
+   card (novoJogo, personalizar, sobre, ajuda, aparencia, pro). Antes
+   algumas tinham override individual (14-16px) e outras nada - resultado
+   era titulo grudado no botao em Sobre e Nova Partida. Consolidado. */
+.btn-voltar {
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .tela#ajuda .ajuda-container {
   margin-top: 8px;
 }
 
-.tela#aparencia .btn-voltar {
-  margin-top: 0;
-  margin-bottom: 14px;
-}
-
-.tela#aparencia .container {
-  margin-top: 10px;
-}
-
-.tela#pro .btn-voltar {
-  margin-top: 0;
-  margin-bottom: 14px;
-}
-
+.tela#aparencia .container,
 .tela#pro .container {
   margin-top: 10px;
 }
