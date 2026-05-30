@@ -181,12 +181,12 @@
 
     <!-- ================= NOVO JOGO ================= -->
     <div id="novoJogo" class="tela">
-      <div class="container">
-        <button class="padrao btn-voltar" data-destino="inicio" type="button">
-          Voltar
-        </button>
+      <button class="padrao btn-voltar" data-destino="inicio" type="button">
+        Voltar
+      </button>
 
-        <h2>Nova Partida</h2>
+      <div class="container">
+        <h2 class="titulo-central">Nova Partida</h2>
 
         <select id="versao" onchange="atualizarJogadores()">
           <option value="clueOriginal">Clue Original</option>
@@ -206,11 +206,11 @@
 
     <!-- ================= PERSONALIZAR ================= -->
     <div id="personalizar" class="tela">
-      <div class="container">
-        <button class="padrao btn-voltar" data-destino="novoJogo" type="button">
-          Voltar
-        </button>
+      <button class="padrao btn-voltar" data-destino="novoJogo" type="button">
+        Voltar
+      </button>
 
+      <div class="container">
         <h2 class="titulo-central">Personalizar jogadores</h2>
 
         <div id="editarJogadores"></div>
@@ -829,10 +829,11 @@
         Voltar
       </button>
 
-      <h2 class="titulo-central">Sobre o App</h2>
+      <div class="container">
+        <h2 class="titulo-central">Sobre o App</h2>
 
-      <!-- CARD 1 - INSTITUCIONAL -->
-      <div class="card-sobre">
+        <!-- CARD 1 - INSTITUCIONAL -->
+        <div class="card-sobre">
         <p>
           Este aplicativo foi desenvolvido para tornar suas partidas de
           investiga&ccedil;&atilde;o mais organizadas, estrat&eacute;gicas e fluidas.
@@ -903,6 +904,7 @@
 
       <!-- VERSAO -->
       <div class="versao-app">Vers&atilde;o 1.3.0</div>
+      </div>
     </div>
 
     <!-- ================= AJUDA ================= -->

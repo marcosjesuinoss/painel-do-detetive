@@ -38,6 +38,12 @@
   max-width: 400px;
   margin: auto;
   text-align: center;
+  margin-top: 16px;
+}
+
+/* Excecao: tela inicial precisa de mais respiro no topo porque nao tem
+   botao Voltar acima - o container eh o primeiro elemento visivel */
+.tela#inicio .container {
   margin-top: 60px;
 }
 
