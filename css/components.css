@@ -2332,10 +2332,13 @@ body.modo-pro .play:active {
 }
 
 /* ===== ICONE DO TEMA ===== */
+/* color explicito var(--text) - botoes NAO herdam color do body
+   (form controls resetam), entao sem isso o currentColor caia no
+   default do botao, que no iOS Safari vira azul de sistema no escuro. */
 .icone-tema {
   width: 32px;
   height: 32px;
-  color: currentColor;
+  color: var(--text);
 }
 
 /* ===== TITULOS DOS TEMAS ===== */
