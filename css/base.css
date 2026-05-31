@@ -124,6 +124,15 @@ input {
   appearance: none;
 }
 
+/* Foco com accent do tema (era o outline azul default do navegador) */
+select:focus,
+select:focus-visible,
+input:focus,
+input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.55);
+}
+
 * {
   box-sizing: border-box;
 }
