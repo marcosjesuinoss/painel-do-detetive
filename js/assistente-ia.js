@@ -1728,24 +1728,24 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   // e esta branch passa a narrar automaticamente.
   if (!ultimaEhJ1) {
     if (ultima?.tipo === "trinca-x" && Array.isArray(ultima.cartas) && ultima.cartas.length) {
-      itens.push(`Trinca eliminada para ${ultima.jogador}: ${ultima.cartas.join(", ")}.`);
+      itens.push(`${ultima.jogador} n\u00e3o tem: ${ultima.cartas.join(", ")}.`);
     } else if (ultima?.tipo === "V" && ultima.carta && ultima.jogador) {
-      itens.push(`${ultima.jogador} foi confirmado com ${ultima.carta}.`);
+      itens.push(`${ultima.jogador} est\u00e1 com ${ultima.carta}.`);
     } else if (ultima?.tipo === "X" && ultima.carta && ultima.jogador) {
-      itens.push(`${ultima.jogador} foi descartado para ${ultima.carta}.`);
+      itens.push(`${ultima.jogador} n\u00e3o tem ${ultima.carta}.`);
     } else if (ultima?.tipo === "?" && ultima.carta && ultima.jogador) {
-      itens.push(`${ultima.carta} segue em aberto para ${ultima.jogador}.`);
+      itens.push(`${ultima.jogador} pode estar com ${ultima.carta}.`);
     } else if (ultima?.tipo === "auto-capacidade" && ultima.jogador && Array.isArray(ultima.cartas)) {
       const prefixo =
         ultima.cartas.length === 1
-          ? `${ultima.jogador} fechou a propria mao e confirmou ${ultima.cartas[0]}.`
-          : `${ultima.jogador} fechou a propria mao e confirmou: ${ultima.cartas.join(", ")}.`;
+          ? `${ultima.jogador} completou a m\u00e3o e est\u00e1 com ${ultima.cartas[0]}.`
+          : `${ultima.jogador} completou a m\u00e3o e est\u00e1 com: ${ultima.cartas.join(", ")}.`;
       itens.push(prefixo);
     }
   }
 
   const encontradas = linhas.filter((linha) => linha.isFound).length;
-    itens.push(`${encontradas} cartas j\u00e1 t\u00eam dono confirmado.`);
+    itens.push(`${encontradas} cartas j\u00e1 t\u00eam dono.`);
 
   const ocultasFortes = resumo.ocultas.slice(0, 2);
   ocultasFortes.forEach((linha) => {
