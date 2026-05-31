@@ -1,4 +1,18 @@
-﻿const CACHE_NAME = "investigacao-v231";
+﻿// Versao do cache = versao completa do app. Quando bumpar aqui,
+// atualizar tambem em index.html (2 lugares: footer e .versao-app) e
+// em manifest.json - todos os 4 lugares devem casar exatamente.
+//
+// Regra de versionamento:
+// - PATCH (3o numero): bumpa em CADA mudanca de codigo (qualquer arquivo
+//   listado em STATIC_FILES). Eh o gatilho pra invalidar o cache do
+//   navegador e o SW baixar arquivos frescos.
+// - MINOR (2o numero): bumpa quando ha conjunto de features novas
+//   relevantes (ex.: 1.3.x -> 1.4.0). Decisao manual. Reseta patch pra 0.
+// - MAJOR (1o numero): bumpa em breaking changes ou refactor grande
+//   (ex.: 1.x.x -> 2.0.0). Decisao manual.
+//
+// Exemplo: 1.3.232 -> 1.3.233 -> ... -> 1.3.500 -> 1.4.0 -> 1.4.1 -> ...
+const CACHE_NAME = "investigacao-1.3.233";
 
 const STATIC_FILES = [
   "./",
