@@ -1132,6 +1132,57 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   box-shadow: 0 2px 6px rgba(var(--accent-rgb), 0.35);
 }
 
+/* ===== BLOCO PRO ATIVO (CONQUISTA) - mesmo capricho do bloco de oferta,
+   mas em tom "conquistado". Reaproveita .card-pro-badge, .card-pro-titulo
+   e .card-pro-vantagens. O container ja tem borda+glow accent via
+   .card-pro.pro-ativo; aqui adicionamos o glow radial e centralizacao. */
+.card-pro-conquista {
+  position: relative;
+  overflow: hidden;
+  text-align: center !important;
+}
+
+.card-pro-conquista::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -30px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.card-pro-conquista .texto-pro {
+  position: relative;
+  text-align: center !important;
+  margin-bottom: 0;
+}
+
+.card-pro-conquista .card-pro-titulo {
+  margin-bottom: 14px;
+}
+
+/* Badge "Pro Ativo" - pill com check inline */
+.card-pro-badge-ativo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card-pro-badge-ativo svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Lista de vantagens centralizada como bloco (inline-block) pra ficar
+   visualmente centrada no card, mas com texto alinhado a esquerda. */
+.card-pro-conquista .card-pro-vantagens {
+  display: inline-flex;
+  text-align: left;
+  margin: 0 auto;
+}
+
 /* BOT?fO SUGEST?fO FORA DOS CARDS */
 
 .sobre-acoes {

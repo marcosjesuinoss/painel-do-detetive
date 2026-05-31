@@ -252,7 +252,7 @@ function atualizarTelaSobre() {
   };
 
   if (proDados.ativo) {
-    cardProEl.classList.add("pro-ativo");
+    cardProEl.classList.add("pro-ativo", "card-pro-conquista");
     cardProEl.classList.remove("card-pro-oferta");
 
     let listaRecursosHtml = `
@@ -268,8 +268,14 @@ function atualizarTelaSobre() {
     }
 
     textoProEl.innerHTML = `
-      <span class="pro-sobre-titulo">No modo Pro voc\u00ea tem</span>
-      <ul class="pro-sobre-lista">
+      <span class="card-pro-badge card-pro-badge-ativo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Pro Ativo
+      </span>
+      <span class="card-pro-titulo">Tudo isto \u00e9 seu</span>
+      <ul class="card-pro-vantagens">
         ${listaRecursosHtml}
       </ul>
     `;
