@@ -923,7 +923,7 @@ body.modo-pro.light .carta-minha {
 .card-sobre p {
   margin-bottom: 20px;
   opacity: 0.95;
-  text-align: justify;
+  text-align: left;
 }
 
 /* FREE: esconde paragrafo que menciona recursos PRO (destaques
@@ -1336,12 +1336,18 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   padding: 22px 20px;
   border-radius: var(--radius-lg);
   text-align: center;
-  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
+  /* Flex column garante que TODOS os filhos (icone, pill ATIVO, titulo,
+     texto) fiquem centrados no mesmo eixo vertical - evita o desalinho
+     sutil que vinha de inline-flex + text-align + letter-spacing. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Glow accent atras do icone */
@@ -1353,12 +1359,23 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   transform: translateX(-50%);
   width: 180px;
   height: 180px;
-  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.22), transparent 65%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12), transparent 65%);
   pointer-events: none;
 }
 
 .pro-hero.ativo {
-  border-color: rgba(var(--accent-rgb), 0.42);
+  border-color: rgba(var(--accent-rgb), 0.26);
+}
+
+/* Linha do topo do hero: icone + pill ATIVO lado a lado, centralizados
+   e alinhados verticalmente. No estado inativo a pill fica display:none,
+   entao so o icone aparece (centralizado pelo justify-content). */
+.pro-hero-topo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 4px 0 12px;
 }
 
 .pro-hero-icone {
@@ -1368,7 +1385,7 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   justify-content: center;
   width: 58px;
   height: 58px;
-  margin: 4px auto 10px;
+  margin: 0;
   border-radius: 50%;
   background: linear-gradient(145deg, rgba(var(--accent-soft-rgb), 0.18), rgba(var(--accent-rgb), 0.08));
   border: 1px solid rgba(var(--accent-rgb), 0.4);
@@ -1414,7 +1431,7 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   align-items: center;
   justify-content: center;
   padding: 3px 12px;
-  margin-bottom: 8px;
+  margin: 0;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
@@ -1476,7 +1493,7 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: rgba(var(--accent-rgb), 0.12);
+  background: rgba(var(--accent-rgb), 0.09);
   color: var(--accent);
   flex-shrink: 0;
 }
@@ -1692,10 +1709,10 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
   text-align: center;
   padding: 20px 18px;
   background: var(--card);
-  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border: 1px solid rgba(var(--accent-rgb), 0.14);
   border-radius: 16px;
   box-shadow:
-    0 8px 20px rgba(var(--accent-rgb), 0.1),
+    0 8px 20px rgba(var(--accent-rgb), 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   position: relative;
   overflow: hidden;
@@ -1708,7 +1725,7 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
   right: -40px;
   width: 140px;
   height: 140px;
-  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1), transparent 70%);
   pointer-events: none;
 }
 
