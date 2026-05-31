@@ -369,6 +369,16 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
     resetarPilhaUndo();
   }
 
+  // Reseta flags dos tooltips educativos - reaparecem a cada partida
+  // nova. NAO sao resetados em "Continuar" nem em "Limpar tabela" (so
+  // iniciarPartidaLimpa passa por aqui).
+  // - freeVTooltipNestaPartida: tooltip de 1o V no FREE
+  // - proTrincaTooltipNestaPartida: tooltip de trinca de ? no PRO
+  // - freeVTooltipMostrado: chave legada (lifetime) de versoes antigas
+  localStorage.removeItem("freeVTooltipNestaPartida");
+  localStorage.removeItem("proTrincaTooltipNestaPartida");
+  localStorage.removeItem("freeVTooltipMostrado");
+
   resetarSelecoesGlobais();
   criarTabela();
   atualizarBotaoContinuar();
@@ -380,5 +390,13 @@ function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
   // nao quer usar. Em "Continuar partida" o popup NAO aparece.
   if (typeof abrirPopupMinhasCartas === "function") {
     abrirPopupMinhasCartas();
+  }
+
+  // Fallback: se o popup "Minhas cartas" nao abriu (sem config valida),
+  // ainda dispara o tooltip da trinca PRO. As funcoes de close do popup
+  // ja chamam isso quando o popup eh fechado normalmente.
+  const popupAberto = document.getElementById("popupMinhasCartas")?.classList.contains("ativo");
+  if (!popupAberto && typeof mostrarTooltipTrincaPro === "function") {
+    setTimeout(mostrarTooltipTrincaPro, 300);
   }
 }

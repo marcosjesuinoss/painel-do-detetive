@@ -113,4 +113,33 @@ Itens guardados pra próxima versão maior. O foco da **v1.x** é estabilizar fe
 - Compartilhar resultado de partida (screenshot + texto) via Web Share API
 - Modo "histórico de partidas" — guardar últimas N partidas com data + jogadores + resultado
 - Som/feedback de áudio sutil em ações chave (toggle opt-in)
-- Onboarding/tutorial visual nas primeiras partidas
+
+### "Jogar novamente com mesmo setup"
+**Contexto:** quem joga sempre com a mesma turma (versão, qtd jogadores, nomes) tem que re-selecionar tudo a cada partida. Atalho economiza tempo.
+
+**Proposta:**
+- Botão na tela inicial, abaixo do "Continuar" (e visível só se houver setup salvo)
+- Texto: nomes dos jogadores ou qtd
+- Click → confirmação se houver partida em andamento → pula novoJogo + personalizar → `iniciarPartidaLimpa(true)` direto
+- Setup já está em localStorage (`numJogadores`, nomes, versão, distribuição 5/7) — só ler e usar
+
+**Esforço:** ~30-45 min
+**Risco:** Baixo
+**Quando fazer:** v2.0 ou quando houver demanda
+
+### Onboarding / Tutorial (prioritário pra UX)
+**Contexto:** primeira vez que o usuário abre o app, vê tabela em branco sem orientação. Pode não entender V/X/?/marcar/trinca/cartas oculta.
+
+**Proposta:**
+- Tutorial visual de 3-4 cards na primeira abertura (flag `tutorialMostrado` em localStorage)
+- Cards:
+  1. "Marque V quando confirmar uma carta na mão de alguém"
+  2. "Marque X quando descobrir que alguém NÃO tem"
+  3. "Use ? pra anotar suspeitas"
+  4. "Toque em 'Minhas cartas' pra começar marcando o que você tem"
+- Botão "Pular" sempre disponível
+- Acessível depois pelo menu (botão "Tutorial" na Ajuda)
+
+**Esforço:** ~1h-1h30
+**Risco:** Médio (afeta primeira impressão)
+**Quando fazer:** v1.x próxima ou v2.0

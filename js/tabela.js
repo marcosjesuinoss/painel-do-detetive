@@ -190,6 +190,125 @@ function atualizarBotaoUndo() {
   }
 }
 
+/* Tooltip educativo - so aparece 1x por install no FREE quando o
+   usuario marca seu 1o V. Explica que auto-X (cascata) eh diferencial
+   PRO. Fecha automaticamente em ~6s ou ao tocar em qualquer lugar. */
+function mostrarTooltipPrimeiroVFree(celReferencia) {
+  // Remove qualquer tooltip antigo
+  document.querySelectorAll(".tooltip-free-v").forEach((el) => el.remove());
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "tooltip-free-v";
+  tooltip.innerHTML = `
+    <div class="tooltip-free-v-conteudo">
+      <strong>Sabia?</strong>
+      <p>No <strong>Modo PRO</strong> ao marcar V, os outros jogadores
+      ganham X automaticamente nesta linha.</p>
+    </div>
+  `;
+  document.body.appendChild(tooltip);
+
+  // Posiciona perto da celula
+  const rect = celReferencia.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const larguraTela = window.innerWidth;
+  const margem = 12;
+
+  let top = rect.bottom + 8;
+  // Se for sair pela parte de baixo da tela, posiciona acima
+  if (top + tooltipRect.height > window.innerHeight - margem) {
+    top = rect.top - tooltipRect.height - 8;
+  }
+  let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+  left = Math.max(margem, Math.min(left, larguraTela - tooltipRect.width - margem));
+
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+
+  // Fade in
+  requestAnimationFrame(() => {
+    tooltip.classList.add("visivel");
+  });
+
+  // Auto-dismiss em 6s OU ao tocar em qualquer lugar
+  const fechar = () => {
+    tooltip.classList.remove("visivel");
+    setTimeout(() => tooltip.remove(), 250);
+    document.removeEventListener("pointerdown", fechar, { capture: true });
+    document.removeEventListener("scroll", fechar, { capture: true });
+  };
+  const timer = setTimeout(fechar, 6000);
+  setTimeout(() => {
+    document.addEventListener("pointerdown", fechar, { capture: true, once: true });
+    document.addEventListener("scroll", fechar, { capture: true, once: true });
+  }, 0);
+  tooltip.addEventListener("transitionend", () => {
+    if (!tooltip.classList.contains("visivel")) clearTimeout(timer);
+  });
+}
+
+/* Tooltip educativo da trinca de "?" no PRO - aparece 1x ao iniciar
+   uma partida nova como balao ancorado no botao "?" do rodape, com
+   setinha apontando pra baixo. Flag resetada em iniciarPartidaLimpa.
+   Funcao expoe verificacao + chama o trigger so se for o caso. */
+function mostrarTooltipTrincaPro() {
+  if (typeof isPRO !== "function" || !isPRO()) return;
+  if (localStorage.getItem("proTrincaTooltipNestaPartida")) return;
+  const btnMaybe = document.getElementById("btnMaybe");
+  if (!btnMaybe) return;
+
+  document.querySelectorAll(".tooltip-pro-trinca").forEach((el) => el.remove());
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "tooltip-pro-trinca";
+  tooltip.innerHTML = `
+    <div class="tooltip-pro-trinca-conteudo">
+      <strong>Dica PRO</strong>
+      <p>Selecione 1 coluna, 3 linhas e toque <strong>?</strong> pra registrar o palpite do jogador.</p>
+    </div>
+    <span class="tooltip-pro-trinca-seta" aria-hidden="true"></span>
+  `;
+  document.body.appendChild(tooltip);
+
+  // Posiciona acima do btnMaybe, centralizado horizontalmente em cima dele.
+  // Mantem dentro da viewport (margens laterais minimas).
+  const rectBtn = btnMaybe.getBoundingClientRect();
+  const rectTooltip = tooltip.getBoundingClientRect();
+  const margem = 10;
+  const larguraTela = window.innerWidth;
+
+  let top = rectBtn.top - rectTooltip.height - 12; // 12px de gap pra seta
+  let left = rectBtn.left + rectBtn.width / 2 - rectTooltip.width / 2;
+  left = Math.max(margem, Math.min(left, larguraTela - rectTooltip.width - margem));
+
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+
+  // Posiciona a setinha alinhada com o centro do botao (relativo ao tooltip)
+  const centroBtnNaTela = rectBtn.left + rectBtn.width / 2;
+  const setaLeft = centroBtnNaTela - left;
+  tooltip.style.setProperty("--seta-left", `${setaLeft}px`);
+
+  localStorage.setItem("proTrincaTooltipNestaPartida", "1");
+
+  requestAnimationFrame(() => {
+    tooltip.classList.add("visivel");
+  });
+
+  const fechar = () => {
+    tooltip.classList.remove("visivel");
+    setTimeout(() => tooltip.remove(), 250);
+    document.removeEventListener("pointerdown", fechar, { capture: true });
+  };
+  const timer = setTimeout(fechar, 7000);
+  setTimeout(() => {
+    document.addEventListener("pointerdown", fechar, { capture: true, once: true });
+  }, 0);
+  tooltip.addEventListener("transitionend", () => {
+    if (!tooltip.classList.contains("visivel")) clearTimeout(timer);
+  });
+}
+
 /* =====================================
    CONFIGURAÇÕES DO JOGO
 ===================================== */
@@ -544,6 +663,24 @@ function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
   const estadoSalvo = lerEstadoTabela();
   const estadoAnterior = estadoSalvo[chave] || "";
   const autoXChaves = new Set();
+
+  // FREE: primeira vez que o usuario marca um V em CADA partida nova,
+  // mostra tooltip rapido explicando que auto-X eh PRO. A flag eh
+  // resetada em iniciarPartidaLimpa (Novo Jogo) mas NAO em "Continuar"
+  // nem em "Limpar tabela" - so reapresenta em jogos realmente novos.
+  if (
+    origem === "manual" &&
+    tipo === "V" &&
+    estadoAnterior !== "V" &&
+    typeof isPRO === "function" &&
+    !isPRO() &&
+    !localStorage.getItem("freeVTooltipNestaPartida")
+  ) {
+    try {
+      mostrarTooltipPrimeiroVFree(cel);
+      localStorage.setItem("freeVTooltipNestaPartida", "1");
+    } catch {}
+  }
 
   // UNDO: registra snapshot ANTES da modificacao, apenas para acoes
   // manuais do usuario. Acoes da IA (origem="assistente") nao entram
@@ -1119,6 +1256,26 @@ function aplicarTrincaResposta() {
   // Cenario B chama marcarCelula(V, "assistente"), que NAO registra
   // snapshot proprio (origem != manual) - este push aqui cobre.
   registrarSnapshotUndo();
+
+  // FREE: comportamento minimalista - apenas marcacao visual das
+  // candidatas como "?" (sem cenario B colapso pra V, sem grupos no
+  // assistente, sem origem). Ajuda o usuario a registrar a duvida
+  // visualmente sem depender da IA. A logica completa fica como
+  // diferencial do PRO.
+  if (typeof isPRO === "function" && !isPRO()) {
+    candidatas.forEach((c) => {
+      estadoSalvo[c.chave] = "?";
+      const cel = document.querySelector(`[data-key="${c.chave}"]`);
+      if (cel) renderizarEstado(cel, "?");
+    });
+    localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
+    limparSelecoes();
+    atualizarEstadoVisualCartasEncontradas();
+    atualizarDestaqueCartaOculta();
+    atualizarBotoes();
+    atualizarBotaoContinuar();
+    return;
+  }
 
   // Cenario B: 1 candidata SEM V no resto -> colapsa para V (outros sao X)
   if (candidatas.length === 1 && !algumV) {

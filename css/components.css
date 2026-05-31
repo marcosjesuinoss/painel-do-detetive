@@ -437,9 +437,195 @@ body:not(.modo-pro) .menu-acao svg {
 }
 
 /* CTA Ativar PRO embaixo - mesmo espacamento do gap entre .menu-acao
-   pra uniformidade visual (FREE) */
+   pra uniformidade visual (FREE). Visual reforcado: icone coroa SVG +
+   glow accent pulsante sutil pra dar "wow" sem virar carnaval. */
 #btnMenuPRO {
   margin-top: 14px;
+}
+
+.btn-menu-pro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 6px 16px rgba(var(--accent-rgb), 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-menu-pro-icone {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
+}
+
+/* Faixa de brilho cruzando o botao a cada ~5s (sutil) */
+.btn-menu-pro::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: btnMenuProShimmer 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes btnMenuProShimmer {
+  0%, 70%, 100% {
+    left: -60%;
+  }
+  88% {
+    left: 130%;
+  }
+}
+
+/* TOOLTIP educativo do primeiro V no FREE - aparece uma vez, explica
+   que auto-X eh PRO. Posicionado via JS perto da celula marcada. */
+.tooltip-free-v {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.4),
+    0 0 18px rgba(var(--accent-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+  pointer-events: none;
+}
+
+.tooltip-free-v.visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-free-v-conteudo strong {
+  display: block;
+  color: var(--accent);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.tooltip-free-v-conteudo p {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.tooltip-free-v-conteudo p strong {
+  display: inline;
+  color: var(--accent);
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.light .tooltip-free-v {
+  box-shadow:
+    0 10px 26px rgba(71, 85, 105, 0.18),
+    0 0 14px rgba(var(--accent-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* TOOLTIP educativo da trinca de "?" no PRO - balao ancorado acima do
+   botao "?" do rodape com setinha apontando pra baixo. Aparece 1x ao
+   iniciar uma partida nova (apos minhas cartas fechar). Top/left
+   definidos via JS pra alinhar com o botao. */
+.tooltip-pro-trinca {
+  position: fixed;
+  z-index: 9999;
+  max-width: 92%;
+  width: 280px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(var(--accent-rgb), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+  pointer-events: none;
+}
+
+.tooltip-pro-trinca.visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Setinha apontando pra baixo (em direcao ao btnMaybe).
+   --seta-left eh setado via JS pra alinhar com o centro do botao. */
+.tooltip-pro-trinca-seta {
+  position: absolute;
+  bottom: -7px;
+  left: var(--seta-left, 50%);
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--card);
+  border-right: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.4);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip-pro-trinca-conteudo strong {
+  display: block;
+  color: var(--accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.tooltip-pro-trinca-conteudo p {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.tooltip-pro-trinca-conteudo p strong {
+  display: inline;
+  color: var(--accent);
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.light .tooltip-pro-trinca {
+  box-shadow:
+    0 12px 28px rgba(71, 85, 105, 0.2),
+    0 0 16px rgba(var(--accent-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 /* ===== POPUP "MINHAS CARTAS" =====
@@ -3303,7 +3489,7 @@ body.modo-pro .play:focus-visible {
 
 /* .ajuda-container nao usa o .container default, entao precisa override */
 .tela#ajuda .ajuda-container {
-  margin-top: 16px;
+  margin-top: 28px;
 }
 
 .btn-pro-grande:active,

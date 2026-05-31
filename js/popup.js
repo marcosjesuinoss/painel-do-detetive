@@ -186,6 +186,11 @@ function atualizarBotaoConfirmarMinhasCartas() {
 function pularMinhasCartas() {
   fecharOverlayAcessivel("popupMinhasCartas");
   cartasMinhasSelecionadas = new Set();
+  // Trigger tooltip da trinca (PRO, 1x por partida nova) - so dispara
+  // se as condicoes baterem (PRO + flag nao setado + btnMaybe existe).
+  if (typeof mostrarTooltipTrincaPro === "function") {
+    setTimeout(mostrarTooltipTrincaPro, 200);
+  }
 }
 
 function confirmarMinhasCartas() {
@@ -251,4 +256,8 @@ function confirmarMinhasCartas() {
 
   fecharOverlayAcessivel("popupMinhasCartas");
   cartasMinhasSelecionadas = new Set();
+  // Trigger tooltip da trinca (PRO, 1x por partida nova)
+  if (typeof mostrarTooltipTrincaPro === "function") {
+    setTimeout(mostrarTooltipTrincaPro, 200);
+  }
 }
