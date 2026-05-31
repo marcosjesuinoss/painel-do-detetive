@@ -111,8 +111,13 @@ function atualizarStatusPRO() {
     if (obrigadoCard) obrigadoCard.style.display = "none";
 
     if (btnMenuPRO) {
-      btnMenuPRO.textContent = "Ativar Modo PRO";
-      btnMenuPRO.style.display = "block";
+      // Atualiza so o <span> pra NAO destruir o icone SVG do botao.
+      const spanMenuPRO = btnMenuPRO.querySelector("span");
+      if (spanMenuPRO) spanMenuPRO.textContent = "Ativar Modo PRO";
+      else btnMenuPRO.textContent = "Ativar Modo PRO";
+      // display vazio (nao "block") pra preservar o display:flex do
+      // .btn-menu-pro (icone + label centralizados).
+      btnMenuPRO.style.display = "";
       btnMenuPRO.disabled = false;
       btnMenuPRO.style.opacity = "";
     }
@@ -238,8 +243,17 @@ function atualizarTelaSobre() {
 
   if (!textoProEl || !botaoProEl || !cardProEl) return;
 
+  // Atualiza o label do botao SEM destruir o icone SVG interno - escreve
+  // no <span> se existir, senao cai pro textContent (fallback legado).
+  const definirLabelBotaoPro = (texto) => {
+    const span = botaoProEl.querySelector("span");
+    if (span) span.textContent = texto;
+    else botaoProEl.textContent = texto;
+  };
+
   if (proDados.ativo) {
     cardProEl.classList.add("pro-ativo");
+    cardProEl.classList.remove("card-pro-oferta");
 
     let listaRecursosHtml = `
       <li>Assistente IA</li>
@@ -260,15 +274,33 @@ function atualizarTelaSobre() {
       </ul>
     `;
 
-    botaoProEl.textContent = "Ver recursos Pro";
+    definirLabelBotaoPro("Ver recursos Pro");
     botaoProEl.style.display = "none";
   } else {
     cardProEl.classList.remove("pro-ativo");
+    // Marca como bloco de oferta - CSS aplica destaque (borda accent,
+    // glow, badge) so neste estado FREE.
+    cardProEl.classList.add("card-pro-oferta");
 
-    textoProEl.innerHTML =
-      "Quer elevar sua experi\u00eancia? Utilize o <strong>Modo Pro</strong> e tenha o aux\u00edlio de uma IA para analisar pistas e solucionar o jogo com mais intelig\u00eancia.";
-    botaoProEl.textContent = "Ativar Modo Pro";
-    botaoProEl.style.display = "block";
+    textoProEl.innerHTML = `
+      <span class="card-pro-badge">Modo Pro</span>
+      <span class="card-pro-titulo">Eleve seu jogo</span>
+      <p class="card-pro-sub">
+        Deixe a intelig\u00eancia artificial deduzir cartas, sugerir as
+        perguntas certas e apontar erros em tempo real.
+      </p>
+      <ul class="card-pro-vantagens">
+        <li>Assistente de IA que deduz sozinho</li>
+        <li>Sugest\u00e3o da pr\u00f3xima pergunta certeira</li>
+        <li>Marca\u00e7\u00e3o autom\u00e1tica e alerta de erros</li>
+        <li>Temas exclusivos e sem an\u00fancios</li>
+      </ul>
+    `;
+
+    definirLabelBotaoPro("Ativar Modo Pro");
+    // display vazio (nao "block") pra preservar o display:flex do
+    // .btn-menu-pro (icone + label). "block" inline venceria o flex.
+    botaoProEl.style.display = "";
   }
 }
 

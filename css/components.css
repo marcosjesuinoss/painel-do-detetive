@@ -923,6 +923,13 @@ body.modo-pro.light .carta-minha {
 .card-sobre p {
   margin-bottom: 20px;
   opacity: 0.95;
+  text-align: justify;
+}
+
+/* FREE: esconde paragrafo que menciona recursos PRO (destaques
+   inteligentes, marcacoes automaticas). No PRO o texto aparece normal. */
+body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
+  display: none;
 }
 
 .sobre-destaque {
@@ -1020,6 +1027,109 @@ body.modo-pro.light .carta-minha {
   font-size: 13px;
   opacity: 0.85;
   margin-bottom: 14px;
+}
+
+/* ===== BLOCO DE OFERTA PRO (FREE) - destaque chamativo =====
+   Aplicado via .card-pro-oferta (set por atualizarTelaSobre no FREE).
+   Borda accent, glow sutil, badge, headline e lista de vantagens. */
+.card-pro-oferta {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(var(--accent-rgb), 0.45) !important;
+  background:
+    linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.02)),
+    var(--card) !important;
+  box-shadow:
+    0 12px 30px rgba(var(--accent-rgb), 0.18),
+    0 0 0 1px rgba(var(--accent-rgb), 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Glow radial no canto superior */
+.card-pro-oferta::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -30px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.card-pro-oferta .texto-pro {
+  position: relative;
+  opacity: 1;
+  margin-bottom: 16px;
+}
+
+/* Badge pill no topo */
+.card-pro-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-botao);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.4);
+}
+
+/* Headline */
+.card-pro-titulo {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+
+/* Subtitulo */
+.card-pro-sub {
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.85;
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+/* Lista de vantagens com check accent */
+.card-pro-vantagens {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.card-pro-vantagens li {
+  position: relative;
+  padding-left: 26px;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.card-pro-vantagens li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  /* Circulo accent (gradiente) com check branco empilhado por cima via
+     background-image SVG (data URI). */
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") no-repeat center / 11px,
+    var(--gradient-botao);
+  box-shadow: 0 2px 6px rgba(var(--accent-rgb), 0.35);
 }
 
 /* BOT?fO SUGEST?fO FORA DOS CARDS */
