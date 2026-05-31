@@ -451,7 +451,11 @@ function selecionarTemaPRO(temaId) {
   if (sucesso) {
     // Atualizar visual dos cards
     renderizarTemasAparencia();
-    mostrarNotificacao(`Tema "${temaId.toUpperCase()}" aplicado!`);
+    // Usa o NOME do tema (ex.: "Dourado Solar") em vez do ID
+    // ("amarelo") pra bater com o que o card mostra.
+    const tema = obterTemaPro(temaId);
+    const nomeTema = tema && tema.nome ? tema.nome : temaId;
+    mostrarNotificacao(`Tema "${nomeTema}" aplicado!`);
   }
 }
 
