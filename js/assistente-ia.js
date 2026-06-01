@@ -1021,7 +1021,7 @@ function construirInstrucoesPendentesAssistenteIA() {
   const itens = [];
 
   itens.push(
-    `A IA detectou ${pendenciasMarcacaoAssistenteIA.length} marca${pendenciasMarcacaoAssistenteIA.length === 1 ? "cao" : "coes"} sugerida${pendenciasMarcacaoAssistenteIA.length === 1 ? "" : "s"} (marcação automática desligada):`,
+    `A IA detectou ${pendenciasMarcacaoAssistenteIA.length} marca${pendenciasMarcacaoAssistenteIA.length === 1 ? "ção" : "ções"} sugerida${pendenciasMarcacaoAssistenteIA.length === 1 ? "" : "s"} (marcação automática desligada):`,
   );
 
   // IA-043: filtra pendencias do J1 (voce) - voce ja sabe suas cartas,
@@ -1045,7 +1045,7 @@ function construirInstrucoesPendentesAssistenteIA() {
   }
   if (pendenciasFiltradas.length > LIMITE_LISTA) {
     const resto = pendenciasFiltradas.length - LIMITE_LISTA;
-    itens.push(`+ ${resto} marca${resto === 1 ? "cao" : "coes"} adicional${resto === 1 ? "" : "is"}.`);
+    itens.push(`+ ${resto} marca${resto === 1 ? "ção" : "ções"} adicional${resto === 1 ? "" : "is"}.`);
   }
 
   return itens;
@@ -1934,13 +1934,16 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
 
     const teste = obterTestePrioritarioAssistenteIA(escolhas);
     if (teste) {
-      const sufixo =
-        teste.xCount === 1
-          ? "jogador j\u00e1 descartou"
-          : "jogadores j\u00e1 descartaram";
-      itens.push(
-        `${teste.nome} \u00e9 um bom teste: ${teste.xCount} ${sufixo}, ent\u00e3o confirmar essa carta fecha v\u00e1rias hip\u00f3teses de uma vez.`,
-      );
+      const xc = teste.xCount || 0;
+      // Frase proporcional a forca da evidencia: com poucos X, nao
+      // prometer que "fecha varias hipoteses" (seria exagero).
+      let fraseTeste;
+      if (xc <= 1) {
+        fraseTeste = `${teste.nome} vale testar: ${xc} jogador j\u00e1 descartou, confirmar ajuda a estreitar as possibilidades.`;
+      } else {
+        fraseTeste = `${teste.nome} \u00e9 um bom teste: ${xc} jogadores j\u00e1 descartaram, ent\u00e3o confirmar essa carta fecha v\u00e1rias hip\u00f3teses de uma vez.`;
+      }
+      itens.push(fraseTeste);
     }
 
     const linhaPressao = resumo.candidatosOcultos.find(
@@ -2023,13 +2026,13 @@ function construirDicasCapacidadeAssistenteIA(linhas) {
     const jogador = obterNomeJogadorAssistenteIA(col);
 
     if (faltam <= 0) {
-      dicas.push(`${jogador} ja fechou a mao com ${limite} carta(s) confirmada(s).`);
+      dicas.push(`${jogador} já fechou a mão com ${limite} carta(s) confirmada(s).`);
       continue;
     }
 
     if (possiveis === faltam) {
       dicas.push(
-        `${jogador} precisa de ${faltam} carta(s) e restam exatamente ${faltam} posicao(oes) possiveis na coluna.`,
+        `${jogador} precisa de ${faltam} carta(s) e restam exatamente ${faltam} posição(ões) possíveis na coluna.`,
       );
       continue;
     }
@@ -2092,7 +2095,7 @@ function classificarInconsistenciasAssistenteIA(linhas) {
       graves.push({
         codigo: "linha-v-duplicado",
         nivel: "grave",
-        mensagem: `"${linha.nome}" tem ${linha.vCount} marcacoes V (cada carta tem 1 dono unico).`,
+        mensagem: `"${linha.nome}" tem ${linha.vCount} marcações V (cada carta tem 1 dono único).`,
         foco: { tipo: "celulas", chaves: cols.map((c) => `${linha.row}-${c}`) },
       });
     }
@@ -2113,7 +2116,7 @@ function classificarInconsistenciasAssistenteIA(linhas) {
       graves.push({
         codigo: "oculta-duplicada",
         nivel: "grave",
-        mensagem: `Secao "${tipo}" tem ${ocultasTodaX.length} cartas marcadas com X em todas as colunas (so pode haver 1 oculta por secao).`,
+        mensagem: `Seção "${tipo}" tem ${ocultasTodaX.length} cartas marcadas com X em todas as colunas (só pode haver 1 oculta por seção).`,
         foco: { tipo: "linhas", rows: ocultasTodaX.map((l) => l.row) },
       });
     }
@@ -2126,7 +2129,7 @@ function classificarInconsistenciasAssistenteIA(linhas) {
       graves.push({
         codigo: "secao-toda-v",
         nivel: "grave",
-        mensagem: `Secao "${tipo}" tem V em todas as cartas (1 carta dessa secao deveria estar oculta).`,
+        mensagem: `Seção "${tipo}" tem V em todas as cartas (1 carta dessa seção deveria estar oculta).`,
         foco: { tipo: "linhas", rows: grupo.map((l) => l.row) },
       });
     }
@@ -2160,7 +2163,7 @@ function classificarInconsistenciasAssistenteIA(linhas) {
         graves.push({
           codigo: "coluna-excesso",
           nivel: "grave",
-          mensagem: `${nomeJog} tem ${vCount} V marcados mas a mao so permite ${limite}.`,
+          mensagem: `${nomeJog} tem ${vCount} V marcados mas a mão só permite ${limite}.`,
           foco: { tipo: "celulas", chaves: chavesV },
         });
       }
@@ -2175,14 +2178,14 @@ function classificarInconsistenciasAssistenteIA(linhas) {
         graves.push({
           codigo: "coluna-fechada-abaixo",
           nivel: "grave",
-          mensagem: `${nomeJog} fechou a mao com ${vCount} carta(s) confirmada(s), mas precisa de ${limite} (faltam ${faltam}).`,
+          mensagem: `${nomeJog} fechou a mão com ${vCount} carta(s) confirmada(s), mas precisa de ${limite} (faltam ${faltam}).`,
           foco: { tipo: "coluna", coluna: col },
         });
       } else if (faltam > 0 && abertas < faltam && vCount <= limite) {
         graves.push({
           codigo: "coluna-impossivel-aberta",
           nivel: "grave",
-          mensagem: `${nomeJog} precisa de ${faltam} carta(s) mas so restam ${abertas} celula(s) aberta(s).`,
+          mensagem: `${nomeJog} precisa de ${faltam} carta(s) mas só restam ${abertas} célula(s) aberta(s).`,
           foco: { tipo: "coluna", coluna: col },
         });
       }
