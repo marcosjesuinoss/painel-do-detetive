@@ -990,6 +990,18 @@ function descreverEscolhaDetalhadaAssistenteIA(linha) {
 
   // Monta: "motivo. Descartado por: X. Em aberto: Y."
   const partes = [`${motivoFrase}.`];
+
+  // Carta ja deduzida como a do crime (oculta-direta): nao faz sentido
+  // listar jogadores "em aberto" como se pudessem ter a carta - ela esta
+  // no envelope. Conclui e, se houver celulas em branco, sugere marcar X.
+  if (ehOcultaDiretaAssistenteIA(linha)) {
+    partes.push("Está no envelope — ninguém tem essa carta.");
+    if (candidatos.length > 0) {
+      partes.push(`Pode marcar X para ${candidatos.join(", ")}.`);
+    }
+    return partes.join(" ");
+  }
+
   if (descartados.length > 0) {
     partes.push(`Descartado por: ${descartados.join(", ")}.`);
   }
@@ -1712,6 +1724,16 @@ function obterResumoMudancaAssistenteIA() {
   }
 }
 
+// Papel da carta no crime, por tipo. Usa "e" (presente) em vez de
+// "foi descoberto/a" pra evitar flexao de genero (nao temos o genero
+// das cartas: "a Faca" vs "o Castical").
+function papelCrimeAssistenteIA(tipo) {
+  if (tipo === "Suspeitos") return "o culpado";
+  if (tipo === "Armas") return "a arma do crime";
+  if (tipo === "Locais") return "o local do crime";
+  return "parte do crime";
+}
+
 function construirMudancasAssistenteIA(linhas, resumo) {
   const ultima = obterResumoMudancaAssistenteIA();
   const itens = [];
@@ -1747,13 +1769,33 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   const encontradas = linhas.filter((linha) => linha.isFound).length;
     itens.push(`${encontradas} cartas j\u00e1 t\u00eam dono.`);
 
+  // Nivel de explicacao controla quanto detalhe acompanha a deducao.
+  const cfgMudancas =
+    typeof obterConfiguracaoAssistenteIA === "function"
+      ? obterConfiguracaoAssistenteIA()
+      : { nivelExplicacao: "objetiva" };
+  const detalhada = cfgMudancas.nivelExplicacao === "detalhada";
+  const explicativa =
+    cfgMudancas.nivelExplicacao === "explicativa" || detalhada;
+
   const ocultasFortes = resumo.ocultas.slice(0, 2);
   ocultasFortes.forEach((linha) => {
-    if (linha.motivo === "linha-toda-x") {
-      itens.push(`${linha.nome} parece oculta porque a linha inteira ficou em X.`);
-    } else if (linha.motivo === "ultima-sem-v") {
-      itens.push(`${linha.nome} ficou como \u00fanica carta sem V na se\u00e7\u00e3o de ${linha.tipo}.`);
+    const papel = papelCrimeAssistenteIA(linha.tipo);
+    let frase = `${linha.nome} \u00e9 ${papel}.`;
+
+    if (explicativa) {
+      if (linha.motivo === "linha-toda-x") {
+        frase += detalhada
+          ? ` Todos os jogadores foram descartados (X) para essa carta, ent\u00e3o ela n\u00e3o est\u00e1 com ningu\u00e9m \u2014 est\u00e1 no envelope do crime.`
+          : ` Ningu\u00e9m tem essa carta (linha toda em X).`;
+      } else if (linha.motivo === "ultima-sem-v") {
+        frase += detalhada
+          ? ` Todas as outras cartas de ${linha.tipo} j\u00e1 t\u00eam dono confirmado (V). Por elimina\u00e7\u00e3o, ${linha.nome} \u00e9 a que sobrou para o envelope.`
+          : ` \u00c9 a \u00fanica carta de ${linha.tipo} sem dono.`;
+      }
     }
+
+    itens.push(frase);
   });
 
   return itens.slice(0, 3);
@@ -1775,6 +1817,11 @@ function obterTestePrioritarioAssistenteIA(escolhas) {
   for (const e of escolhas) {
     if (!e) continue;
     if (e.isFound) continue;
+    // Pula cartas ja deduzidas como oculta-direta (a carta do crime).
+    // Elas nao tem dono V (estao no envelope), mas ja sao CONHECIDAS -
+    // sugerir "testa-las" contradiz a deducao "X e o culpado/arma/local"
+    // mostrada no card "O que mudou".
+    if (ehOcultaDiretaAssistenteIA(e)) continue;
     if (!melhor || (e.xCount || 0) > (melhor.xCount || 0)) melhor = e;
   }
   return melhor && melhor.xCount > 0 ? melhor : null;
