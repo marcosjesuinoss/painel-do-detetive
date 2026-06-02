@@ -499,7 +499,12 @@ function criarTabela() {
   header.appendChild(titulo);
 
   for (let j = 1; j <= jogadores; j++) {
-  const nome = localStorage.getItem("nomeJogador" + j) || "J" + j;
+  // Exibe nome TRUNCADO pra caber na celula (o nome completo fica salvo
+  // e eh usado pelo assistente). Fallback "Jx" quando vazio.
+  const nome =
+    typeof obterNomeExibicaoJogador === "function"
+      ? obterNomeExibicaoJogador(j, jogadores)
+      : (localStorage.getItem("nomeJogador" + j) || "J" + j).slice(0, 7);
   const cel = document.createElement("div");
   cel.className = "celula";
   const strong = document.createElement("strong");

@@ -2,6 +2,11 @@
    JOGADORES
 ===================================== */
 
+// Limite do nome COMPLETO (digitado/armazenado e usado pelo assistente).
+const LIMITE_NOME_COMPLETO = 16;
+
+// Limite de EXIBICAO na tabela (cabe na celula do cabecalho), por
+// numero de jogadores. Quanto mais jogadores, menos espaco por coluna.
 function obterLimiteNomeJogador(numJogadores) {
   const num = parseInt(numJogadores, 10);
 
@@ -10,6 +15,15 @@ function obterLimiteNomeJogador(numJogadores) {
   if (num === 5) return 5;
 
   return 4;
+}
+
+// Nome truncado pra exibicao na tabela (sem afetar o nome completo
+// salvo, que o assistente usa). Default "Jx" quando vazio.
+function obterNomeExibicaoJogador(coluna1Based, numJogadores) {
+  const completo = ler("nomeJogador" + coluna1Based) || "";
+  if (!completo) return "J" + coluna1Based;
+  const limite = obterLimiteNomeJogador(numJogadores);
+  return completo.slice(0, limite);
 }
 
 function restaurarNomesPadraoJogadores() {
@@ -75,18 +89,20 @@ function abrirPersonalizar() {
   if (!selectJogadores || !areaJog) return;
 
   const num = selectJogadores.value;
-  const limiteNome = obterLimiteNomeJogador(num);
   areaJog.innerHTML = "";
 
   for (let i = 1; i <= num; i++) {
     const input = document.createElement("input");
-    input.maxLength = limiteNome;
+    // Nome COMPLETO ate 16 chars - salvo inteiro. A tabela trunca so
+    // pra exibicao (obterLimiteNomeJogador), mas o assistente usa o
+    // nome completo nas falas.
+    input.maxLength = LIMITE_NOME_COMPLETO;
     input.placeholder = "J" + i;
-    input.value = (ler("nomeJogador" + i) || "").slice(0, limiteNome);
+    input.value = (ler("nomeJogador" + i) || "").slice(0, LIMITE_NOME_COMPLETO);
     salvar("nomeJogador" + i, input.value);
 
     input.oninput = function () {
-      input.value = input.value.slice(0, limiteNome);
+      input.value = input.value.slice(0, LIMITE_NOME_COMPLETO);
       salvar("nomeJogador" + i, input.value);
     };
 
