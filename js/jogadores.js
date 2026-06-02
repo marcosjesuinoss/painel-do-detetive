@@ -24,7 +24,12 @@ function limparConfiguracaoDistribuicaoCartas() {
   localStorage.removeItem("assistenteJogadoresMaisCartas");
 }
 
-function atualizarJogadores() {
+// interacaoUsuario=true so quando chamado pelos onchange dos selects
+// (usuario trocou versao/qtd). Na inicializacao do app eh chamado SEM
+// esse flag - assim NAO reseta os nomes/distribuicao de um jogo em
+// andamento ao reabrir o app (o select volta ao padrao e isso disparava
+// restaurarNomesPadraoJogadores indevidamente).
+function atualizarJogadores(interacaoUsuario = false) {
   const elVersao = getEl("versao");
   const select = getEl("jogadores");
   if (!elVersao || !select) return;
@@ -48,12 +53,20 @@ function atualizarJogadores() {
   const quantidadeAtual = String(select.value);
   const quantidadeAnterior = ler("numJogadoresPersonalizacao");
 
-  if (quantidadeAnterior && quantidadeAnterior !== quantidadeAtual) {
+  if (
+    interacaoUsuario &&
+    quantidadeAnterior &&
+    quantidadeAnterior !== quantidadeAtual
+  ) {
     restaurarNomesPadraoJogadores();
     limparConfiguracaoDistribuicaoCartas();
   }
 
-  salvar("numJogadoresPersonalizacao", quantidadeAtual);
+  // So persiste a nova quantidade quando foi o usuario que mexeu. Na
+  // inicializacao, preservar o valor salvo (do jogo em andamento).
+  if (interacaoUsuario) {
+    salvar("numJogadoresPersonalizacao", quantidadeAtual);
+  }
 }
 
 function abrirPersonalizar() {
