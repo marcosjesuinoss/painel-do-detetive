@@ -1766,9 +1766,6 @@ function construirMudancasAssistenteIA(linhas, resumo) {
     }
   }
 
-  const encontradas = linhas.filter((linha) => linha.isFound).length;
-    itens.push(`${encontradas} cartas j\u00e1 t\u00eam dono.`);
-
   // Nivel de explicacao controla quanto detalhe acompanha a deducao.
   const cfgMudancas =
     typeof obterConfiguracaoAssistenteIA === "function"
@@ -1778,10 +1775,15 @@ function construirMudancasAssistenteIA(linhas, resumo) {
   const explicativa =
     cfgMudancas.nivelExplicacao === "explicativa" || detalhada;
 
-  const ocultasFortes = resumo.ocultas.slice(0, 2);
+  // Ocultas (cartas do crime) tem PRIORIDADE - mostra ate 3 (uma por
+  // secao quando o crime esta solucionado). Vem ANTES do filler "N
+  // cartas ja tem dono" pra nao serem cortadas pelo limite final - era
+  // slice(0,2) + cap 3, que escondia a 2a e 3a carta descoberta.
+  const ocultasFortes = resumo.ocultas.slice(0, 3);
   ocultasFortes.forEach((linha) => {
     const papel = papelCrimeAssistenteIA(linha.tipo);
-    let frase = `${linha.nome} \u00e9 ${papel}.`;
+    // Carta do envelope em negrito (destaque da conclusao mais importante)
+    let frase = `**${linha.nome}** \u00e9 ${papel}.`;
 
     if (explicativa) {
       if (linha.motivo === "linha-toda-x") {
@@ -1798,7 +1800,15 @@ function construirMudancasAssistenteIA(linhas, resumo) {
     itens.push(frase);
   });
 
-  return itens.slice(0, 3);
+  // Filler "N cartas ja tem dono" - so se ainda sobrar espaco (nao
+  // empurra as ocultas pra fora do limite). Omitido quando ja temos
+  // muita coisa relevante (ex.: crime solucionado com 3 ocultas).
+  const encontradas = linhas.filter((linha) => linha.isFound).length;
+  if (encontradas > 0 && itens.length < 3) {
+    itens.push(`${encontradas} cartas j\u00e1 t\u00eam dono.`);
+  }
+
+  return itens.slice(0, 4);
 }
 
 // ============================================================================
@@ -1876,7 +1886,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
     ehOcultaDiretaAssistenteIA(local)
   ) {
     const itens = [
-      `Crime solucionado! Acuse com: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`,
+      `Crime solucionado! Acuse com: **${suspeito.nome}** + **${arma.nome}** + **${local.nome}**.`,
     ];
     if (explicativo) {
       itens.push(
@@ -2283,6 +2293,30 @@ function formatarInconsistenciasAssistenteIA(graves, leves) {
 // Conteudo dos itens eh sempre texto puro (verificado em todos os push
 // dos producers); usar textContent eh seguro e mais rapido que innerHTML.
 
+// Preenche um elemento com texto que pode conter marcador **negrito**.
+// Constroi via nos DOM (textNode + <strong>), NUNCA innerHTML - seguro
+// contra XSS mesmo que algum trecho venha de nome de jogador custom.
+// Usado pra destacar cartas do envelope (crime) nas falas do assistente.
+function aplicarTextoComNegritoAssistenteIA(el, texto) {
+  const str = String(texto);
+  if (!str.includes("**")) {
+    el.textContent = str;
+    return;
+  }
+  // Split em pares **...**: partes de indice impar sao negrito.
+  const partes = str.split("**");
+  partes.forEach((parte, i) => {
+    if (parte === "") return;
+    if (i % 2 === 1) {
+      const strong = document.createElement("strong");
+      strong.textContent = parte;
+      el.appendChild(strong);
+    } else {
+      el.appendChild(document.createTextNode(parte));
+    }
+  });
+}
+
 function aplicarListaAssistenteIA(el, itens) {
   if (!el) return;
   if (!Array.isArray(itens) || itens.length === 0) {
@@ -2295,7 +2329,7 @@ function aplicarListaAssistenteIA(el, itens) {
   ul.className = "ia-lista";
   for (const item of itens) {
     const li = document.createElement("li");
-    li.textContent = String(item);
+    aplicarTextoComNegritoAssistenteIA(li, item);
     ul.appendChild(li);
   }
   el.replaceChildren(ul);
@@ -2475,6 +2509,15 @@ function atualizarAssistenteIA() {
       const confianca = calcularConfiancaAssistenteIA(sugestao.escolhas);
       const dicasCapacidade = construirDicasCapacidadeAssistenteIA(linhas);
 
+      // Crime solucionado: as 3 escolhas sao oculta-direta (1 carta do
+      // crime por secao identificada). Estado final - a Confianca deve
+      // refletir isso em vez do detalhe generico "Alta".
+      const crimeSolucionado =
+        sugestao &&
+        Array.isArray(sugestao.escolhas) &&
+        sugestao.escolhas.length === 3 &&
+        sugestao.escolhas.every((e) => ehOcultaDiretaAssistenteIA(e));
+
       // IA-016: classifica inconsistencias antes de renderizar cards
       const inc = classificarInconsistenciasAssistenteIA(linhas);
       const temGrave = inc.graves.length > 0;
@@ -2529,6 +2572,12 @@ function atualizarAssistenteIA() {
         detalhesFinal = [
           "Marcacoes contem erros logicos - corrigir antes de confiar em sugestoes.",
         ];
+      } else if (crimeSolucionado) {
+        nivelFinal = "Máxima";
+        detalhesFinal = [
+          "Crime solucionado! As 3 cartas do envelope foram identificadas.",
+          "Pode fazer a acusação final.",
+        ];
       } else if (temLeve) {
         nivelFinal = "Cautela";
         detalhesFinal = [
@@ -2547,7 +2596,7 @@ function atualizarAssistenteIA() {
       aplicarListaAssistenteIA(estrutura.confianca, [
         `Nivel atual: ${nivelFinal}.`,
         ...detalhesFinal,
-        ...(temGrave || temPendencias ? [] : dicasCapacidade),
+        ...(temGrave || temPendencias || crimeSolucionado ? [] : dicasCapacidade),
       ]);
 
       // Card "Inconsistencias" (IA-017)
