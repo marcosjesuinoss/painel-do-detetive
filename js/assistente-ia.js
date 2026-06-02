@@ -2036,7 +2036,7 @@ function construirDicasCapacidadeAssistenteIA(linhas) {
     const jogador = obterNomeJogadorAssistenteIA(col);
 
     if (faltam <= 0) {
-      dicas.push(`${jogador} já fechou a mão com ${limite} carta(s) confirmada(s).`);
+      dicas.push(`Todas as cartas de ${jogador} foram descobertas.`);
       continue;
     }
 
