@@ -1603,8 +1603,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
     return {
       nivel: "Baixa",
       detalhes: [
-        "Ainda faltam dados em pelo menos uma das secoes.",
-        "Vale registrar mais X e V antes de confiar em uma sugest\u00e3o forte.",
+        "Ainda falta informa\u00e7\u00e3o em pelo menos uma se\u00e7\u00e3o.",
+        "Marque mais cartas antes de confiar numa sugest\u00e3o.",
       ],
     };
   }
@@ -1613,8 +1613,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
     return {
       nivel: "Alta",
       detalhes: [
-        "A sugest\u00e3o combina v\u00e1rias exclus\u00f5es fortes.",
-        "H\u00e1 sinais consistentes de carta oculta ou dono muito restrito.",
+        "Muitos jogadores j\u00e1 foram descartados nessas cartas.",
+        "As cartas sugeridas est\u00e3o bem encaminhadas pro envelope.",
       ],
     };
   }
@@ -1623,8 +1623,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
     return {
       nivel: "Media",
       detalhes: [
-        "A linha principal est\u00e1 bem encaminhada, mas ainda h\u00e1 concorrentes.",
-        "Uma rodada boa pode confirmar a leitura atual.",
+        "As cartas sugeridas s\u00e3o prov\u00e1veis, mas ainda h\u00e1 outras poss\u00edveis.",
+        "Mais algumas marca\u00e7\u00f5es devem confirmar.",
       ],
     };
   }
@@ -1632,8 +1632,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
   return {
     nivel: "Baixa",
     detalhes: [
-        "A recomenda\u00e7\u00e3o atual serve mais para explorar do que para fechar conclus\u00f5es.",
-        "O melhor ganho agora \u00e9 eliminar combina\u00e7\u00f5es.",
+      "Ainda \u00e9 cedo pra concluir \u2014 a sugest\u00e3o serve pra explorar.",
+      "O foco agora \u00e9 eliminar possibilidades.",
     ],
   };
 }
@@ -1890,7 +1890,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
     ];
     if (explicativo) {
       itens.push(
-        "As 3 cartas foram identificadas como ocultas (uma por se\u00e7\u00e3o). Pode fechar a partida.",
+        "As 3 cartas do envelope foram descobertas. Pode fazer a acusa\u00e7\u00e3o!",
       );
     }
     return { itens, escolhas };
@@ -1970,7 +1970,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
           .map((item) => obterNomeJogadorAssistenteIA(item.col))
           .join(", ");
         itens.push(
-          `${linhaPressao.nome} est\u00e1 pressionada \u2014 s\u00f3 ${nomes} ainda pode(m) ter essa carta.`,
+          `S\u00f3 ${nomes} ainda pode(m) ter ${linhaPressao.nome}.`,
         );
       }
     }
@@ -2042,7 +2042,7 @@ function construirDicasCapacidadeAssistenteIA(linhas) {
 
     if (possiveis === faltam) {
       dicas.push(
-        `${jogador} precisa de ${faltam} carta(s) e restam exatamente ${faltam} posição(ões) possíveis na coluna.`,
+        `${jogador} precisa de ${faltam} carta(s) e só há ${faltam} em aberto — todas são de ${jogador}.`,
       );
       continue;
     }

@@ -12,7 +12,7 @@
 //   (ex.: 1.x.x -> 2.0.0). Decisao manual.
 //
 // Exemplo: 1.3.232 -> 1.3.233 -> ... -> 1.3.500 -> 1.4.0 -> 1.4.1 -> ...
-const CACHE_NAME = "investigacao-1.3.254";
+const CACHE_NAME = "investigacao-1.3.256";
 
 const STATIC_FILES = [
   "./",
