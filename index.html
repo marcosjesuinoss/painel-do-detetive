@@ -90,11 +90,14 @@
         var corBarra = usarClaro ? (visual.bgLight || visual.bg) : visual.bg;
         var root = document.documentElement;
 
-        root.style.setProperty("--splash-bg", visual.bg);
-        root.style.setProperty("--splash-bg-end", visual.bgEnd);
-        root.style.setProperty("--splash-glow", visual.glow);
-        root.style.setProperty("--splash-accent", visual.accent);
-        root.style.setProperty("--splash-text", visual.text);
+        // Splash sempre na cor verde "padrao" do app, independente do tema PRO
+        // ativo (identidade de marca fixa). Apenas a barra de status (metaTheme)
+        // continua seguindo o tema escolhido.
+        root.style.setProperty("--splash-bg", "#0c1712");
+        root.style.setProperty("--splash-bg-end", "#13231b");
+        root.style.setProperty("--splash-glow", "22, 163, 74");
+        root.style.setProperty("--splash-accent", "#22c55e");
+        root.style.setProperty("--splash-text", "#e2e8f0");
 
         var metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
@@ -170,7 +173,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.3.265</footer>
+      <footer>Vers&atilde;o 1.3.266</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -889,7 +892,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.3.265</div>
+      <div class="versao-app">Vers&atilde;o 1.3.266</div>
       </div>
     </div>
 

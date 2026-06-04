@@ -1373,6 +1373,25 @@ function aplicarTrincaResposta() {
 
   localStorage.setItem("estadoTabela", JSON.stringify(estadoSalvo));
 
+  // Narracao do conjunto pro assistente: "J2 mostrou uma destas cartas".
+  // Sabemos quem mostrou (col) e as cartas candidatas (rows), mas nao pra
+  // quem foi mostrada nem qual das 3 era - por isso o texto fala "uma destas".
+  if (typeof registrarMudancaAssistenteIA === "function") {
+    const nomeJogConjunto =
+      localStorage.getItem(`nomeJogador${col + 1}`) || `J${col + 1}`;
+    const cartasConjunto = candidatas
+      .map((c) => (Array.isArray(cartas) && cartas[c.row] ? cartas[c.row].nome : null))
+      .filter(Boolean);
+    if (cartasConjunto.length >= 2) {
+      registrarMudancaAssistenteIA({
+        tipo: "conjunto-duvida",
+        jogador: nomeJogConjunto,
+        col, // IA-043: usado pra suprimir narracao do J1 (voce)
+        cartas: cartasConjunto,
+      });
+    }
+  }
+
   // Trinca concluida (palpite respondido com "uma das 3"). Limpa selecao
   // pra um proximo palpite, em vez de avancar coluna.
   limparSelecoes();

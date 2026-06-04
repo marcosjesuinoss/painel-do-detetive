@@ -1757,6 +1757,19 @@ function construirMudancasAssistenteIA(linhas, resumo) {
       itens.push(`${ultima.jogador} n\u00e3o tem ${ultima.carta}.`);
     } else if (ultima?.tipo === "?" && ultima.carta && ultima.jogador) {
       itens.push(`${ultima.jogador} pode estar com ${ultima.carta}.`);
+    } else if (
+      ultima?.tipo === "conjunto-duvida" &&
+      ultima.jogador &&
+      Array.isArray(ultima.cartas) &&
+      ultima.cartas.length >= 2
+    ) {
+      // Conjunto de possibilidades: jogador mostrou UMA das cartas, sem saber
+      // qual. Cartas em negrito; ultima separada por "ou" (X, Y ou Z).
+      const nomes = ultima.cartas.map((c) => `**${c}**`);
+      const ultimaCarta = nomes.pop();
+      const lista =
+        nomes.length > 0 ? `${nomes.join(", ")} ou ${ultimaCarta}` : ultimaCarta;
+      itens.push(`${ultima.jogador} mostrou uma destas: ${lista}.`);
     } else if (ultima?.tipo === "auto-capacidade" && ultima.jogador && Array.isArray(ultima.cartas)) {
       const prefixo =
         ultima.cartas.length === 1

@@ -8,26 +8,11 @@ let temaAtualPro = null;
 function atualizarCoresSplash(variaveisTema) {
   if (!variaveisTema) return;
 
+  // O splash usa cor verde fixa (definida no bloco inline do index.html) como
+  // identidade de marca - nao seguir mais o tema PRO aqui. Esta funcao agora
+  // so atualiza a barra de status (theme-color) para combinar com o tema ativo.
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   const bg = variaveisTema["--bg-primario"] || "#0f172a";
-  const bgEnd = variaveisTema["--bg-secundario"] || bg;
-  const accent = variaveisTema["--accent-soft"] || variaveisTema["--accent"] || "#4ade80";
-  const accentRgb = variaveisTema["--accent-rgb"] || "22, 163, 74";
-  const text = variaveisTema["--text-primario"] || "#e8eef6";
-
-  document.documentElement.style.setProperty("--splash-bg", bg);
-  document.documentElement.style.setProperty("--splash-bg-end", bgEnd);
-  document.documentElement.style.setProperty("--splash-accent", accent);
-  document.documentElement.style.setProperty("--splash-glow", accentRgb);
-  document.documentElement.style.setProperty("--splash-text", text);
-
-  if (document.body) {
-    document.body.style.setProperty("--splash-bg", bg);
-    document.body.style.setProperty("--splash-bg-end", bgEnd);
-    document.body.style.setProperty("--splash-accent", accent);
-    document.body.style.setProperty("--splash-glow", accentRgb);
-    document.body.style.setProperty("--splash-text", text);
-  }
 
   if (metaTheme) {
     metaTheme.setAttribute("content", bg);
@@ -423,9 +408,13 @@ function renderizarTemasAparencia() {
 
     const card = document.createElement("div");
     card.className = `card-tema ${temaSelecionado === tema.id ? "selecionado" : ""}`;
+    // Nomes dos temas tem 2 palavras (ex.: "Verde Assinatura"). Quebra a 1a
+    // palavra em linha propria pra todos ocuparem 2 linhas de forma uniforme,
+    // evitando que alguns fiquem em 1 linha e outros em 2.
+    const nomeEmDuasLinhas = tema.nome.replace(/ (?=\S+$)/, "<br>");
     card.innerHTML = `
       <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}"></div>
-      <h4 class="tema-nome">${tema.nome}</h4>
+      <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
       <button class="btn-selecionar-tema" data-tema="${tema.id}" type="button">
         ${temaSelecionado === tema.id ? "Selecionado" : "Usar tema"}
       </button>
