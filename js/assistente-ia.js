@@ -2079,6 +2079,15 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
       : `Sugest\u00e3o: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`,
   );
 
+  // Linha de OBJETIVO (ambos os modos): explica em 1 frase simples o porque
+  // da sugestao. Com trancas, o alvo e a categoria isolada; sem trancas, e
+  // exploracao pura.
+  itens.push(
+    trancasTipos.length >= 1
+      ? `Objetivo: descobrir ${rotuloCategoriaAssistenteIA(alvoTipo)}.`
+      : "Objetivo: abrir o jogo e eliminar possibilidades.",
+  );
+
   if (explicativo) {
     if (trancasTipos.length >= 1) {
       const descrTrancas = trancasTipos
@@ -2088,12 +2097,9 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
           return `${c.nome} (${motivo})`;
         })
         .join(" e ");
+      const plural = trancasTipos.length > 1;
       itens.push(
-        `Tranquei ${descrTrancas} de prop\u00f3sito \u2014 ningu\u00e9m pode mostrar essas cartas, ent\u00e3o a resposta \u00e9 for\u00e7ada a revelar ${rotuloCategoriaAssistenteIA(alvoTipo)}.`,
-      );
-    } else {
-      itens.push(
-        "Ainda sem cartas pra trancar: escolhi as mais incertas pra abrir o jogo e eliminar possibilidades.",
+        `${descrTrancas} ${plural ? "s\u00e3o travas" : "\u00e9 trava"} \u2014 ningu\u00e9m pode ${plural ? "mostr\u00e1-las" : "mostr\u00e1-la"}.`,
       );
     }
 

@@ -154,10 +154,29 @@ describe("construirSugestaoAssistenteIA - isolamento", () => {
 
     const sug = obterSugestao();
     const texto = sug.itens.join(" ");
-    expect(texto).toMatch(/Tranquei/);
+    expect(texto).toMatch(/Objetivo: descobrir o local/);
+    expect(texto).toMatch(/são travas/);
     expect(texto).toMatch(/sua carta/);
     // J2 ja descartado do local -> resposta vem de J3 em diante.
     expect(texto).toMatch(/J2 já não tem/);
     expect(texto).toMatch(/J3 em diante/);
+  });
+
+  it("modo objetivo mostra a linha de Objetivo de forma resumida", () => {
+    configurarPartida(3, [3, 3, 3]);
+    // objetiva e o default de configurarPartida
+    definirEstadoTabela({
+      "0-0": "V", // J1 tem Marco (tranca)
+      "3-0": "V", // J1 tem Faca (tranca)
+      "6-1": "X",
+      "7-1": "X",
+      "8-1": "X",
+    });
+
+    const sug = obterSugestao();
+    expect(sug.itens[0]).toMatch(/^Sugestão:/);
+    expect(sug.itens[1]).toBe("Objetivo: descobrir o local.");
+    // No modo objetivo nao deve vir o detalhe de travas/ordem de turno.
+    expect(sug.itens.join(" ")).not.toMatch(/são travas/);
   });
 });
