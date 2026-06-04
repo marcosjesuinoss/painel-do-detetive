@@ -127,7 +127,7 @@ describe("classificarInconsistenciasAssistenteIA - graves", () => {
     const imp = graves.find((g) => g.codigo === "coluna-impossivel-aberta");
     expect(imp).toBeDefined();
     expect(imp.mensagem).toContain("precisa de 3");
-    expect(imp.mensagem).toContain("1 celula(s) aberta(s)");
+    expect(imp.mensagem).toContain("1 célula(s) aberta(s)");
   });
 
   it("sem inconsistencias quando estado eh valido", () => {

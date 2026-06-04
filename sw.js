@@ -1,4 +1,4 @@
-﻿// Versao do cache = versao completa do app. Quando bumpar aqui,
+// Versao do cache = versao completa do app. Quando bumpar aqui,
 // atualizar tambem em index.html (2 lugares: footer e .versao-app) e
 // em manifest.json - todos os 4 lugares devem casar exatamente.
 //
@@ -12,7 +12,7 @@
 //   (ex.: 1.x.x -> 2.0.0). Decisao manual.
 //
 // Exemplo: 1.3.232 -> 1.3.233 -> ... -> 1.3.500 -> 1.4.0 -> 1.4.1 -> ...
-const CACHE_NAME = "investigacao-1.3.266";
+const CACHE_NAME = "investigacao-1.3.269";
 
 const STATIC_FILES = [
   "./",

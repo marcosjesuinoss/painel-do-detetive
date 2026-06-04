@@ -31,40 +31,62 @@ function setarNivelExplicacao(nivel) {
   localStorage.setItem("assistenteIAConfiguracoes", JSON.stringify(cfg));
 }
 
+// IA-045: confianca agora normaliza pela fracao de jogadores descartados (X)
+// por categoria e usa o MINIMO das 3 (gargalo). Helper monta uma "linha" com
+// `numX` descartes numa mesa de `jogadores`.
+function linhaCom(numX, jogadores, motivo) {
+  const estados = Array.from({ length: jogadores }, (_, i) =>
+    i < numX ? "X" : "",
+  );
+  return { estados, xCount: numX, motivo };
+}
+
 describe("calcularConfiancaAssistenteIA", () => {
   it("retorna Baixa quando alguma escolha eh null", () => {
     const result = calcularConfiancaAssistenteIA([
-      { score: 100 },
+      linhaCom(3, 6),
       null,
-      { score: 100 },
+      linhaCom(3, 6),
     ]);
     expect(result.nivel).toBe("Baixa");
-    expect(result.detalhes[0]).toMatch(/faltam dados/i);
+    expect(result.detalhes[0]).toMatch(/falta/i);
   });
 
-  it("retorna Alta quando totalScore >= 220", () => {
+  it("retorna Alta quando todas as categorias estao quase fechadas", () => {
+    // 5 de 6 descartados em cada -> 0.83 >= 0.75
     const result = calcularConfiancaAssistenteIA([
-      { score: 100 },
-      { score: 100 },
-      { score: 25 },
+      linhaCom(5, 6),
+      linhaCom(5, 6),
+      linhaCom(5, 6),
     ]);
     expect(result.nivel).toBe("Alta");
   });
 
-  it("retorna Media quando 120 <= totalScore < 220", () => {
+  it("oculta-direta conta como certeza total", () => {
     const result = calcularConfiancaAssistenteIA([
-      { score: 50 },
-      { score: 50 },
-      { score: 30 },
+      linhaCom(6, 6, "linha-toda-x"),
+      linhaCom(5, 6),
+      linhaCom(5, 6),
+    ]);
+    expect(result.nivel).toBe("Alta");
+  });
+
+  it("retorna Media quando a categoria mais fraca esta no meio", () => {
+    // 3 de 6 -> 0.5 (entre 0.34 e 0.75)
+    const result = calcularConfiancaAssistenteIA([
+      linhaCom(5, 6),
+      linhaCom(3, 6),
+      linhaCom(5, 6),
     ]);
     expect(result.nivel).toBe("Media");
   });
 
-  it("retorna Baixa quando totalScore < 120", () => {
+  it("retorna Baixa quando alguma categoria esta muito aberta", () => {
+    // 1 de 6 -> 0.167 < 0.34 puxa o minimo pra baixo
     const result = calcularConfiancaAssistenteIA([
-      { score: 30 },
-      { score: 30 },
-      { score: 30 },
+      linhaCom(5, 6),
+      linhaCom(5, 6),
+      linhaCom(1, 6),
     ]);
     expect(result.nivel).toBe("Baixa");
   });

@@ -1595,9 +1595,22 @@ function obterMelhorLinhaPorTipoAssistenteIA(tipo, resumo) {
   return resumo.candidatosOcultos.find((linha) => linha.tipo === tipo) || null;
 }
 
+// Certeza de uma categoria estar "fechada" no envelope, normalizada de 0 a 1.
+// - Carta ja deduzida (oculta-direta) = 1 (certeza total).
+// - Caso contrario: fracao de jogadores descartados (X) sobre o total.
+//   Normalizar pelo numero de jogadores torna a confianca consistente em
+//   qualquer mesa - antes o score cru (xCount*8) inflava em mesas grandes e
+//   tornava "Alta" quase inalcancavel em mesas de 3.
+function certezaCategoriaAssistenteIA(linha) {
+  if (!linha) return null;
+  if (ehOcultaDiretaAssistenteIA(linha)) return 1;
+  const jogadores = Array.isArray(linha.estados) ? linha.estados.length : 0;
+  if (jogadores <= 0) return 0;
+  return Math.min(1, (linha.xCount || 0) / jogadores);
+}
+
 function calcularConfiancaAssistenteIA(escolhas) {
-  const totalScore = escolhas.reduce((soma, item) => soma + (item?.score || 0), 0);
-  const todasPresentes = escolhas.every(Boolean);
+  const todasPresentes = Array.isArray(escolhas) && escolhas.every(Boolean);
 
   if (!todasPresentes) {
     return {
@@ -1609,22 +1622,28 @@ function calcularConfiancaAssistenteIA(escolhas) {
     };
   }
 
-  if (totalScore >= 220) {
+  // Gargalo: voce so esta tao certo quanto a categoria mais incerta. Usar o
+  // minimo (e nao a soma) impede que duas categorias resolvidas mascarem uma
+  // terceira totalmente em aberto.
+  const certezas = escolhas.map(certezaCategoriaAssistenteIA);
+  const minCerteza = Math.min(...certezas);
+
+  if (minCerteza >= 0.75) {
     return {
       nivel: "Alta",
       detalhes: [
-        "Muitos jogadores j\u00e1 foram descartados nessas cartas.",
-        "As cartas sugeridas est\u00e3o bem encaminhadas pro envelope.",
+        "As tr\u00eas se\u00e7\u00f5es est\u00e3o bem encaminhadas pro envelope.",
+        "Faltam poucas confirma\u00e7\u00f5es pra fechar o crime.",
       ],
     };
   }
 
-  if (totalScore >= 120) {
+  if (minCerteza >= 0.34) {
     return {
       nivel: "Media",
       detalhes: [
-        "As cartas sugeridas s\u00e3o prov\u00e1veis, mas ainda h\u00e1 outras poss\u00edveis.",
-        "Mais algumas marca\u00e7\u00f5es devem confirmar.",
+        "Algumas se\u00e7\u00f5es est\u00e3o claras, mas pelo menos uma ainda tem v\u00e1rias possibilidades.",
+        "Continue eliminando cartas pra subir a confian\u00e7a.",
       ],
     };
   }
@@ -1835,167 +1854,276 @@ function ehOcultaDiretaAssistenteIA(linha) {
 // ============================================================================
 // IA-025: helper - teste prioritario (carta com mais X = mais perto de fechar)
 // ============================================================================
-function obterTestePrioritarioAssistenteIA(escolhas) {
-  let melhor = null;
-  for (const e of escolhas) {
-    if (!e) continue;
-    if (e.isFound) continue;
-    // Pula cartas ja deduzidas como oculta-direta (a carta do crime).
-    // Elas nao tem dono V (estao no envelope), mas ja sao CONHECIDAS -
-    // sugerir "testa-las" contradiz a deducao "X e o culpado/arma/local"
-    // mostrada no card "O que mudou".
-    if (ehOcultaDiretaAssistenteIA(e)) continue;
-    if (!melhor || (e.xCount || 0) > (melhor.xCount || 0)) melhor = e;
-  }
-  return melhor && melhor.xCount > 0 ? melhor : null;
+// Rotulo curto da categoria pra frases ("revela algo sobre o suspeito").
+function rotuloCategoriaAssistenteIA(tipo) {
+  if (tipo === "Suspeitos") return "o suspeito";
+  if (tipo === "Armas") return "a arma";
+  if (tipo === "Locais") return "o local";
+  return "a carta";
 }
 
-// ============================================================================
-// IA-026: sugestao exploratoria quando nao ha tripla forte ainda
-// ============================================================================
-// Quando o motor nao tem dados suficientes para uma sugestao com score alto,
-// gera uma combinacao que MAXIMIZA INFORMACAO: pega a carta de cada tipo com
-// mais candidatos abertos (= mais incerta = pergunta tende a comprimir o
-// espaco de hipoteses melhor).
-function obterSugestaoExploratoriaAssistenteIA(linhas) {
-  const porTipo = { Suspeitos: [], Armas: [], Locais: [] };
-  for (const linha of linhas) {
-    if (linha.isFound) continue;
-    if (porTipo[linha.tipo]) porTipo[linha.tipo].push(linha);
-  }
-
-  function pegarMaisAmbigua(grupo) {
-    if (!grupo || grupo.length === 0) return null;
-    return grupo
-      .slice()
-      .sort((a, b) => (b.candidatos.length || 0) - (a.candidatos.length || 0))[0];
-  }
-
-  const sus = pegarMaisAmbigua(porTipo.Suspeitos);
-  const arm = pegarMaisAmbigua(porTipo.Armas);
-  const loc = pegarMaisAmbigua(porTipo.Locais);
-
-  if (!sus || !arm || !loc) return null;
-  return { suspeito: sus, arma: arm, local: loc };
+// Quantos OUTROS jogadores (fora voce, J1) ainda podem ter a carta. Mede a
+// incerteza util: perguntar uma carta com muitos donos possiveis tende a
+// revelar mais informacao do que perguntar uma ja quase pinada.
+function aberturasOutrosAssistenteIA(linha) {
+  if (!linha || !Array.isArray(linha.candidatos)) return 0;
+  return linha.candidatos.filter(
+    (c) => !ehJogadorUsuarioAssistenteIA(c.col) && c.valor !== "V",
+  ).length;
 }
 
+// Carta de uma categoria que MAXIMIZA informacao ao ser perguntada: a mais
+// incerta (mais donos possiveis). Desempata por mais X (mais perto de pinar,
+// resposta tende a ser mais definitiva) e depois pela ordem da linha.
+function obterCartaMaisIncertaAssistenteIA(tipo, linhas) {
+  const candidatas = linhas.filter((l) => l.tipo === tipo && !l.isFound);
+  if (candidatas.length === 0) return null;
+  return candidatas.slice().sort((a, b) => {
+    const dif = aberturasOutrosAssistenteIA(b) - aberturasOutrosAssistenteIA(a);
+    if (dif !== 0) return dif;
+    const difX = (b.xCount || 0) - (a.xCount || 0);
+    if (difX !== 0) return difX;
+    return a.row - b.row;
+  })[0];
+}
+
+// IA-046: "carta morta" = carta que NENHUM oponente pode mostrar num palpite,
+// logo serve de TRANCA (lock) perfeita:
+//   - carta da SUA mao (J1 = coluna 0 com V): unica, ninguem mais a tem.
+//   - carta do ENVELOPE (linha em resumo.ocultas): ninguem a tem.
+// Trancar as categorias que voce NAO quer investigar com cartas mortas forca
+// a resposta a recair sobre a categoria-alvo - e elimina a ordem de turno
+// nesses slots: carta morta nao pode ser "absorvida" por ninguem.
+function ehCartaMortaAssistenteIA(linha, envelopeRows) {
+  if (!linha) return false;
+  if (Array.isArray(linha.estados) && linha.estados[0] === "V") return true;
+  return envelopeRows instanceof Set && envelopeRows.has(linha.row);
+}
+
+// Melhor carta-tranca de uma categoria: prioriza a SUA mao (mensagem "sua
+// carta") e depois o envelope. null se nao houver tranca disponivel.
+function obterCartaTrancaAssistenteIA(tipo, linhas, resumo) {
+  const propria = linhas.find(
+    (l) => l.tipo === tipo && Array.isArray(l.estados) && l.estados[0] === "V",
+  );
+  if (propria) return propria;
+  const envelope = resumo.ocultas.find((o) => o.tipo === tipo);
+  return envelope || null;
+}
+
+// IA-046: simula o palpite respeitando a ORDEM DE TURNO (J2, J3, ... Jn) pra
+// estimar a informacao NOVA que ele gera. Retorna:
+//   - absorvido: o 1o oponente alcancado mostraria carta JA CONHECIDA (inutil).
+//   - primeiroRespondedor: 1a coluna (oponente) que PODE revelar carta nova.
+//   - descartados: oponentes antes dele, ja eliminados das cartas do palpite.
+function analisarPalpiteAssistenteIA(named, jogadores, envelopeRows) {
+  const descartados = [];
+  for (let col = 1; col < jogadores; col++) {
+    let temConhecida = false;
+    let podeRevelar = false;
+    for (const c of named) {
+      if (ehCartaMortaAssistenteIA(c, envelopeRows)) continue; // ninguem mostra
+      const v = (c.estados && c.estados[col]) || "";
+      if (v === "V") temConhecida = true; // oponente tem -> mostraria carta conhecida
+      else if (v !== "X") podeRevelar = true; // em aberto -> pode revelar carta nova
+    }
+    if (temConhecida) {
+      return { absorvido: true, primeiroRespondedor: col, descartados };
+    }
+    if (podeRevelar) {
+      return { absorvido: false, primeiroRespondedor: col, descartados };
+    }
+    descartados.push(col); // este oponente nao tem nenhuma das cartas: passa a vez
+  }
+  return { absorvido: false, primeiroRespondedor: null, descartados };
+}
+
+// Pontua um palpite: mais TRANCAS (foco) >> mais incerteza no alvo > resposta
+// mais cedo no turno. Palpite "absorvido" (resposta = carta conhecida) ou sem
+// nenhuma carta viva e descartado (score < 0).
+function valorPalpiteAssistenteIA(named, jogadores, envelopeRows) {
+  const vivo = named.find((c) => !ehCartaMortaAssistenteIA(c, envelopeRows));
+  if (!vivo) {
+    return {
+      score: -1,
+      analise: { absorvido: false, primeiroRespondedor: null, descartados: [] },
+    };
+  }
+  const analise = analisarPalpiteAssistenteIA(named, jogadores, envelopeRows);
+  if (analise.absorvido) return { score: -1, analise };
+
+  const trancas = named.filter((c) =>
+    ehCartaMortaAssistenteIA(c, envelopeRows),
+  ).length;
+  const incerteza = aberturasOutrosAssistenteIA(vivo);
+  const posicao =
+    analise.primeiroRespondedor === null
+      ? jogadores
+      : jogadores - analise.primeiroRespondedor;
+
+  return { score: trancas * 1000 + incerteza * 10 + posicao, analise };
+}
+
+// IA-046: a sugestao otimiza GANHO DE INFORMACAO respeitando a ordem de turno.
+// Dois conjuntos distintos:
+//   - escolhasEnvelope: carta mais provavel de cada categoria. Alimenta a
+//     Confianca e a acusacao final / raciocinio (a CONCLUSAO).
+//   - escolhas (ask): o palpite a fazer agora. Para CADA categoria-alvo
+//     (nao resolvida) monta um palpite - alvo = carta incerta; demais = carta
+//     morta (tranca) ou, sem tranca, a propria incerta - e escolhe o de maior
+//     valor. Assim o palpite forca a descoberta em vez de devolver o obvio.
 function construirSugestaoAssistenteIA(resumo, linhas) {
-  const suspeito = obterMelhorLinhaPorTipoAssistenteIA("Suspeitos", resumo);
-  const arma = obterMelhorLinhaPorTipoAssistenteIA("Armas", resumo);
-  const local = obterMelhorLinhaPorTipoAssistenteIA("Locais", resumo);
-  const escolhas = [suspeito, arma, local];
-
-  // IA-025: le o nivel de explicacao configurado
-  // IA-041: "detalhada" inclui tudo de "explicativa" + arvore de raciocinio
   const cfg = obterConfiguracaoAssistenteIA();
   const detalhado = cfg.nivelExplicacao === "detalhada";
   const explicativo = cfg.nivelExplicacao === "explicativa" || detalhado;
 
-  // IA-027: ACUSACAO FINAL - se todos os 3 tipos tem oculta-direta identificada,
-  // o crime esta solucionado.
-  if (
-    ehOcultaDiretaAssistenteIA(suspeito) &&
-    ehOcultaDiretaAssistenteIA(arma) &&
-    ehOcultaDiretaAssistenteIA(local)
-  ) {
+  const tipos = ["Suspeitos", "Armas", "Locais"];
+  const jogadores =
+    Array.isArray(linhas) && linhas[0] && Array.isArray(linhas[0].estados)
+      ? linhas[0].estados.length
+      : 0;
+  const envelopeRows = new Set(resumo.ocultas.map((o) => o.row));
+
+  // Conclusao (carta mais provavel por categoria) - usada na confianca.
+  const envelope = {};
+  tipos.forEach((t) => {
+    envelope[t] = obterMelhorLinhaPorTipoAssistenteIA(t, resumo);
+  });
+  const escolhasEnvelope = [envelope.Suspeitos, envelope.Armas, envelope.Locais];
+
+  // ACUSACAO FINAL: as 3 categorias resolvidas (oculta-direta).
+  if (escolhasEnvelope.every((e) => ehOcultaDiretaAssistenteIA(e))) {
+    const [s, a, l] = escolhasEnvelope;
     const itens = [
-      `Crime solucionado! Acuse com: **${suspeito.nome}** + **${arma.nome}** + **${local.nome}**.`,
+      `Crime solucionado! Acuse com: **${s.nome}** + **${a.nome}** + **${l.nome}**.`,
     ];
     if (explicativo) {
-      itens.push(
-        "As 3 cartas do envelope foram descobertas. Pode fazer a acusa\u00e7\u00e3o!",
-      );
+      itens.push("As 3 cartas do envelope foram descobertas. Pode fazer a acusa\u00e7\u00e3o!");
     }
-    return { itens, escolhas };
+    return { itens, escolhas: escolhasEnvelope, escolhasEnvelope };
   }
 
-  const scoreTotal = escolhas.reduce((soma, item) => soma + (item?.score || 0), 0);
+  // Por categoria: carta-alvo (mais incerta) e carta-tranca (morta).
+  const incerta = {};
+  const tranca = {};
+  tipos.forEach((t) => {
+    incerta[t] = obterCartaMaisIncertaAssistenteIA(t, linhas);
+    tranca[t] = obterCartaTrancaAssistenteIA(t, linhas, resumo);
+  });
 
-  // IA-026: sem tripla forte -> sugestao exploratoria
-  if (!(suspeito && arma && local && scoreTotal >= 18)) {
-    const exploratoria = obterSugestaoExploratoriaAssistenteIA(linhas);
-    if (exploratoria) {
-      const itens = [
-        explicativo
-          ? `Ainda sem certezas fortes. Pra abrir o jogo, vale perguntar: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`
-          : `Sugest\u00e3o explorat\u00f3ria: ${exploratoria.suspeito.nome} + ${exploratoria.arma.nome} + ${exploratoria.local.nome}.`,
-      ];
-      if (explicativo) {
-        itens.push(
-          "Foco em cartas com mais incerteza \u2014 essa pergunta tende a eliminar mais hip\u00f3teses.",
-        );
-      }
-      return {
-        itens,
-        escolhas: [exploratoria.suspeito, exploratoria.arma, exploratoria.local],
-      };
+  // So vale investigar categoria NAO resolvida que tenha carta incerta. As
+  // resolvidas servem apenas de tranca.
+  const alvosValidos = tipos.filter(
+    (t) => !resumo.ocultas.find((o) => o.tipo === t) && incerta[t],
+  );
+
+  // Palpite pra um alvo: alvo = incerta; demais = tranca morta ou incerta.
+  function montarPalpite(alvo) {
+    const cartas = {};
+    for (const t of tipos) {
+      cartas[t] = t === alvo ? incerta[t] : tranca[t] || incerta[t] || null;
     }
+    return tipos.some((t) => !cartas[t]) ? null : cartas;
+  }
+
+  const candidatos = [];
+  for (const alvo of alvosValidos) {
+    const cartas = montarPalpite(alvo);
+    if (!cartas) continue;
+    const named = [cartas.Suspeitos, cartas.Armas, cartas.Locais];
+    const { score, analise } = valorPalpiteAssistenteIA(
+      named,
+      jogadores,
+      envelopeRows,
+    );
+    if (score < 0) continue;
+    candidatos.push({ alvo, cartas, named, score, analise });
+  }
+
+  // Entre os palpites de MAIOR valor (empate), varia qual categoria investigar
+  // em vez de fixar sempre suspeitos. O total de marcacoes serve de offset:
+  // deterministico pra um mesmo estado (nao pisca), mas roda conforme o jogo
+  // avanca - evita repetir sempre a mesma categoria no inicio.
+  let melhor = null;
+  if (candidatos.length > 0) {
+    const maxScore = Math.max(...candidatos.map((c) => c.score));
+    const empatados = candidatos.filter((c) => c.score === maxScore);
+    const totalMarcas = linhas.reduce(
+      (soma, l) => soma + l.estados.filter((v) => v !== "").length,
+      0,
+    );
+    melhor = empatados[totalMarcas % empatados.length];
+  }
+
+  // Nenhum palpite util (raro). Fallback.
+  if (!melhor) {
     return {
-      itens: ["Ainda n\u00e3o h\u00e1 dados suficientes para montar uma combina\u00e7\u00e3o forte completa."],
-      escolhas,
+      itens: [
+        "Ainda n\u00e3o h\u00e1 um palpite que garanta informa\u00e7\u00e3o nova \u2014 siga eliminando cartas.",
+      ],
+      escolhas: escolhasEnvelope,
+      escolhasEnvelope,
     };
   }
 
-  // Tripla forte - modo objetivo ou explicativo
+  const { cartas, named, analise, alvo: alvoTipo } = melhor;
+  const trancasTipos = tipos.filter((t) =>
+    ehCartaMortaAssistenteIA(cartas[t], envelopeRows),
+  );
+  const alvoCarta = cartas[alvoTipo];
+
   const itens = [];
   itens.push(
     explicativo
-      ? `Pergunta sugerida: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`
-      : `Sugest\u00e3o: ${suspeito.nome} + ${arma.nome} + ${local.nome}.`,
+      ? `Pergunta sugerida: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`
+      : `Sugest\u00e3o: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`,
   );
 
-  // IA-025: complementos so no modo explicativo
   if (explicativo) {
-    if (local) {
-      const pesoLocal = calcularPesoOcultacaoLocal(local, linhas);
-      if (pesoLocal > 0) {
-        itens.push(
-          `Locais costumam ser escondidos quando o jogador tem outras cartas pra mostrar \u2014 ${local.nome} \u00e9 uma boa aposta.`,
-        );
-      }
-    }
-
-    const teste = obterTestePrioritarioAssistenteIA(escolhas);
-    if (teste) {
-      const xc = teste.xCount || 0;
-      // Frase proporcional a forca da evidencia: com poucos X, nao
-      // prometer que "fecha varias hipoteses" (seria exagero).
-      let fraseTeste;
-      if (xc <= 1) {
-        fraseTeste = `${teste.nome} vale testar: ${xc} jogador j\u00e1 descartou, confirmar ajuda a estreitar as possibilidades.`;
-      } else {
-        fraseTeste = `${teste.nome} \u00e9 um bom teste: ${xc} jogadores j\u00e1 descartaram, ent\u00e3o confirmar essa carta fecha v\u00e1rias hip\u00f3teses de uma vez.`;
-      }
-      itens.push(fraseTeste);
-    }
-
-    const linhaPressao = resumo.candidatosOcultos.find(
-      (linha) => linha.candidatos.length > 1 && !linha.isFound,
-    );
-    if (linhaPressao) {
-      // IA-043: J1 (voce) nao eh candidato util - voce nao se pergunta
-      const candidatosSemJ1 = linhaPressao.candidatos.filter(
-        (item) => !ehJogadorUsuarioAssistenteIA(item.col),
+    if (trancasTipos.length >= 1) {
+      const descrTrancas = trancasTipos
+        .map((t) => {
+          const c = cartas[t];
+          const motivo = c.estados[0] === "V" ? "sua carta" : "envelope";
+          return `${c.nome} (${motivo})`;
+        })
+        .join(" e ");
+      itens.push(
+        `Tranquei ${descrTrancas} de prop\u00f3sito \u2014 ningu\u00e9m pode mostrar essas cartas, ent\u00e3o a resposta \u00e9 for\u00e7ada a revelar ${rotuloCategoriaAssistenteIA(alvoTipo)}.`,
       );
-      if (candidatosSemJ1.length > 0) {
-        const nomes = candidatosSemJ1
-          .slice(0, 3)
-          .map((item) => obterNomeJogadorAssistenteIA(item.col))
-          .join(", ");
+    } else {
+      itens.push(
+        "Ainda sem cartas pra trancar: escolhi as mais incertas pra abrir o jogo e eliminar possibilidades.",
+      );
+    }
+
+    // Ordem de turno: so e preciso quando as outras 2 categorias estao
+    // trancadas (a unica carta mostravel e o alvo).
+    if (trancasTipos.length === 2) {
+      if (analise.primeiroRespondedor === null) {
         itens.push(
-          `S\u00f3 ${nomes} ainda pode(m) ter ${linhaPressao.nome}.`,
+          `Todos j\u00e1 foram descartados de ${alvoCarta.nome} \u2014 se ningu\u00e9m mostrar, ela est\u00e1 no envelope.`,
+        );
+      } else if (analise.descartados.length > 0) {
+        const nomesDesc = analise.descartados
+          .map((col) => obterNomeJogadorAssistenteIA(col))
+          .join(", ");
+        const resp = obterNomeJogadorAssistenteIA(analise.primeiroRespondedor);
+        itens.push(
+          `${nomesDesc} j\u00e1 n\u00e3o tem ${alvoCarta.nome}, ent\u00e3o a resposta deve vir de ${resp} em diante \u2014 e se ningu\u00e9m mostrar, est\u00e1 no envelope.`,
+        );
+      } else {
+        itens.push(
+          `Se mostrarem, voc\u00ea descobre quem tem ${alvoCarta.nome}; se ningu\u00e9m mostrar, ela est\u00e1 no envelope.`,
         );
       }
     }
   }
 
-  // IA-041: a arvore de raciocinio agora vai pro card "Raciocinio detalhado"
-  // separado (montado em construirRaciocinioDetalhadoAssistenteIA). Aqui o
-  // card Sugestao volta a ser enxuto (max 4 itens).
-
   return {
     itens: itens.slice(0, 4),
-    escolhas,
+    escolhas: named,
+    escolhasEnvelope,
   };
 }
 
@@ -2519,17 +2647,20 @@ function atualizarAssistenteIA() {
       const resumo = montarResumoLinhasAssistenteIA(linhas);
       const mudancas = construirMudancasAssistenteIA(linhas, resumo);
       const sugestao = construirSugestaoAssistenteIA(resumo, linhas);
-      const confianca = calcularConfiancaAssistenteIA(sugestao.escolhas);
+      // IA-045: confianca/conclusao usam escolhasEnvelope (cartas mais
+      // provaveis), nao as cartas PERGUNTADAS (que agora podem ser incertas
+      // de proposito pela tatica de isolamento).
+      const escolhasConclusao = sugestao.escolhasEnvelope || sugestao.escolhas;
+      const confianca = calcularConfiancaAssistenteIA(escolhasConclusao);
       const dicasCapacidade = construirDicasCapacidadeAssistenteIA(linhas);
 
-      // Crime solucionado: as 3 escolhas sao oculta-direta (1 carta do
-      // crime por secao identificada). Estado final - a Confianca deve
+      // Crime solucionado: as 3 escolhas (envelope) sao oculta-direta (1 carta
+      // do crime por secao identificada). Estado final - a Confianca deve
       // refletir isso em vez do detalhe generico "Alta".
       const crimeSolucionado =
-        sugestao &&
-        Array.isArray(sugestao.escolhas) &&
-        sugestao.escolhas.length === 3 &&
-        sugestao.escolhas.every((e) => ehOcultaDiretaAssistenteIA(e));
+        Array.isArray(escolhasConclusao) &&
+        escolhasConclusao.length === 3 &&
+        escolhasConclusao.every((e) => ehOcultaDiretaAssistenteIA(e));
 
       // IA-016: classifica inconsistencias antes de renderizar cards
       const inc = classificarInconsistenciasAssistenteIA(linhas);
@@ -2629,7 +2760,7 @@ function atualizarAssistenteIA() {
         if (ehDetalhado) {
           estrutura.raciocinioCard.hidden = false;
           const itensRaciocinio = construirRaciocinioDetalhadoAssistenteIA(
-            sugestao.escolhas,
+            escolhasConclusao,
           );
           if (estrutura.raciocinio && itensRaciocinio.length > 0) {
             aplicarListaAssistenteIA(estrutura.raciocinio, itensRaciocinio);
