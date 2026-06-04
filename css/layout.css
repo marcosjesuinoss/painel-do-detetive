@@ -47,7 +47,7 @@
   margin-top: 60px;
 }
 
-/* LUPA - icone SVG da tela inicial */
+/* LOGO - figura do detetive na tela inicial (PNG) */
 .logo {
   display: flex;
   justify-content: center;
@@ -59,6 +59,14 @@
   width: 52px;
   height: 52px;
   filter: drop-shadow(0 2px 8px rgba(var(--accent-rgb), 0.35));
+}
+
+.logo-img {
+  width: auto;
+  height: 121px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
 }
 
 /* Tela inicial: h1 mais "hero" - cresce um pouco do h1 base, mantem peso

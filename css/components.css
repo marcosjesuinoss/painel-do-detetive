@@ -3740,11 +3740,10 @@ body.modo-pro.light #inicio .container {
 }
 
 body.modo-pro.light #inicio .logo {
-  width: 72px;
-  height: 72px;
   margin: 0 auto 12px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 body.modo-pro.light #inicio h1 {
@@ -3812,10 +3811,9 @@ body.modo-pro #sobre .container {
 }
 
 body.modo-pro .logo {
-  display: grid;
-  place-items: center;
-  width: 72px;
-  height: 72px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 0 auto 12px;
 }
 

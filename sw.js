@@ -12,7 +12,7 @@
 //   (ex.: 1.x.x -> 2.0.0). Decisao manual.
 //
 // Exemplo: 1.3.232 -> 1.3.233 -> ... -> 1.3.500 -> 1.4.0 -> 1.4.1 -> ...
-const CACHE_NAME = "investigacao-1.3.259";
+const CACHE_NAME = "investigacao-1.3.265";
 
 const STATIC_FILES = [
   "./",
@@ -39,12 +39,12 @@ const STATIC_FILES = [
   "./js/tabela.js",
   "./js/assistente-ia.js",
   "./js/pro.js",
-  "./assets/icons/icon.svg",
   "./assets/icons/icon-180.png",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/icon-512-maskable.png",
-  "./assets/splash.svg"
+  "./assets/logo-detetive.png",
+  "./assets/splash-completo.png"
 ];
 
 self.addEventListener("install", event => {
