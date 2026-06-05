@@ -1617,7 +1617,7 @@ function calcularConfiancaAssistenteIA(escolhas) {
       nivel: "Baixa",
       detalhes: [
         "Ainda falta informa\u00e7\u00e3o em pelo menos uma se\u00e7\u00e3o.",
-        "Marque mais cartas antes de confiar numa sugest\u00e3o.",
+        "Marque mais algumas cartas e a gente melhora a sugest\u00e3o.",
       ],
     };
   }
@@ -1632,8 +1632,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
     return {
       nivel: "Alta",
       detalhes: [
-        "As tr\u00eas se\u00e7\u00f5es est\u00e3o bem encaminhadas pro envelope.",
-        "Faltam poucas confirma\u00e7\u00f5es pra fechar o crime.",
+        "As tr\u00eas se\u00e7\u00f5es est\u00e3o bem encaminhadas!",
+        "Falta pouco pra fechar o crime.",
       ],
     };
   }
@@ -1642,8 +1642,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
     return {
       nivel: "Media",
       detalhes: [
-        "Algumas se\u00e7\u00f5es est\u00e3o claras, mas pelo menos uma ainda tem v\u00e1rias possibilidades.",
-        "Continue eliminando cartas pra subir a confian\u00e7a.",
+        "Algumas se\u00e7\u00f5es j\u00e1 est\u00e3o claras, mas uma ainda tem v\u00e1rias possibilidades.",
+        "Vai eliminando cartas que a confian\u00e7a sobe.",
       ],
     };
   }
@@ -1651,8 +1651,8 @@ function calcularConfiancaAssistenteIA(escolhas) {
   return {
     nivel: "Baixa",
     detalhes: [
-      "Ainda \u00e9 cedo pra concluir \u2014 a sugest\u00e3o serve pra explorar.",
-      "O foco agora \u00e9 eliminar possibilidades.",
+      "Ainda \u00e9 cedo pra concluir \u2014 por isso a sugest\u00e3o \u00e9 mais pra explorar.",
+      "Por agora, foca em eliminar possibilidades.",
     ],
   };
 }
@@ -1788,7 +1788,7 @@ function construirMudancasAssistenteIA(linhas, resumo) {
       const ultimaCarta = nomes.pop();
       const lista =
         nomes.length > 0 ? `${nomes.join(", ")} ou ${ultimaCarta}` : ultimaCarta;
-      itens.push(`${ultima.jogador} mostrou uma destas: ${lista}.`);
+      itens.push(`${ultima.jogador} mostrou uma destas três: ${lista}.`);
     } else if (ultima?.tipo === "auto-capacidade" && ultima.jogador && Array.isArray(ultima.cartas)) {
       const prefixo =
         ultima.cartas.length === 1
@@ -1995,10 +1995,10 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
   if (escolhasEnvelope.every((e) => ehOcultaDiretaAssistenteIA(e))) {
     const [s, a, l] = escolhasEnvelope;
     const itens = [
-      `Crime solucionado! Acuse com: **${s.nome}** + **${a.nome}** + **${l.nome}**.`,
+      `Caso encerrado! Pode acusar: **${s.nome}** + **${a.nome}** + **${l.nome}**.`,
     ];
     if (explicativo) {
-      itens.push("As 3 cartas do envelope foram descobertas. Pode fazer a acusa\u00e7\u00e3o!");
+      itens.push("Voc\u00ea descobriu as 3 cartas do envelope. Hora de acusar!");
     }
     return { itens, escolhas: escolhasEnvelope, escolhasEnvelope };
   }
@@ -2059,7 +2059,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
   if (!melhor) {
     return {
       itens: [
-        "Ainda n\u00e3o h\u00e1 um palpite que garanta informa\u00e7\u00e3o nova \u2014 siga eliminando cartas.",
+        "Por enquanto nenhum palpite garante novidade \u2014 continue eliminando cartas que logo abre.",
       ],
       escolhas: escolhasEnvelope,
       escolhasEnvelope,
@@ -2075,8 +2075,8 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
   const itens = [];
   itens.push(
     explicativo
-      ? `Pergunta sugerida: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`
-      : `Sugest\u00e3o: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`,
+      ? `Que tal perguntar ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}?`
+      : `Pergunte: ${cartas.Suspeitos.nome} + ${cartas.Armas.nome} + ${cartas.Locais.nome}.`,
   );
 
   // Linha de OBJETIVO (ambos os modos): explica em 1 frase simples o porque
@@ -2084,8 +2084,8 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
   // exploracao pura.
   itens.push(
     trancasTipos.length >= 1
-      ? `Objetivo: descobrir ${rotuloCategoriaAssistenteIA(alvoTipo)}.`
-      : "Objetivo: abrir o jogo e eliminar possibilidades.",
+      ? `A ideia \u00e9 descobrir ${rotuloCategoriaAssistenteIA(alvoTipo)}.`
+      : "A ideia aqui \u00e9 abrir o jogo e ir eliminando possibilidades.",
   );
 
   if (explicativo) {
@@ -2099,7 +2099,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
         .join(" e ");
       const plural = trancasTipos.length > 1;
       itens.push(
-        `${descrTrancas} ${plural ? "s\u00e3o travas" : "\u00e9 trava"} \u2014 ningu\u00e9m pode ${plural ? "mostr\u00e1-las" : "mostr\u00e1-la"}.`,
+        `${descrTrancas} ${plural ? "j\u00e1 s\u00e3o conhecidas, ent\u00e3o ningu\u00e9m pode mostr\u00e1-las" : "j\u00e1 \u00e9 conhecida, ent\u00e3o ningu\u00e9m pode mostr\u00e1-la"}.`,
       );
     }
 
@@ -2108,7 +2108,7 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
     if (trancasTipos.length === 2) {
       if (analise.primeiroRespondedor === null) {
         itens.push(
-          `Todos j\u00e1 foram descartados de ${alvoCarta.nome} \u2014 se ningu\u00e9m mostrar, ela est\u00e1 no envelope.`,
+          `Ningu\u00e9m mais pode ter ${alvoCarta.nome} \u2014 se n\u00e3o mostrarem, ela est\u00e1 no envelope!`,
         );
       } else if (analise.descartados.length > 0) {
         const nomesDesc = analise.descartados
@@ -2116,11 +2116,11 @@ function construirSugestaoAssistenteIA(resumo, linhas) {
           .join(", ");
         const resp = obterNomeJogadorAssistenteIA(analise.primeiroRespondedor);
         itens.push(
-          `${nomesDesc} j\u00e1 n\u00e3o tem ${alvoCarta.nome}, ent\u00e3o a resposta deve vir de ${resp} em diante \u2014 e se ningu\u00e9m mostrar, est\u00e1 no envelope.`,
+          `Como ${nomesDesc} j\u00e1 n\u00e3o tem ${alvoCarta.nome}, a resposta deve vir de ${resp} em diante. E se ningu\u00e9m mostrar, ela est\u00e1 no envelope!`,
         );
       } else {
         itens.push(
-          `Se mostrarem, voc\u00ea descobre quem tem ${alvoCarta.nome}; se ningu\u00e9m mostrar, ela est\u00e1 no envelope.`,
+          `Se algu\u00e9m mostrar, voc\u00ea descobre quem tem ${alvoCarta.nome}. Se ningu\u00e9m mostrar, ela est\u00e1 no envelope!`,
         );
       }
     }

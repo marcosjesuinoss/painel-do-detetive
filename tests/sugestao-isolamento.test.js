@@ -154,8 +154,8 @@ describe("construirSugestaoAssistenteIA - isolamento", () => {
 
     const sug = obterSugestao();
     const texto = sug.itens.join(" ");
-    expect(texto).toMatch(/Objetivo: descobrir o local/);
-    expect(texto).toMatch(/são travas/);
+    expect(texto).toMatch(/A ideia é descobrir o local/);
+    expect(texto).toMatch(/já são conhecidas/);
     expect(texto).toMatch(/sua carta/);
     // J2 ja descartado do local -> resposta vem de J3 em diante.
     expect(texto).toMatch(/J2 já não tem/);
@@ -174,9 +174,9 @@ describe("construirSugestaoAssistenteIA - isolamento", () => {
     });
 
     const sug = obterSugestao();
-    expect(sug.itens[0]).toMatch(/^Sugestão:/);
-    expect(sug.itens[1]).toBe("Objetivo: descobrir o local.");
+    expect(sug.itens[0]).toMatch(/^Pergunte:/);
+    expect(sug.itens[1]).toBe("A ideia é descobrir o local.");
     // No modo objetivo nao deve vir o detalhe de travas/ordem de turno.
-    expect(sug.itens.join(" ")).not.toMatch(/são travas/);
+    expect(sug.itens.join(" ")).not.toMatch(/já são conhecidas/);
   });
 });

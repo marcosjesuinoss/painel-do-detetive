@@ -104,7 +104,7 @@ describe("construirSugestaoAssistenteIA - branches principais", () => {
     });
 
     const sug = obterSugestao();
-    expect(sug.itens[0]).toMatch(/Crime solucionado/i);
+    expect(sug.itens[0]).toMatch(/Caso encerrado/i);
     expect(sug.itens[0]).toContain("Marco");
     expect(sug.itens[0]).toContain("Faca");
     expect(sug.itens[0]).toContain("Cozinha");
@@ -120,7 +120,7 @@ describe("construirSugestaoAssistenteIA - branches principais", () => {
     });
 
     const sug = obterSugestao();
-    expect(sug.itens[0]).toMatch(/^Sugest/i);
+    expect(sug.itens[0]).toMatch(/^Pergunte/i);
     expect(sug.escolhas).toHaveLength(3);
   });
 
@@ -134,7 +134,7 @@ describe("construirSugestaoAssistenteIA - branches principais", () => {
     });
 
     const sug = obterSugestao();
-    expect(sug.itens[0]).toMatch(/Pergunta sugerida:/);
+    expect(sug.itens[0]).toMatch(/Que tal perguntar/);
   });
 
   it("sugestao exploratoria com pouca evidencia", () => {
@@ -143,8 +143,8 @@ describe("construirSugestaoAssistenteIA - branches principais", () => {
     definirEstadoTabela({});
 
     const sug = obterSugestao();
-    // Pode ser exploratoria ou "ainda nao ha dados"
-    expect(sug.itens[0]).toMatch(/Sugest|ainda n|abrir o jogo/i);
+    // Cabecalho do palpite (modo objetivo) ou fallback.
+    expect(sug.itens[0]).toMatch(/Pergunte|abrir o jogo|nenhum palpite/i);
   });
 });
 

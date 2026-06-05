@@ -90,11 +90,12 @@
         var corBarra = usarClaro ? (visual.bgLight || visual.bg) : visual.bg;
         var root = document.documentElement;
 
-        // Splash sempre na cor verde "padrao" do app, independente do tema PRO
-        // ativo (identidade de marca fixa). Apenas a barra de status (metaTheme)
+        // Splash com fundo fixo no azul-escuro geral do app (--bg #0f141c),
+        // independente do tema PRO ativo. O logo (verde) fica por cima; o halo
+        // verde sutil mantem coesao com a marca. Barra de status (metaTheme)
         // continua seguindo o tema escolhido.
-        root.style.setProperty("--splash-bg", "#0c1712");
-        root.style.setProperty("--splash-bg-end", "#13231b");
+        root.style.setProperty("--splash-bg", "#0f141c");
+        root.style.setProperty("--splash-bg-end", "#161e2b");
         root.style.setProperty("--splash-glow", "22, 163, 74");
         root.style.setProperty("--splash-accent", "#22c55e");
         root.style.setProperty("--splash-text", "#e2e8f0");
@@ -173,7 +174,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.4.0</footer>
+      <footer>Vers&atilde;o 1.4.1</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -897,7 +898,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.4.0</div>
+      <div class="versao-app">Vers&atilde;o 1.4.1</div>
       </div>
     </div>
 
