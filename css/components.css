@@ -899,6 +899,19 @@ body.modo-pro.light .carta-minha {
   max-width: 320px;
 }
 
+/* Link discreto pra Politica de Privacidade na tela Sobre. */
+.link-privacidade {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--text-secundario, var(--text));
+  opacity: 0.75;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+}
+.link-privacidade:hover {
+  opacity: 1;
+}
+
 /* ===== ANIMACAO DE UNDO ===== */
 /* Pulse sutil nas celulas que mudaram apos um undo - usa o accent do
    tema atual (FREE verde / PRO amarelo) e some em ~0.7s. */
