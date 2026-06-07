@@ -270,7 +270,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   executarEtapaInicial("service-worker", () => {
-    if ("serviceWorker" in navigator) {
+    // Dentro do app nativo (Capacitor) o conteudo ja e servido localmente -
+    // registrar o Service Worker so atrapalha (cache/navegacao). Registra
+    // apenas no navegador / PWA.
+    const ehNativoCapacitor =
+      typeof window !== "undefined" &&
+      window.Capacitor &&
+      typeof window.Capacitor.isNativePlatform === "function" &&
+      window.Capacitor.isNativePlatform();
+
+    if (!ehNativoCapacitor && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("./sw.js")
         .then((reg) => {

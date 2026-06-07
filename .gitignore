@@ -15,3 +15,8 @@ Thumbs.db
 node_modules/
 coverage/
 
+# Capacitor (gerados): www/ vem do build-www.mjs; android/ vem de `cap add`
+www/
+/android/
+.gradle/
+
