@@ -1,10 +1,12 @@
 ﻿// ============================================================================
 // IA-020: CONFIGURACAO PERSISTIDA DO ASSISTENTE
 // ============================================================================
-// 3 eixos de comportamento independentes:
-//   - ativo: bool        - desliga/liga toda a analise do motor
-//   - automarcacao: bool - se true, IA marca V/X automaticamente; se false,
-//                          gera apenas instrucoes manuais (pendencias)
+// 3 eixos de comportamento INDEPENDENTES (sugestoes e automarcacao nao se
+// influenciam - cada um liga/desliga sozinho):
+//   - sugestoes: bool    - mostra (ou nao) os cards de analise/dicas
+//   - automarcacao: bool - se true, IA marca V/X automaticamente na tabela;
+//                          se false, nao marca (e, com sugestoes on, lista
+//                          as marcacoes pendentes pra o usuario aplicar)
 //   - nivelExplicacao    - valores internos (labels UI):
 //                          "objetiva"    (Resumido - so a sugestao)
 //                          "explicativa" (Explicado - com o motivo)
@@ -17,7 +19,7 @@
 const CHAVE_CONFIGURACAO_ASSISTENTE_IA = "assistenteIAConfiguracoes";
 
 const CONFIGURACAO_PADRAO_ASSISTENTE_IA = Object.freeze({
-  ativo: true,
+  sugestoes: true,
   automarcacao: true,
   nivelExplicacao: "objetiva",
 });
@@ -27,16 +29,37 @@ function obterConfiguracaoAssistenteIA() {
     const bruto = localStorage.getItem(CHAVE_CONFIGURACAO_ASSISTENTE_IA);
     if (!bruto) return { ...CONFIGURACAO_PADRAO_ASSISTENTE_IA };
     const parsed = JSON.parse(bruto);
+
+    // Migracao do modelo antigo (mestre 'ativo' soberano) para o novo
+    // (sugestoes + automarcacao independentes):
+    //  - 'ativo' antigo vira 'sugestoes'.
+    //  - no modelo antigo, ativo=false desligava TUDO (inclusive a marcacao
+    //    automatica); preservamos isso forcando automarcacao=false nesse caso.
+    const ehFormatoAntigo =
+      typeof parsed.sugestoes !== "boolean" &&
+      typeof parsed.ativo === "boolean";
+
+    let sugestoes;
+    if (typeof parsed.sugestoes === "boolean") {
+      sugestoes = parsed.sugestoes;
+    } else if (typeof parsed.ativo === "boolean") {
+      sugestoes = parsed.ativo;
+    } else {
+      sugestoes = CONFIGURACAO_PADRAO_ASSISTENTE_IA.sugestoes;
+    }
+
+    let automarcacao =
+      typeof parsed.automarcacao === "boolean"
+        ? parsed.automarcacao
+        : CONFIGURACAO_PADRAO_ASSISTENTE_IA.automarcacao;
+    if (ehFormatoAntigo && parsed.ativo === false) {
+      automarcacao = false;
+    }
+
     // Merge com defaults para tolerar chaves ausentes em saves antigos
     return {
-      ativo:
-        typeof parsed.ativo === "boolean"
-          ? parsed.ativo
-          : CONFIGURACAO_PADRAO_ASSISTENTE_IA.ativo,
-      automarcacao:
-        typeof parsed.automarcacao === "boolean"
-          ? parsed.automarcacao
-          : CONFIGURACAO_PADRAO_ASSISTENTE_IA.automarcacao,
+      sugestoes,
+      automarcacao,
       nivelExplicacao:
         parsed.nivelExplicacao === "explicativa" ||
         parsed.nivelExplicacao === "objetiva" ||
@@ -69,12 +92,13 @@ function resetarConfiguracaoAssistenteIA() {
   return { ...CONFIGURACAO_PADRAO_ASSISTENTE_IA };
 }
 
-// Combina PRO + configuracao.ativo. Toda checagem "deve rodar assistente?"
-// deveria passar por aqui em vez de chamar isPRO() direto.
+// Combina PRO + config. O motor "roda" se houver PRO e pelo menos um dos dois
+// eixos ligado (sugestoes OU automarcacao). Toda checagem "deve rodar
+// assistente?" deveria passar por aqui em vez de chamar isPRO() direto.
 function assistenteIAEstaAtivo() {
   if (typeof isPRO !== "function" || !isPRO()) return false;
   const cfg = obterConfiguracaoAssistenteIA();
-  return cfg.ativo === true;
+  return cfg.sugestoes === true || cfg.automarcacao === true;
 }
 
 // ============================================================================
@@ -89,11 +113,11 @@ function abrirConfiguracoesAssistenteIA(event) {
 
   // Pre-fill com config atual
   const cfg = obterConfiguracaoAssistenteIA();
-  const ativoEl = getEl("configIAAtivo");
+  const sugestoesEl = getEl("configIASugestoes");
   const autoEl = getEl("configIAAutomarcacao");
   const radios = document.querySelectorAll('input[name="configIANivel"]');
 
-  if (ativoEl) ativoEl.checked = cfg.ativo;
+  if (sugestoesEl) sugestoesEl.checked = cfg.sugestoes;
   if (autoEl) autoEl.checked = cfg.automarcacao;
   radios.forEach((r) => {
     r.checked = r.value === cfg.nivelExplicacao;
@@ -104,7 +128,7 @@ function abrirConfiguracoesAssistenteIA(event) {
   if (typeof abrirOverlayAcessivel === "function") {
     abrirOverlayAcessivel(
       "popupConfiguracoesAssistenteIA",
-      "#configIAAtivo, .popup-acoes .play",
+      "#configIASugestoes, .popup-acoes .play",
     );
   } else {
     const popup = getEl("popupConfiguracoesAssistenteIA");
@@ -122,12 +146,12 @@ function fecharConfiguracoesAssistenteIA() {
 }
 
 function confirmarConfiguracoesAssistenteIA() {
-  const ativoEl = getEl("configIAAtivo");
+  const sugestoesEl = getEl("configIASugestoes");
   const autoEl = getEl("configIAAutomarcacao");
   const radioChecked = document.querySelector('input[name="configIANivel"]:checked');
 
   const parcial = {};
-  if (ativoEl) parcial.ativo = !!ativoEl.checked;
+  if (sugestoesEl) parcial.sugestoes = !!sugestoesEl.checked;
   if (autoEl) parcial.automarcacao = !!autoEl.checked;
   if (radioChecked && radioChecked.value) parcial.nivelExplicacao = radioChecked.value;
 
@@ -145,12 +169,14 @@ function confirmarConfiguracoesAssistenteIA() {
 }
 
 function atualizarPopupConfiguracoesAssistenteIA() {
-  const ativoEl = getEl("configIAAtivo");
-  if (!ativoEl) return;
+  const sugestoesEl = getEl("configIASugestoes");
+  if (!sugestoesEl) return;
+  // So o NIVEL de explicacao depende das sugestoes (sem cards, nao ha o que
+  // explicar). A marcacao automatica e independente e nunca e desabilitada.
   const dependentes = document.querySelectorAll(
-    "#popupConfiguracoesAssistenteIA [data-dependente-de-ativo]",
+    "#popupConfiguracoesAssistenteIA [data-dependente-de-sugestoes]",
   );
-  const habilitar = ativoEl.checked;
+  const habilitar = sugestoesEl.checked;
   dependentes.forEach((grupo) => {
     grupo.classList.toggle("desabilitado", !habilitar);
     grupo.querySelectorAll("input").forEach((input) => {
@@ -320,7 +346,7 @@ function hashSnapshotParaRenderAssistenteIA(snap) {
     (snap.nomesJogadores || []).join("|"),
     (snap.cartasPorJogador || []).join(","),
     (snap.jogadoresMaisCartas || []).join(","),
-    cfg.ativo,
+    cfg.sugestoes,
     cfg.automarcacao,
     cfg.nivelExplicacao,
     JSON.stringify(snap.gruposResposta || []),
@@ -2554,10 +2580,11 @@ function atualizarAssistenteIA() {
     // IA-029: usado pelos 2 early-returns abaixo e pelo skip do render etapa 2
     const menuVisivel = menuLateralAssistenteVisivelAssistenteIA();
 
-    // PRO ativo mas usuario desligou o assistente via popup: cards continuam
-    // visiveis (pra o gear ficar acessivel) mas mostram estado "desativado".
+    // PRO ativo mas usuario desligou OS DOIS eixos (sugestoes E automarcacao):
+    // assistente totalmente silencioso. Cards continuam visiveis (pra o gear
+    // ficar acessivel) mas mostram estado "desativado".
     const cfgUsuario = obterConfiguracaoAssistenteIA();
-    if (!cfgUsuario.ativo) {
+    if (!cfgUsuario.sugestoes && !cfgUsuario.automarcacao) {
       // Limpa badge - assistente off, sem deteccao de inconsistencia
       document.body.classList.remove("tem-inconsistencia-grave");
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
@@ -2584,7 +2611,9 @@ function atualizarAssistenteIA() {
     const estado = obterEstadoTabelaAssistenteIA();
     const totalMarcacoes = Object.values(estado).filter(Boolean).length;
 
-    if (totalMarcacoes === 0) {
+    // Estado inicial "comece marcando" so faz sentido com SUGESTOES ligadas.
+    // Sem sugestoes, cai no estado minimo mais abaixo (apos a etapa 1).
+    if (totalMarcacoes === 0 && cfgUsuario.sugestoes) {
       // IA-029: skip writes se menu lateral fechado - toggleMenu re-dispara
       if (!menuVisivel) return;
       // IA-030: replaceChildren via aplicarListaAssistenteIA
@@ -2634,6 +2663,42 @@ function atualizarAssistenteIA() {
     // IA-029: render dos cards eh inutil se ninguem ve. toggleMenu() chama
     // atualizarAssistenteIA quando o menu abrir.
     if (!menuVisivel) return;
+
+    // SUGESTOES desligadas (mas automarcacao ligada - senao teria retornado la
+    // em cima): a tabela e preenchida sozinha, mas NAO mostramos analise/dicas
+    // (sem "spoiler"). Estado minimo. Se houver inconsistencia grave - que pausa
+    // a marcacao automatica - avisamos, senao o usuario nao entende a pausa.
+    if (!cfgUsuario.sugestoes) {
+      let incGrave = false;
+      try {
+        executarComCacheAssistenteIA(() => {
+          incGrave =
+            classificarInconsistenciasAssistenteIA(obterLinhasAssistenteIA())
+              .graves.length > 0;
+        });
+      } catch {}
+      aplicarListaAssistenteIA(estrutura.resumo, [
+        "Sugestões desativadas.",
+        "Marcação automática ativa.",
+      ]);
+      aplicarListaAssistenteIA(estrutura.sugestao, [
+        incGrave
+          ? "Há uma inconsistência grave e a marcação automática está pausada. Ative as sugestões para ver os detalhes."
+          : "Ative as sugestões na engrenagem para receber dicas de palpite.",
+      ]);
+      aplicarListaAssistenteIA(estrutura.confianca, [
+        "Nível atual: Sugestões desativadas.",
+      ]);
+      if (estrutura.inconsistencias) {
+        aplicarListaAssistenteIA(estrutura.inconsistencias, [
+          incGrave
+            ? "Há inconsistências. Ative as sugestões para ver e corrigir."
+            : "Nenhuma inconsistência detectada.",
+        ]);
+      }
+      if (estrutura.raciocinioCard) estrutura.raciocinioCard.hidden = true;
+      return;
+    }
 
     // IA-028: skip render quando snapshot final (pos-deducao) nao mudou
     // desde o ultimo render. Hash inclui estadoTabela, grupos, origens,

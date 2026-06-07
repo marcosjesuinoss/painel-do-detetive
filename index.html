@@ -174,7 +174,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.4.2</footer>
+      <footer>Vers&atilde;o 1.4.3</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -759,21 +759,21 @@
         <h3 id="tituloPopupConfigIA">Configurar Assistente</h3>
 
         <div class="config-ia-grupo">
-          <label class="config-ia-toggle" for="configIAAtivo">
-            <span>Assistente ativo</span>
+          <label class="config-ia-toggle" for="configIASugestoes">
+            <span>Sugest&otilde;es</span>
             <input
               type="checkbox"
-              id="configIAAtivo"
+              id="configIASugestoes"
               onchange="atualizarPopupConfiguracoesAssistenteIA()"
             />
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
           </label>
           <p class="config-ia-descricao">
-            Liga/desliga todas as an&aacute;lises, sugest&otilde;es e alertas do assistente.
+            Mostra as dicas, sugest&otilde;es de palpite e alertas do assistente.
           </p>
         </div>
 
-        <div class="config-ia-grupo" data-dependente-de-ativo>
+        <div class="config-ia-grupo">
           <label class="config-ia-toggle" for="configIAAutomarcacao">
             <span>Marca&ccedil;&atilde;o autom&aacute;tica</span>
             <input type="checkbox" id="configIAAutomarcacao" />
@@ -781,11 +781,11 @@
           </label>
           <p class="config-ia-descricao">
             Quando ligado, o assistente preenche V e X sozinho ao deduzir com certeza.
-            Quando desligado, mostra as marca&ccedil;&otilde;es como sugest&otilde;es pra voc&ecirc; aplicar manualmente.
+            Independente das sugest&otilde;es &mdash; pode ficar ligado mesmo sem as dicas.
           </p>
         </div>
 
-        <div class="config-ia-grupo" data-dependente-de-ativo>
+        <div class="config-ia-grupo" data-dependente-de-sugestoes>
           <span class="config-ia-titulo-grupo">N&iacute;vel de explica&ccedil;&atilde;o</span>
           <p class="config-ia-descricao">
             Define se as sugest&otilde;es v&ecirc;m acompanhadas do motivo da dedu&ccedil;&atilde;o.
@@ -902,7 +902,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.4.2</div>
+      <div class="versao-app">Vers&atilde;o 1.4.3</div>
       </div>
     </div>
 

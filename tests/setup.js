@@ -148,11 +148,11 @@ function configurarPartida(numJogadores, cartasPorJogador) {
       JSON.stringify(cartasPorJogador),
     );
   }
-  // Config padrao do assistente: ativo + automarcacao on + objetiva
+  // Config padrao do assistente: sugestoes + automarcacao on + objetiva
   localStorage.setItem(
     "assistenteIAConfiguracoes",
     JSON.stringify({
-      ativo: true,
+      sugestoes: true,
       automarcacao: true,
       nivelExplicacao: "objetiva",
     }),
