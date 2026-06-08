@@ -69,11 +69,14 @@
   flex-direction: column;
   gap: 2px;
 
+  /* Perf: backdrop-filter blur foi REMOVIDO daqui - como #tabela e a
+     superficie rolada/tocada o tempo todo, o blur recalculava a cada frame
+     e travava em aparelhos intermediarios. O blur so aparecia nas linhas de
+     2px entre celulas, entao o impacto visual e minimo. Base um pouco mais
+     opaca compensa a ausencia do desfoque. */
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(15, 23, 42, 0.22);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    rgba(15, 23, 42, 0.4);
 
   border-radius: 22px;
   padding: 4px 4px;
@@ -3538,9 +3541,9 @@ body.modo-pro .play:focus-visible {
 }
 
 .popup-overlay {
-  background: rgba(15, 20, 28, 0.68);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* Perf: blur removido (travava ao abrir popups no mobile). Fundo um pouco
+     mais opaco mantem o escurecimento sem o custo do desfoque. */
+  background: rgba(15, 20, 28, 0.82);
 }
 
 .popup-box,

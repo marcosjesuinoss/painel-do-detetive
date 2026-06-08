@@ -439,8 +439,8 @@ body.modo-pro .toast-ia-ajuda-destaque {
     0 16px 34px rgba(15, 23, 42, 0.42),
     0 0 0 1px rgba(var(--accent-rgb), 0.1) inset;
   color: #f8fafc;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* Perf: blur removido - o fundo deste toast e quase opaco, entao nao havia
+     nada visivel atras pra desfocar (filtro custoso e inutil). */
 }
 
 body.modo-pro .toast-ia-cabecalho {
@@ -520,8 +520,8 @@ body.modo-pro.light .toast-ia-ajuda-destaque {
     0 14px 30px rgba(71, 85, 105, 0.22),
     0 0 0 1px rgba(var(--accent-rgb), 0.08) inset;
   color: #1f2937;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* Perf: blur removido - o fundo deste toast e quase opaco, entao nao havia
+     nada visivel atras pra desfocar (filtro custoso e inutil). */
 }
 
 body.modo-pro.light .toast-ia-cabecalho {

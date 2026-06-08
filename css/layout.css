@@ -23,9 +23,9 @@
   -webkit-overflow-scrolling: touch; /* scroll mais suave no iPhone */
 }
 
-#areaRolagemJogo {
-  will-change: filter;
-}
+/* Perf: 'will-change: filter' removido - promovia uma camada GPU permanente
+   na area de rolagem do jogo (residuo de um efeito de blur que nao existe
+   mais), pesando o scroll em aparelhos intermediarios. */
 
 .ativa {
   opacity: 1;
