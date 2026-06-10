@@ -4,6 +4,32 @@ Itens guardados pra próxima versão maior. O foco da **v1.x** é estabilizar fe
 
 ---
 
+## Plataforma / Arquitetura
+
+### Reescrita 100% nativa em Flutter (decisão grande da 2.0)
+**Contexto:** hoje o app é uma PWA empacotada com Capacitor — a UI roda dentro de um **WebView** (motor de navegador). Isso reaproveita 100% do código web, mas o **render é mais pesado** que nativo: efeitos como `backdrop-filter` (blur), `drop-shadow` e `box-shadow` animado re-rasterizam a cada frame e travam em aparelhos intermediários (testado em Xiaomi). Na v1.x resolvemos **cortando esses efeitos** (mantendo todos os recursos). Pra ter os efeitos ricos E performance, o caminho é sair do WebView.
+
+**Proposta:** reescrever em **Flutter** (Dart):
+- **Um código → Android + iOS.**
+- Renderização própria acelerada por GPU (Skia/Impeller) — blur/brilho/animações ficam baratos e suaves.
+- Performance nativa de verdade.
+
+**O que transfere fácil vs. o que é reescrito:**
+- ✅ **Lógica** (motor do assistente: dedução, trinca, ordem de turno, confiança; marcação; estado). É lógica pura e temos **46 testes** que definem o comportamento exato → viram a especificação que guia a reescrita em Dart. Tradução conceitualmente mecânica (mesmos conceitos, outra linguagem).
+- 🔨 **UI inteira reconstruída** do zero em **widgets Flutter**. NÃO existe HTML/CSS no Flutter — telas, tabela, botões, estilos e animações são reescritos no paradigma de widgets. É o grosso do trabalho.
+- 🔁 **APIs de navegador** (localStorage, DOM) trocadas por equivalentes Dart (ex.: `shared_preferences`).
+
+**Ressalvas honestas:**
+- **A PWA web provavelmente sai de cena** (Flutter não é web-first) — perde o canal "link no navegador", a menos que mantenha as duas versões.
+- **iOS ainda precisa de Mac** pra compilar/publicar.
+- Não é "converter": JS→Dart automático é não-confiável, e HTML/CSS→widgets não tem caminho automático limpo (modelos de render fundamentalmente diferentes).
+
+**Esforço:** semanas de trabalho focado (incremental, com os testes guiando).
+**Risco:** Alto (novo stack, reescrita da UI).
+**Quando fazer:** **só depois de validar a 1.x** (Capacitor) — se o app provar público/receita. Reescrever antes de validar é o erro clássico. Depois das otimizações de perf, a 1.x ficou fluida, então a urgência diminuiu.
+
+---
+
 ## UI / Navegação
 
 ### Botão "Voltar" das telas — repaginar
