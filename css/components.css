@@ -115,11 +115,11 @@
 
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
 
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast),
-    border-color var(--transition-fast);
+  /* Perf: so 'transform' transiciona (usado no feedback de toque). background,
+     box-shadow e border-color mudam INSTANTANEAMENTE - animar background/sombra
+     em ~22 celulas de uma vez (ao selecionar uma coluna) causava engasgo.
+     Destaque de selecao instantaneo tambem fica mais responsivo. */
+  transition: transform var(--transition-fast);
 }
 
 .celula.nome {
@@ -1222,8 +1222,9 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
 /* ===== SELE???.ES DA TABELA ===== */
 
 .sel-col:not(.ok):not(.no):not(.maybe) {
+  /* Perf: sem transition propria - o destaque da coluna aparece na hora
+     (animar o background em ~22 celulas de uma vez causava engasgo). */
   background: rgba(255, 255, 255, 0.08);
-  transition: background var(--transition-normal);
 }
 
 .sel-row:not(.ok):not(.no):not(.maybe) {
@@ -1334,10 +1335,8 @@ body:not(.modo-pro) .card-sobre .sobre-mencoes-pro {
   box-shadow:
     0 2px 5px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  /* Perf: so transform transiciona (ver bloco acima). */
+  transition: transform var(--transition-fast);
 }
 
 /* ============================================================

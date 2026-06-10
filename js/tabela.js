@@ -464,6 +464,10 @@ function criarTabela() {
   const area = document.getElementById("tabela");
   area.innerHTML = "";
 
+  // Perf: monta tudo num DocumentFragment (fora da arvore renderizada) e
+  // insere de uma vez no fim - evita um reflow por linha durante o build.
+  const frag = document.createDocumentFragment();
+
   const estadoSalvo = lerEstadoTabela();
   // Polish H: largura fixa pra coluna de nomes - independente de quantos
   // jogadores. Antes era 31% (proporcional, ficava menor com menos jogadores
@@ -534,7 +538,7 @@ function criarTabela() {
   header.appendChild(cel);
 }
 
-  area.appendChild(header);
+  frag.appendChild(header);
 
   let tipoAtual = "";
 
@@ -552,7 +556,7 @@ function criarTabela() {
       cel.textContent = tipoAtual;
 
       secao.appendChild(cel);
-      area.appendChild(secao);
+      frag.appendChild(secao);
     }
 
     const linha = document.createElement("div");
@@ -609,7 +613,8 @@ nomeCarta.onclick = () => {
   cel.dataset.col = j;
   cel.dataset.key = chave;
 
-  renderizarEstado(cel, estado);
+  // Sem animacao no build (senao todas as celulas marcadas animam de uma vez)
+  renderizarEstado(cel, estado, false);
 
 cel.onclick = () => {
 
@@ -644,8 +649,12 @@ cel.onclick = () => {
       linha.appendChild(cel);
     }
 
-    area.appendChild(linha);
+    frag.appendChild(linha);
   });
+
+  // Insere a tabela inteira de uma vez (montada no fragment).
+  area.appendChild(frag);
+
   atualizarEstadoVisualCartasEncontradas();
   atualizarDestaqueCartaOculta();
   atualizarAlertaDuplicidadePRO();
@@ -781,6 +790,10 @@ celulaSelecionada = null;
 if (tipo === "V") {
   document.querySelectorAll(`[data-row="${row}"][data-key]`).forEach((c) => {
     const k = c.dataset.key;
+    // Perf: re-renderiza/anima SO as celulas que mudaram (a V marcada + as
+    // auto-X em cascata). As demais ficam como estao - evita re-animar a
+    // linha inteira a cada V.
+    if (k !== chave && !autoXChaves.has(k)) return;
     renderizarEstado(c, estadoSalvo[k] || "");
 
     if (autoXChaves.has(k) && estadoSalvo[k] === "X") {
@@ -1125,7 +1138,11 @@ function atualizarBotoes() {
   }
 }
 
-function renderizarEstado(cel, estado) {
+// Perf: `animar` controla se o icone entra com a animacao. Na MARCACAO manual
+// queremos a animacao (animar=true, default). Na CONSTRUCAO/recarga da tabela
+// (Continuar) passamos animar=false - senao TODAS as celulas ja marcadas tocam
+// a animacao de entrada ao mesmo tempo, travando o carregamento.
+function renderizarEstado(cel, estado, animar = true) {
 
   cel.innerHTML = "";
 
@@ -1136,7 +1153,7 @@ function renderizarEstado(cel, estado) {
   if (estado === "V") {
     cel.classList.add("celula-v");
     cel.innerHTML = `
-      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-check check-anim" aria-hidden="true">        <path class="estado-traco" d="M7.2 12.3L10.4 15.5L16.9 8.7"></path>
+      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-check${animar ? " check-anim" : ""}" aria-hidden="true">        <path class="estado-traco" d="M7.2 12.3L10.4 15.5L16.9 8.7"></path>
       </svg>
     `;
   }
@@ -1144,7 +1161,7 @@ function renderizarEstado(cel, estado) {
   if (estado === "X") {
     cel.classList.add("celula-x");
     cel.innerHTML = `
-      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-x x-anim" aria-hidden="true">        <path class="estado-traco" d="M8 8L16 16"></path>
+      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-x${animar ? " x-anim" : ""}" aria-hidden="true">        <path class="estado-traco" d="M8 8L16 16"></path>
         <path class="estado-traco" d="M16 8L8 16"></path>
       </svg>
     `;
@@ -1153,7 +1170,7 @@ function renderizarEstado(cel, estado) {
   if (estado === "?") {
     cel.classList.add("celula-duvida");
     cel.innerHTML = `
-      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-duvida q-anim" aria-hidden="true">        <path class="estado-traco" d="M9.2 9.2A2.9 2.9 0 0112 7.6A2.85 2.85 0 0114.8 10.5C14.8 12.2 12.8 12.5 12 13.8"></path>
+      <svg viewBox="0 0 24 24" width="24" height="24" class="estado-icon estado-duvida${animar ? " q-anim" : ""}" aria-hidden="true">        <path class="estado-traco" d="M9.2 9.2A2.9 2.9 0 0112 7.6A2.85 2.85 0 0114.8 10.5C14.8 12.2 12.8 12.5 12 13.8"></path>
         <circle class="estado-ponto" cx="12" cy="16.8" r="1.2"></circle>
       </svg>
     `;

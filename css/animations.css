@@ -155,26 +155,17 @@
   overflow: visible;
 }
 
-/* Otimizacao GPU: era 1 drop-shadow externo + 3 drop-shadow empilhados
-   no traco interno por celula = 4 filters por SVG. Em tabelas grandes
-   (8 jog * 21 cartas = 168 celulas) isso pesa muito no scroll/animacao.
-   Reduzido pra 1 outer + 1 inner por icone = perceptivelmente igual
-   mas 4x mais leve. */
-.estado-check {
-  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.4));
-}
-
+/* Perf: o "brilho" (drop-shadow) dos icones V/X/? foi REMOVIDO. Cada icone
+   tinha 2 drop-shadows; animar um elemento COM filtro forca o navegador a
+   re-rasterizar a CADA frame. Com ate 168 celulas isso travava a trinca, a
+   troca de colunas e o carregar da tabela. Sem o halo ficou mais leve E menos
+   cansativo pra vista (preferencia do usuario). */
 .estado-check .estado-traco {
   fill: none;
   stroke: #22c55e;
   stroke-width: 2.6;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.85));
-}
-
-.estado-x {
-  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.42));
 }
 
 .estado-x .estado-traco {
@@ -182,11 +173,6 @@
   stroke: #ef4444;
   stroke-width: 2.5;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.85));
-}
-
-.estado-duvida {
-  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.45));
 }
 
 .estado-duvida .estado-traco,
@@ -196,7 +182,6 @@
   stroke-width: 2.3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.85));
 }
 
 .estado-duvida .estado-ponto {
