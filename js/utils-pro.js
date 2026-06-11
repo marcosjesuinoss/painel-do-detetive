@@ -387,44 +387,69 @@ function renderizarTemasAparencia() {
 
   if (!container || !configProFeatures) return;
 
-  const temAcceso = temFeaturePro("temas");
-  if (!temAcceso) {
-    if (secaoTemas) secaoTemas.style.display = "none";
-    return;
-  }
+  const temAcesso = temFeaturePro("temas");
+  const oferta = getEl("ofertaTemasPro");
 
+  // A secao de temas PRO agora aparece SEMPRE. No FREE ela vira uma "vitrine"
+  // bloqueada (cards com cadeado) + um banner de oferta do Modo PRO.
   if (secaoTemas) secaoTemas.style.display = "block";
+  if (oferta) oferta.style.display = temAcesso ? "none" : "";
 
   container.innerHTML = "";
 
-  const temasDisponiveis = listarTemasDisponiveis();
   const temaSelecionado =
     localStorage.getItem("temaProSelecionado") || "classico";
 
-  temasDisponiveis.forEach((tema) => {
+  // Sempre os 6 temas PRO: no PRO sao selecionaveis; no FREE, bloqueados.
+  const temasPro = Object.values(configProFeatures.temas).filter(
+    (t) => t.tipo === "pro",
+  );
+
+  temasPro.forEach((tema) => {
     const usarClaro = document.body.classList.contains("light");
     const varsPreview =
       usarClaro && tema["variaveis-light"] ? tema["variaveis-light"] : tema.variaveis;
+    // Nomes dos temas tem 2 palavras (ex.: "Verde Assinatura"). Quebra a 1a
+    // palavra em linha propria pra todos ocuparem 2 linhas de forma uniforme.
+    const nomeEmDuasLinhas = tema.nome.replace(/ (?=\S+$)/, "<br>");
 
     const card = document.createElement("div");
-    card.className = `card-tema ${temaSelecionado === tema.id ? "selecionado" : ""}`;
-    // Nomes dos temas tem 2 palavras (ex.: "Verde Assinatura"). Quebra a 1a
-    // palavra em linha propria pra todos ocuparem 2 linhas de forma uniforme,
-    // evitando que alguns fiquem em 1 linha e outros em 2.
-    const nomeEmDuasLinhas = tema.nome.replace(/ (?=\S+$)/, "<br>");
-    card.innerHTML = `
-      <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}"></div>
-      <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
-      <button class="btn-selecionar-tema" data-tema="${tema.id}" type="button">
-        ${temaSelecionado === tema.id ? "Selecionado" : "Usar tema"}
-      </button>
-    `;
 
-    const btnSelecionar = card.querySelector(".btn-selecionar-tema");
-    btnSelecionar.addEventListener("click", (e) => {
-      e.preventDefault();
-      selecionarTemaPRO(tema.id);
-    });
+    if (temAcesso) {
+      // PRO: card selecionavel (comportamento original).
+      const ehSelecionado = temaSelecionado === tema.id;
+      card.className = `card-tema ${ehSelecionado ? "selecionado" : ""}`;
+      card.innerHTML = `
+        <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}"></div>
+        <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
+        <button class="btn-selecionar-tema" data-tema="${tema.id}" type="button">
+          ${ehSelecionado ? "Selecionado" : "Usar tema"}
+        </button>
+      `;
+      card.querySelector(".btn-selecionar-tema").addEventListener("click", (e) => {
+        e.preventDefault();
+        selecionarTemaPRO(tema.id);
+      });
+    } else {
+      // FREE: vitrine bloqueada - preview visivel, cadeado por cima, clique no
+      // card inteiro leva pra tela do Modo PRO (a oferta).
+      card.className = "card-tema bloqueado";
+      card.innerHTML = `
+        <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}">
+          <span class="tema-cadeado" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+        </div>
+        <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
+        <button class="btn-selecionar-tema btn-tema-bloqueado" type="button">PRO</button>
+      `;
+      card.addEventListener("click", () => {
+        if (typeof mostrarTela === "function") mostrarTela("pro");
+      });
+    }
 
     container.appendChild(card);
   });

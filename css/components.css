@@ -2150,6 +2150,76 @@ body.modo-pro .play:active {
   transition: transform var(--transition-fast);
 }
 
+/* ===== Vitrine de temas PRO bloqueados (modo FREE) ===== */
+.oferta-temas-pro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(var(--accent-rgb), 0.32);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-rgb), 0.12),
+    rgba(var(--accent-rgb), 0.05)
+  );
+}
+.oferta-temas-texto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  font-size: var(--text-md);
+  color: var(--text);
+}
+.oferta-temas-texto svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.btn-oferta-temas {
+  width: auto;
+  margin-top: 0;
+  padding: 10px 22px;
+}
+
+.card-tema.bloqueado {
+  cursor: pointer;
+}
+.card-tema.bloqueado .tema-preview {
+  position: relative;
+}
+.card-tema.bloqueado .tema-nome {
+  opacity: 0.7;
+}
+/* Overlay escuro sobre o preview + cadeado nitido por cima. */
+.tema-cadeado {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.4);
+}
+.tema-cadeado svg {
+  width: 18px;
+  height: 18px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+/* Botao "PRO" do card bloqueado - selo, nao CTA. Clique recai sobre o card. */
+.btn-tema-bloqueado {
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
 .card-tema:active .tema-preview,
 .card-tema:focus-visible .tema-preview {
   transform: scale(1.05);

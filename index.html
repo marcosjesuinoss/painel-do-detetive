@@ -174,7 +174,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.4.7</footer>
+      <footer>Vers&atilde;o 1.4.8</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -587,6 +587,20 @@
             Customize a apar&ecirc;ncia com temas premium e exclusivos
           </p>
 
+          <!-- Oferta (so aparece no FREE; controlada por renderizarTemasAparencia) -->
+          <div id="ofertaTemasPro" class="oferta-temas-pro" style="display: none">
+            <div class="oferta-temas-texto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Temas premium s&atilde;o exclusivos do Modo PRO.</span>
+            </div>
+            <button class="play btn-oferta-temas" type="button" onclick="mostrarTela('pro')">
+              Ativar Modo PRO
+            </button>
+          </div>
+
           <div id="containerTemasAparencia" class="temas-container">
             <!-- Temas serao inseridos aqui via JavaScript -->
           </div>
@@ -902,7 +916,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.4.7</div>
+      <div class="versao-app">Vers&atilde;o 1.4.8</div>
       </div>
     </div>
 
