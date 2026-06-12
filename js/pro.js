@@ -3,49 +3,12 @@
 ===================================== */
 
 /**
- * Ativa o Modo PRO
- */
-function confirmarAtivarPRO() {
-  salvar(
-    "modoPRO",
-    JSON.stringify({
-      ativo: true,
-      dataAtivacao: new Date().toISOString(),
-    }),
-  );
-
-  fecharPopupAtivarPRO();
-  atualizarStatusPRO();
-
-  mostrarNotificacao("PRO Ativado com Sucesso!");
-}
-
-/**
- * Cancela o Modo PRO
- */
-function confirmarCancelarPRO() {
-  salvar(
-    "modoPRO",
-    JSON.stringify({
-      ativo: false,
-      dataCancelamento: new Date().toISOString(),
-    }),
-  );
-
-  fecharPopupCancelarPRO();
-  atualizarStatusPRO();
-
-  mostrarNotificacao("PRO Cancelado");
-}
-
-/**
  * Atualiza os elementos visuais conforme status do PRO
  */
 function atualizarStatusPRO() {
   const proDados = lerPRO();
   const statusEl = getEl("statusPRO");
   const statusTexto = getEl("statusTexto");
-  const btnCancelar = getEl("btnCancelarPRO");
   const btnMenuPRO = getEl("btnMenuPRO");
   const assistenteIAMenu = getEl("assistenteIAMenu");
   // Wrapper das secoes que so aparecem no estado INATIVO (preco + CTA +
@@ -56,14 +19,11 @@ function atualizarStatusPRO() {
   const checklistLabel = getEl("proChecklistLabel");
   const obrigadoCard = getEl("proObrigadoCard");
 
-  if (!statusEl || !statusTexto || !btnCancelar) return;
+  if (!statusEl || !statusTexto) return;
 
   const statusH2 = statusEl.querySelector("h2");
 
   if (proDados.ativo) {
-    // PRO ATIVO (s8) - hero celebrativo + checklist com tom "seus recursos" +
-    // card de agradecimento + cancelar discreto. Tela cheia mas com foco em
-    // confirmar valor (em vez de vender).
     statusEl.classList.remove("inativo");
     statusEl.classList.add("ativo");
 
@@ -76,7 +36,6 @@ function atualizarStatusPRO() {
       statusTexto.textContent = "Aproveite os recursos exclusivos do PRO.";
     }
 
-    btnCancelar.style.display = "inline-block";
     if (ctaSection) ctaSection.style.display = "none";
     if (checklist) checklist.style.display = "";
     if (checklistLabel) checklistLabel.textContent = "Seus recursos ativos";
@@ -104,7 +63,6 @@ function atualizarStatusPRO() {
     statusTexto.textContent =
       "Ative o Modo PRO e ganhe acesso a recursos exclusivos";
 
-    btnCancelar.style.display = "none";
     if (ctaSection) ctaSection.style.display = "";
     if (checklist) checklist.style.display = "";
     if (checklistLabel) checklistLabel.textContent = "Recursos exclusivos";
@@ -174,40 +132,13 @@ function acaoBotaoMenuPRO() {
 }
 
 /**
- * Abre popup de ativacao
- */
-function abrirAtivarPRO() {
-  abrirOverlayAcessivel("popupAtivarPRO", ".popup-acoes .play");
-}
-
-/**
- * Fecha popup de ativacao
- */
-function fecharPopupAtivarPRO() {
-  fecharOverlayAcessivel("popupAtivarPRO");
-}
-
-/**
- * Abre popup de cancelamento
- */
-function abrirCancelarPRO() {
-  abrirOverlayAcessivel("popupCancelarPRO", ".popup-acoes .play, .popup-acoes .padrao");
-}
-
-/**
- * Fecha popup de cancelamento
- */
-function fecharPopupCancelarPRO() {
-  fecharOverlayAcessivel("popupCancelarPRO");
-}
-
-/**
  * Aplica efeitos visuais quando PRO esta ativo
  */
 function aplicarEfeitosPRO() {
   document.body.classList.add("modo-pro");
 
-  // Restaurar tema salvo ou aplicar tema padrao PRO
+  if (typeof ocultarBannerAnuncio === "function") ocultarBannerAnuncio();
+
   setTimeout(() => {
     restaurarTemaPro();
   }, 100);
@@ -335,6 +266,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   inicializarTelaPRO();
   atualizarTelaSobre();
+
+  if (typeof inicializarPagamento === "function") inicializarPagamento();
+  if (typeof inicializarAnuncios === "function") inicializarAnuncios();
 });
 
 

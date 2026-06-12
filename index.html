@@ -174,7 +174,7 @@
         </button>
       </div>
 
-      <footer>Vers&atilde;o 1.4.13</footer>
+      <footer>Vers&atilde;o 1.5.0</footer>
     </div>
 
     <!-- ================= NOVO JOGO ================= -->
@@ -662,7 +662,7 @@
         <div id="proCtaSection" class="pro-cta-section">
           <div class="preco-box">
             <p class="preco-label">Acesso Vital&iacute;cio</p>
-            <div class="preco-valor"><strong>R$ 19,90</strong></div>
+            <div class="preco-valor"><strong>R$ 24,90</strong></div>
             <p class="preco-info">Pagamento &uacute;nico, sem recorr&ecirc;ncia</p>
           </div>
 
@@ -670,7 +670,7 @@
             id="btnAtivarPRO"
             class="btn-pro-cta"
             type="button"
-            onclick="abrirAtivarPRO()"
+            onclick="comprarPRO()"
           >
             <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
             <span class="btn-pro-cta-label">Ativar PRO Agora</span>
@@ -682,80 +682,9 @@
             <li>Funciona offline</li>
             <li>Atualiza&ccedil;&otilde;es futuras</li>
           </ul>
-        </div>
 
-        <!-- Botao Cancelar - so aparece quando PRO ativo, visualmente discreto -->
-        <button
-          id="btnCancelarPRO"
-          class="btn-cancelar-pro-link"
-          type="button"
-          style="display: none"
-          onclick="abrirCancelarPRO()"
-        >
-          Cancelar assinatura
-        </button>
-      </div>
-    </div>
-
-    <!-- ================= POPUP DE ATIVACAO PRO ================= -->
-    <div
-      id="popupAtivarPRO"
-      class="popup-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="tituloPopupAtivarPRO"
-      aria-hidden="true"
-    >
-      <div class="popup-box popup-pro">
-        <div class="popup-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-        </div>
-        <h3 id="tituloPopupAtivarPRO">Confirmar Ativa&ccedil;&atilde;o</h3>
-        <p>Voc&ecirc; est&aacute; prestes a ativar o Modo PRO!</p>
-        <p class="payload-preco">R$ 19,90 (Acesso Vital&iacute;cio)</p>
-
-        <div class="popup-acoes">
-          <button class="play" type="button" onclick="confirmarAtivarPRO()">
-            Confirmar Pagamento
-          </button>
-          <button class="padrao" type="button" onclick="fecharPopupAtivarPRO()">
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= POPUP DE CANCELAMENTO PRO ================= -->
-    <div
-      id="popupCancelarPRO"
-      class="popup-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="tituloPopupCancelarPRO"
-      aria-hidden="true"
-    >
-      <div class="popup-box popup-pro">
-        <div class="popup-icon popup-icon-alerta" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-            <line x1="12" y1="9" x2="12" y2="13" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
-        </div>
-        <h3 id="tituloPopupCancelarPRO">Cancelar PRO?</h3>
-        <p>Voc&ecirc; perder&aacute; acesso aos recursos exclusivos.</p>
-        <p style="font-size: 12px; opacity: 0.7">
-          Poder&aacute; reativar a qualquer momento.
-        </p>
-
-        <div class="popup-acoes">
-          <button class="padrao" type="button" onclick="confirmarCancelarPRO()">
-            Sim, Cancelar
-          </button>
-          <button class="play" type="button" onclick="fecharPopupCancelarPRO()">
-            Manter PRO
+          <button class="btn-restaurar-pro" type="button" onclick="restaurarComprasPRO()">
+            Restaurar compra
           </button>
         </div>
       </div>
@@ -916,7 +845,7 @@
       </div>
 
       <!-- VERSAO -->
-      <div class="versao-app">Vers&atilde;o 1.4.13</div>
+      <div class="versao-app">Vers&atilde;o 1.5.0</div>
       </div>
     </div>
 
@@ -1275,6 +1204,8 @@
     <script src="js/tabela.js?v=69" defer></script>
     <script src="js/assistente-ia.js?v=69" defer></script>
     <script src="js/pro.js?v=69" defer></script>
+    <script src="js/pagamento.js?v=69" defer></script>
+    <script src="js/anuncios.js?v=69" defer></script>
     <script src="js/app.js?v=69" defer></script>
   </body>
 </html>

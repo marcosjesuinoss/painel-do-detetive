@@ -1696,8 +1696,8 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") no-repeat center / contain;
 }
 
-/* === BOTAO CANCELAR (discreto, estilo link) === */
-.btn-cancelar-pro-link {
+/* === BOTAO RESTAURAR COMPRA (discreto, estilo link) === */
+.btn-restaurar-pro {
   display: inline-block;
   width: auto;
   align-self: center;
@@ -1716,14 +1716,14 @@ body.modo-pro .pro-hero.ativo ~ .pro-checklist .pro-checklist-check {
   transition: opacity var(--transition-fast);
 }
 
-.btn-cancelar-pro-link:hover,
-.btn-cancelar-pro-link:focus-visible {
+.btn-restaurar-pro:hover,
+.btn-restaurar-pro:focus-visible {
   opacity: 0.85;
   background: transparent;
   box-shadow: none;
 }
 
-.btn-cancelar-pro-link:active {
+.btn-restaurar-pro:active {
   transform: none;
   box-shadow: none;
 }

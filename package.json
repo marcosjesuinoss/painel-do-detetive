@@ -16,7 +16,9 @@
     "vitest": "^2.1.0"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "^8.4.0",
-    "@capacitor/core": "^8.4.0"
+    "@capacitor/core": "^8.4.0",
+    "@revenuecat/purchases-capacitor": "^13.1.7"
   }
 }
