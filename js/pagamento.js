@@ -7,7 +7,7 @@
    - PRODUCT_ID          → ID do produto criado no Google Play Console
 ===================================== */
 
-const REVENUECAT_API_KEY = "PREENCHER_CHAVE_REVENUECAT";
+const REVENUECAT_API_KEY = "test_BedxRuEvOKLZHTNKasidbpqgdiM";
 const ENTITLEMENT_ID = "pro";
 
 function _isCapacitor() {

@@ -11,7 +11,7 @@
    - No PWA / browser: sem efeito (silencioso)
 ===================================== */
 
-const ADMOB_BANNER_ID = "PREENCHER_BANNER_UNIT_ID";
+const ADMOB_BANNER_ID = "ca-app-pub-2620409279923135/3428449007";
 
 // IDs de teste do AdMob — usar durante desenvolvimento
 const ADMOB_BANNER_ID_TESTE = "ca-app-pub-3940256099942544/6300978111";
