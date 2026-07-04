@@ -113,13 +113,13 @@
 
     <title>Painel do Detetive</title>
 
-    <link rel="stylesheet" href="css/style.css?v=70" />
-    <link rel="manifest" href="manifest.json?v=70" />
+    <link rel="stylesheet" href="css/style.css?v=71" />
+    <link rel="manifest" href="manifest.json?v=71" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180.png" />
     <link rel="apple-touch-startup-image" href="assets/splash-completo.png" />
 
     <!-- Scripts PRO e Utilitarios -->
-    <script src="js/utils-pro.js?v=70" defer></script>
+    <script src="js/utils-pro.js?v=71" defer></script>
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -228,6 +228,16 @@
     <div id="jogo" class="tela">
       <div id="areaRolagemJogo">
         <div id="tabela"></div>
+      </div>
+
+      <!-- Toast rewarded — aparece alguns segundos após nova partida (FREE) -->
+      <div id="snackbarRewarded" class="snackbar-rewarded" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="snackbar-rewarded-icone">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+          <polygon points="10 8 16 12 10 16 10 8"/>
+        </svg>
+        <span class="snackbar-rewarded-texto">Assista um anúncio para testar recursos PRO</span>
+        <button class="snackbar-rewarded-fechar" type="button" onclick="fecharSnackbarRewarded()" aria-label="Fechar">✕</button>
       </div>
 
       <!-- RODAPE FIXO -->
@@ -464,11 +474,49 @@
           type="button"
           onclick="acaoBotaoMenuPRO()"
         >
+          <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
           <svg class="btn-menu-pro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
           <span>Ativar Modo PRO</span>
         </button>
+
+        <button
+          id="btnMenuRewarded"
+          class="btn-menu-rewarded"
+          type="button"
+          onclick="mostrarRewardedAnuncio()"
+        >
+          <span class="btn-shimmer" aria-hidden="true"></span>
+          <svg class="btn-menu-rewarded-icone" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+            <polygon points="10 8 16 12 10 16 10 8"/>
+          </svg>
+          <span>Assista e ganhe PRO por 1 partida</span>
+        </button>
+
+        <div id="proTempStatus" class="pro-temp-status" aria-live="polite">
+          <div class="pro-temp-status-item pro-temp-status-ativo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Marcação automática ativada</span>
+          </div>
+          <div class="pro-temp-status-item pro-temp-status-bloqueado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Assistente de IA não incluso</span>
+          </div>
+          <div class="pro-temp-status-item pro-temp-status-timer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="proTempTimerLabel">30:00 restantes</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -586,6 +634,16 @@
             Customize a apar&ecirc;ncia com temas premium e exclusivos
           </p>
 
+          <!-- Info PRO temp (so aparece em PRO temp; controlada por renderizarTemasAparencia) -->
+          <div id="infoTemasProTemp" class="info-temas-pro-temp" style="display: none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p><strong>Tema incluído no Teste PRO:</strong> Verde Assinatura. Os outros 5 temas são exclusivos do Modo PRO completo.</p>
+          </div>
+
           <!-- Oferta (so aparece no FREE; controlada por renderizarTemasAparencia) -->
           <div id="ofertaTemasPro" class="oferta-temas-pro" style="display: none">
             <div class="oferta-temas-texto">
@@ -596,6 +654,7 @@
               <span>Temas premium s&atilde;o exclusivos do Modo PRO.</span>
             </div>
             <button class="play btn-menu-pro btn-oferta-temas" type="button" onclick="mostrarTela('pro')">
+              <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
               <svg class="btn-menu-pro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
@@ -619,7 +678,7 @@
       <div class="container pro-container">
         <!-- HERO - icone SVG + titulo + descricao. Troca de aparencia
              via classes .ativo / .inativo controladas por atualizarStatusPRO -->
-        <div id="statusPRO" class="pro-hero inativo">
+        <div id="statusPRO" class="pro-hero inativo pro-anim-entrada">
           <div class="pro-hero-topo">
             <div class="pro-hero-icone">
               <svg class="pro-hero-svg-inativo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -639,7 +698,7 @@
         </div>
 
         <!-- LABEL antes da checklist (texto muda conforme PRO ativo/inativo) -->
-        <h3 id="proChecklistLabel" class="pro-checklist-label">
+        <h3 id="proChecklistLabel" class="pro-checklist-label pro-anim-entrada">
           Recursos exclusivos
         </h3>
 
@@ -650,7 +709,7 @@
         </ul>
 
         <!-- CARD "OBRIGADO" - so visivel quando PRO ativo -->
-        <div id="proObrigadoCard" class="pro-obrigado" style="display: none">
+        <div id="proObrigadoCard" class="pro-obrigado pro-anim-entrada" style="display: none">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
@@ -659,7 +718,7 @@
         </div>
 
         <!-- SECAO DE CTA: preco + botao + bullets - ocultada quando PRO ativo -->
-        <div id="proCtaSection" class="pro-cta-section">
+        <div id="proCtaSection" class="pro-cta-section pro-anim-entrada">
           <div class="preco-box">
             <p class="preco-label">Acesso Vital&iacute;cio</p>
             <div class="preco-valor"><strong>R$ 24,90</strong></div>
@@ -822,6 +881,7 @@
         <div class="texto-pro"></div>
 
         <button class="play btn-menu-pro" onclick="mostrarTela('pro')" type="button">
+          <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
           <svg class="btn-menu-pro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
@@ -839,13 +899,117 @@
           Enviar uma sugest&atilde;o
         </button>
 
-        <a class="link-privacidade" href="privacidade.html">
+        <a class="link-privacidade" href="privacidade.html" onclick="event.preventDefault(); mostrarTela('privacidade');">
           Pol&iacute;tica de Privacidade
         </a>
       </div>
 
       <!-- VERSAO -->
       <div class="versao-app">Vers&atilde;o 1.5.0</div>
+      </div>
+    </div>
+
+    <!-- ================= PRIVACIDADE ================= -->
+    <div id="privacidade" class="tela">
+      <button class="padrao btn-voltar" data-destino="sobre" type="button">
+        Voltar
+      </button>
+
+      <div class="container privacidade-container">
+        <h1>Pol&iacute;tica de Privacidade</h1>
+        <p class="privacidade-atualizado">Última atualização: 6 de junho de 2026</p>
+
+        <div class="privacidade-nota">
+          <strong>Resumo rápido:</strong> o Painel do Detetive funciona inteiramente
+          no seu aparelho. Tudo o que você digita ou marca durante uma partida fica
+          salvo apenas localmente, no seu dispositivo, e <strong>não é enviado para
+          nenhum servidor nosso</strong>. Não exigimos cadastro nem login.
+        </div>
+
+        <h2>1. Quem é o responsável</h2>
+        <p>O responsável pelo tratamento dos dados (controlador) é o desenvolvedor do
+        Painel do Detetive. Para qualquer dúvida ou solicitação relacionada a esta
+        política, entre em contato pelo e-mail:
+        <strong>codecreationstudio@outlook.com</strong>.</p>
+
+        <h2>2. Quais dados o app trata</h2>
+        <p>O aplicativo armazena, <strong>apenas no seu próprio dispositivo</strong>
+        (no armazenamento local do navegador), informações necessárias para o
+        funcionamento do jogo, como:</p>
+        <ul>
+          <li>Os nomes que você digita para os jogadores da partida;</li>
+          <li>O andamento da partida (suas marcações na tabela);</li>
+          <li>Suas preferências (tema visual, configurações do assistente);</li>
+          <li>O status de ativação do Modo PRO (armazenado localmente e verificado via servidor RevenueCat).</li>
+        </ul>
+        <p>Os dados de jogo <strong>não saem do seu dispositivo</strong>. Não há
+        cadastro, conta de usuário ou login. Não solicitamos dados sensíveis.</p>
+        <p>A verificação da compra do Modo PRO é processada pelo serviço RevenueCat,
+        que pode transmitir um identificador anônimo do dispositivo e o recibo de
+        compra para seus servidores com fins exclusivos de validação.</p>
+
+        <h2>3. Cookies e tecnologias de armazenamento</h2>
+        <p>Utilizamos apenas o <strong>armazenamento local técnico</strong>
+        (localStorage), essencial para o app lembrar da sua partida e das suas
+        preferências entre sessões. <strong>Não usamos cookies de
+        rastreamento</strong> para fins de marketing ou perfilamento.</p>
+
+        <h2>4. Publicidade e serviços de terceiros</h2>
+        <p>O app utiliza os seguintes serviços de terceiros que podem processar
+        dados do dispositivo:</p>
+        <ul>
+          <li><strong>Google AdMob</strong> — exibe anúncios na versão gratuita.
+          Pode coletar identificadores do dispositivo para personalização de anúncios.
+          O Modo PRO remove os anúncios.</li>
+          <li><strong>RevenueCat</strong> — processa e valida a compra do Modo PRO.
+          Coleta identificador anônimo do dispositivo e recibo da loja para verificação
+          de entitlements. Dados enviados aos servidores da RevenueCat exclusivamente
+          para esse fim. Política de privacidade: revenuecat.com/privacy.</li>
+        </ul>
+        <p>Não utilizamos ferramentas de análise de comportamento (analytics) próprias.</p>
+
+        <h2>5. Compartilhamento de dados</h2>
+        <p>Não vendemos dados pessoais. Os únicos terceiros que recebem dados do
+        dispositivo são os descritos na seção 4 (AdMob e RevenueCat), exclusivamente
+        para as finalidades indicadas. As informações de jogo ficam apenas no seu
+        dispositivo.</p>
+
+        <h2>6. Seus direitos (LGPD)</h2>
+        <p>Você tem direito a, entre outros:</p>
+        <ul>
+          <li>Confirmar a existência de tratamento e acessar seus dados;</li>
+          <li>Corrigir dados incompletos ou desatualizados;</li>
+          <li>Eliminar os dados tratados.</li>
+        </ul>
+        <p>Como tudo é armazenado localmente, você pode
+        <strong>excluir todos os dados a qualquer momento</strong>: use a opção de
+        iniciar uma nova partida no app, ou limpe os dados do app nas configurações
+        do seu dispositivo. Ao desinstalar o app, os dados locais também são removidos.</p>
+
+        <h2>7. Segurança</h2>
+        <p>Como os dados permanecem no seu aparelho, recomendamos manter o
+        dispositivo protegido (bloqueio de tela, sistema atualizado). Não temos
+        acesso ao conteúdo das suas partidas.</p>
+
+        <h2>8. Crianças e adolescentes</h2>
+        <p>O Painel do Detetive é um auxiliar para jogos de tabuleiro de dedução
+        (estilo Detetive / Clue). O app não coleta intencionalmente dados pessoais
+        de crianças. O uso por menores deve ocorrer com a supervisão dos pais ou
+        responsáveis.</p>
+
+        <h2>9. Alterações nesta política</h2>
+        <p>Esta política pode ser atualizada para refletir mudanças no aplicativo ou
+        na legislação. A data da "Última atualização" no topo indica a versão
+        vigente. Recomendamos revisá-la periodicamente.</p>
+
+        <h2>10. Contato</h2>
+        <p>Em caso de dúvidas sobre esta Política de Privacidade ou sobre o
+        tratamento dos seus dados, fale conosco pelo e-mail
+        <strong>codecreationstudio@outlook.com</strong>.</p>
+
+        <p class="privacidade-rodape">Painel do Detetive &mdash; auxiliar não oficial
+        para jogos de dedução. Detetive e Clue são marcas de seus respectivos
+        titulares; este app não possui vínculo com elas.</p>
       </div>
     </div>
 
@@ -1045,6 +1209,54 @@
       </div>
     </div>
 
+    <!-- ================= POPUP OFERTA REWARDED ================= -->
+    <div
+      id="popupOfertaRewarded"
+      class="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloPopupOfertaRewarded"
+      aria-hidden="true"
+    >
+      <div class="popup-box">
+        <h3 id="tituloPopupOfertaRewarded">Teste recursos PRO Gr&aacute;tis</h3>
+        <p class="popup-oferta-rewarded-desc">
+          No Modo PRO, ao marcar V numa linha, os outros jogadores ganham X
+          automaticamente. Teste gr&aacute;tis por 30 minutos assistindo um an&uacute;ncio.
+        </p>
+        <button
+          class="btn-menu-rewarded"
+          type="button"
+          onclick="fecharPopupOfertaRewarded(); mostrarRewardedAnuncio()"
+        >
+          <span class="btn-shimmer" aria-hidden="true"></span>
+          <svg class="btn-menu-rewarded-icone" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+            <polygon points="10 8 16 12 10 16 10 8"/>
+          </svg>
+          <span>Assista e ganhe PRO por 1 partida</span>
+        </button>
+        <button
+          class="play btn-menu-pro"
+          type="button"
+          onclick="fecharPopupOfertaRewarded(); mostrarTela('pro')"
+        >
+          <span class="btn-pro-cta-shimmer" aria-hidden="true"></span>
+          <svg class="btn-menu-pro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          <span>Ativar Modo PRO</span>
+        </button>
+        <button
+          class="padrao"
+          type="button"
+          onclick="fecharPopupOfertaRewarded()"
+        >
+          Agora n&atilde;o
+        </button>
+      </div>
+    </div>
+
     <!-- ================= POPUPS ================= -->
 
     <div
@@ -1192,21 +1404,21 @@
       </div>
     </div>
 
-    <script src="js/utils.js?v=70" defer></script>
-    <script src="js/jogadores.js?v=70" defer></script>
-    <script src="js/telas.js?v=70" defer></script>
-    <script src="js/partida.js?v=70" defer></script>
-    <script src="js/menu.js?v=70" defer></script>
-    <script src="js/popup.js?v=70" defer></script>
-    <script src="js/tema.js?v=70" defer></script>
-    <script src="js/accordion.js?v=70" defer></script>
-    <script src="js/estado.js?v=70" defer></script>
-    <script src="js/tabela.js?v=70" defer></script>
-    <script src="js/assistente-ia.js?v=70" defer></script>
-    <script src="js/pro.js?v=70" defer></script>
-    <script src="js/pagamento.js?v=70" defer></script>
-    <script src="js/anuncios.js?v=70" defer></script>
-    <script src="js/app.js?v=70" defer></script>
+    <script src="js/utils.js?v=71" defer></script>
+    <script src="js/jogadores.js?v=71" defer></script>
+    <script src="js/telas.js?v=71" defer></script>
+    <script src="js/partida.js?v=71" defer></script>
+    <script src="js/menu.js?v=71" defer></script>
+    <script src="js/popup.js?v=71" defer></script>
+    <script src="js/tema.js?v=71" defer></script>
+    <script src="js/accordion.js?v=71" defer></script>
+    <script src="js/estado.js?v=71" defer></script>
+    <script src="js/tabela.js?v=71" defer></script>
+    <script src="js/assistente-ia.js?v=71" defer></script>
+    <script src="js/pro.js?v=71" defer></script>
+    <script src="js/pagamento.js?v=71" defer></script>
+    <script src="js/anuncios.js?v=71" defer></script>
+    <script src="js/app.js?v=71" defer></script>
   </body>
 </html>
 

@@ -12,7 +12,10 @@ function mostrarTela(id) {
     .forEach((t) => t.classList.remove("ativa"));
 
   const tela = getEl(id);
-  if (tela) tela.classList.add("ativa");
+  if (tela) {
+    tela.classList.add("ativa");
+    tela.scrollTop = 0;
+  }
 
   if (id === "inicio") {
     atualizarBotaoContinuar();

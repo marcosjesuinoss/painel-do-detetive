@@ -260,25 +260,9 @@ function prepararDistribuicaoCartasPartida(numJogadores) {
     return true;
   }
 
-  // FREE: o popup so existe pra alimentar o assistente (PRO). Sem PRO,
-  // salva uma distribuicao default (primeiros N jogadores com mais cartas)
-  // e segue direto pra partida. Usuario nao perde nada porque nao tem
-  // assistente pra usar essa info.
-  const proAtivo = typeof isPRO === "function" && isPRO();
-  if (!proAtivo) {
-    const num = parseInt(numJogadores, 10);
-    const maisCartas = [];
-    for (let i = 0; i < configuracao.quantidadeMaisCartas; i++) {
-      maisCartas.push(i);
-    }
-    const dist = Array(num).fill(configuracao.cartasMenor);
-    maisCartas.forEach((i) => {
-      dist[i] = configuracao.cartasMaior;
-    });
-    salvarDistribuicaoCartasPartida(dist, maisCartas);
-    return true;
-  }
-
+  // Popup necessario mesmo no FREE: J1 pode ter a quantidade menor de cartas
+  // e o popup de "selecione suas cartas" depende dessa info para pedir a
+  // quantidade correta. Assumir sempre os primeiros N com mais cartas estava errado.
   abrirPopupDistribuicaoCartas(numJogadores, configuracao);
   return false;
 }
@@ -313,6 +297,11 @@ function continuar() {
   if (typeof retomarJogoComCarregamento === "function") {
     retomarJogoComCarregamento("continuar");
   }
+
+  // Reinicia o timer do snackbar rewarded — usuário voltou a jogar
+  if (typeof exibirSnackbarRewardedSeElegivel === "function") {
+    exibirSnackbarRewardedSeElegivel();
+  }
 }
 
 function novaPartida() {
@@ -324,6 +313,8 @@ function novaPartida() {
 }
 
 function iniciarPartidaLimpa(distribuicaoJaConfirmada = false) {
+  if (typeof notificarNovaPartida === "function") notificarNovaPartida();
+  if (typeof mostrarInterstitialSeDisponivel === "function") mostrarInterstitialSeDisponivel();
   gerarCartas();
 
   const elJogadores = getEl("jogadores");

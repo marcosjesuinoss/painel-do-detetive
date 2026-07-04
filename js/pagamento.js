@@ -75,6 +75,7 @@ async function comprarPRO() {
     if (ativo) {
       _gravarProAtivado();
       mostrarNotificacao("PRO Ativado com Sucesso!");
+      if (typeof celebrarProAtivado === "function") celebrarProAtivado();
     }
   } catch (e) {
     if (e?.code !== "PURCHASE_CANCELLED") {

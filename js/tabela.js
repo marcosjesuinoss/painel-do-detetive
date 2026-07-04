@@ -190,61 +190,12 @@ function atualizarBotaoUndo() {
   }
 }
 
-/* Tooltip educativo - so aparece 1x por install no FREE quando o
-   usuario marca seu 1o V. Explica que auto-X (cascata) eh diferencial
-   PRO. Fecha automaticamente em ~6s ou ao tocar em qualquer lugar. */
+/* Popup de oferta rewarded - aparece 1x por partida no FREE quando o
+   usuario marca seu 1o V. Oferece testar PRO temp via anuncio ou comprar PRO. */
 function mostrarTooltipPrimeiroVFree(celReferencia) {
-  // Remove qualquer tooltip antigo
-  document.querySelectorAll(".tooltip-free-v").forEach((el) => el.remove());
-
-  const tooltip = document.createElement("div");
-  tooltip.className = "tooltip-free-v";
-  tooltip.innerHTML = `
-    <div class="tooltip-free-v-conteudo">
-      <strong>Sabia?</strong>
-      <p>No <strong>Modo PRO</strong> ao marcar V, os outros jogadores
-      ganham X automaticamente nesta linha.</p>
-    </div>
-  `;
-  document.body.appendChild(tooltip);
-
-  // Posiciona perto da celula
-  const rect = celReferencia.getBoundingClientRect();
-  const tooltipRect = tooltip.getBoundingClientRect();
-  const larguraTela = window.innerWidth;
-  const margem = 12;
-
-  let top = rect.bottom + 8;
-  // Se for sair pela parte de baixo da tela, posiciona acima
-  if (top + tooltipRect.height > window.innerHeight - margem) {
-    top = rect.top - tooltipRect.height - 8;
+  if (typeof abrirPopupOfertaRewarded === "function") {
+    abrirPopupOfertaRewarded();
   }
-  let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-  left = Math.max(margem, Math.min(left, larguraTela - tooltipRect.width - margem));
-
-  tooltip.style.top = `${top}px`;
-  tooltip.style.left = `${left}px`;
-
-  // Fade in
-  requestAnimationFrame(() => {
-    tooltip.classList.add("visivel");
-  });
-
-  // Auto-dismiss em 6s OU ao tocar em qualquer lugar
-  const fechar = () => {
-    tooltip.classList.remove("visivel");
-    setTimeout(() => tooltip.remove(), 250);
-    document.removeEventListener("pointerdown", fechar, { capture: true });
-    document.removeEventListener("scroll", fechar, { capture: true });
-  };
-  const timer = setTimeout(fechar, 6000);
-  setTimeout(() => {
-    document.addEventListener("pointerdown", fechar, { capture: true, once: true });
-    document.addEventListener("scroll", fechar, { capture: true, once: true });
-  }, 0);
-  tooltip.addEventListener("transitionend", () => {
-    if (!tooltip.classList.contains("visivel")) clearTimeout(timer);
-  });
 }
 
 /* Tooltip educativo da trinca de "?" no PRO - aparece 1x ao iniciar
@@ -688,6 +639,7 @@ function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
     estadoAnterior !== "V" &&
     typeof isPRO === "function" &&
     !isPRO() &&
+    !(typeof isPROTemp === "function" && isPROTemp()) &&
     !localStorage.getItem("freeVTooltipNestaPartida")
   ) {
     try {
@@ -713,7 +665,8 @@ function marcarCelula(cel, tipo, modoTrinca = false, origem = "manual") {
     // assistente - se desligado, tambem nao faz auto-X.
     let permitirAutoX = false;
     try {
-      const isProAtivo = typeof isPRO === "function" && isPRO();
+      const isProAtivo = (typeof isPRO === "function" && isPRO()) ||
+                         (typeof isPROTemp === "function" && isPROTemp());
       if (isProAtivo) {
         permitirAutoX = true;
         const cfgRaw = localStorage.getItem("assistenteIAConfiguracoes");
@@ -891,7 +844,9 @@ function atualizarDestaqueCartaOculta() {
     .querySelectorAll("#tabela .celula.carta-oculta")
     .forEach((c) => c.classList.remove("carta-oculta"));
 
-  if (typeof isPRO !== "function" || !isPRO()) {
+  const _proOuTemp = (typeof isPRO === "function" && isPRO()) ||
+                     (typeof isPROTemp === "function" && isPROTemp());
+  if (!_proOuTemp) {
     return;
   }
 
@@ -959,7 +914,9 @@ function atualizarAlertaDuplicidadePRO() {
     .querySelectorAll("#tabela .celula.alerta-duplicidade-v")
     .forEach((c) => c.classList.remove("alerta-duplicidade-v"));
 
-  if (typeof isPRO !== "function" || !isPRO()) {
+  const _proOuTemp2 = (typeof isPRO === "function" && isPRO()) ||
+                      (typeof isPROTemp === "function" && isPROTemp());
+  if (!_proOuTemp2) {
     return;
   }
 
@@ -1284,7 +1241,9 @@ function aplicarTrincaResposta() {
   // assistente, sem origem). Ajuda o usuario a registrar a duvida
   // visualmente sem depender da IA. A logica completa fica como
   // diferencial do PRO.
-  if (typeof isPRO === "function" && !isPRO()) {
+  const _proOuTempTrinca = (typeof isPRO === "function" && isPRO()) ||
+                           (typeof isPROTemp === "function" && isPROTemp());
+  if (!_proOuTempTrinca) {
     candidatas.forEach((c) => {
       estadoSalvo[c.chave] = "?";
       const cel = document.querySelector(`[data-key="${c.chave}"]`);

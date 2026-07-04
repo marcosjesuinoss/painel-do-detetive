@@ -96,7 +96,12 @@ function resetarConfiguracaoAssistenteIA() {
 // eixos ligado (sugestoes OU automarcacao). Toda checagem "deve rodar
 // assistente?" deveria passar por aqui em vez de chamar isPRO() direto.
 function assistenteIAEstaAtivo() {
-  if (typeof isPRO !== "function" || !isPRO()) return false;
+  const proCompleto = typeof isPRO === "function" && isPRO();
+  if (!proCompleto) {
+    // PRO temporário (rewarded): apenas automarcação, sem sugestões
+    if (typeof isPROTemp !== "function" || !isPROTemp()) return false;
+    return obterConfiguracaoAssistenteIA().automarcacao === true;
+  }
   const cfg = obterConfiguracaoAssistenteIA();
   return cfg.sugestoes === true || cfg.automarcacao === true;
 }
@@ -2565,10 +2570,11 @@ function menuLateralAssistenteVisivelAssistenteIA() {
 
 function atualizarAssistenteIA() {
   try {
-    // Sem PRO -> menu inteiro fica oculto via atualizarStatusPRO; nao
-    // precisamos renderizar nada. Garante limpeza do badge de inconsistencia
-    // (caso usuario desativou PRO com inconsistencia ainda na tela).
-    if (typeof isPRO === "function" && !isPRO()) {
+    // Sem PRO e sem PRO temp -> nao roda deducoes nem renderiza.
+    // Limpa badge de inconsistencia caso usuario tenha desativado PRO.
+    const _proOuTempIA = (typeof isPRO === "function" && isPRO()) ||
+                         (typeof isPROTemp === "function" && isPROTemp());
+    if (!_proOuTempIA) {
       document.body.classList.remove("tem-inconsistencia-grave");
       return;
     }
@@ -2583,7 +2589,11 @@ function atualizarAssistenteIA() {
     // PRO ativo mas usuario desligou OS DOIS eixos (sugestoes E automarcacao):
     // assistente totalmente silencioso. Cards continuam visiveis (pra o gear
     // ficar acessivel) mas mostram estado "desativado".
-    const cfgUsuario = obterConfiguracaoAssistenteIA();
+    let cfgUsuario = obterConfiguracaoAssistenteIA();
+    // PRO temporário: bloqueia sugestões — apenas automarcação disponível
+    if (typeof isPROTemp === "function" && isPROTemp() && !(typeof isPRO === "function" && isPRO())) {
+      cfgUsuario = { ...cfgUsuario, sugestoes: false };
+    }
     if (!cfgUsuario.sugestoes && !cfgUsuario.automarcacao) {
       // Limpa badge - assistente off, sem deteccao de inconsistencia
       document.body.classList.remove("tem-inconsistencia-grave");

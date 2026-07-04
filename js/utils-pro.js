@@ -313,7 +313,7 @@ function renderizarBeneficiosPRO() {
 
   if (recursos.length === 0) {
     container.innerHTML = `
-      <li class="pro-checklist-item pro-checklist-vazio">
+      <li class="pro-checklist-item pro-checklist-vazio pro-anim-entrada">
         Recursos PRO indisponiveis no momento.
       </li>
     `;
@@ -324,7 +324,7 @@ function renderizarBeneficiosPRO() {
   // da feature + check accent + nome + descricao. Renderizado como <ul>.
   container.innerHTML = recursos
     .map((recurso) => `
-      <li class="pro-checklist-item" data-feature="${recurso.id}">
+      <li class="pro-checklist-item pro-anim-entrada" data-feature="${recurso.id}">
         <span class="pro-checklist-icone">${recurso.svg || ""}</span>
         <div class="pro-checklist-conteudo">
           <strong class="pro-checklist-nome">${recurso.nome}</strong>
@@ -336,6 +336,26 @@ function renderizarBeneficiosPRO() {
       </li>
     `)
     .join("");
+}
+
+/**
+ * Reinicia a animacao de entrada em cascata da tela PRO (hero, label,
+ * itens da checklist, cta/obrigado). Precisa ser chamada toda vez que a
+ * tela PRO abre - ".tela" nunca sai do DOM (usa opacity/transform, nao
+ * display:none), entao um <keyframe> comum so tocaria na primeira vez.
+ * Remove a classe marcadora, forca reflow (1x, pra todos de uma vez) e
+ * reaplica - isso reinicia o keyframe do zero em cada elemento.
+ */
+function reiniciarAnimacaoEntradaPRO() {
+  const telaPro = getEl("pro");
+  if (!telaPro) return;
+
+  const alvos = telaPro.querySelectorAll(".pro-anim-entrada");
+  if (alvos.length === 0) return;
+
+  alvos.forEach((el) => el.classList.remove("pro-anim-entrada"));
+  void telaPro.offsetWidth; // forca reflow antes de reaplicar
+  alvos.forEach((el) => el.classList.add("pro-anim-entrada"));
 }
 
 // ======================================
@@ -374,6 +394,42 @@ function mostrarNotificacao(mensagem) {
   }, 2000);
 }
 
+/**
+ * Confete celebrativo no momento da compra do PRO. Usa so transform/opacity
+ * (GPU composited) pra nao repetir o lag que tinhamos com box-shadow/outline.
+ */
+function celebrarProAtivado() {
+  const cores = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#a855f7"];
+  const container = document.createElement("div");
+  container.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;";
+
+  for (let i = 0; i < 36; i++) {
+    const conf = document.createElement("div");
+    const cor = cores[i % cores.length];
+    const x = Math.random() * 100;
+    const atraso = (Math.random() * 0.3).toFixed(2);
+    const duracao = (1.4 + Math.random() * 0.8).toFixed(2);
+    const largura = (6 + Math.random() * 6).toFixed(1);
+    const rotacao = (Math.random() * 720 - 360).toFixed(0);
+    conf.style.cssText = `
+      position: absolute;
+      top: -10px;
+      left: ${x}%;
+      width: ${largura}px;
+      height: ${(largura * 0.4).toFixed(1)}px;
+      background: ${cor};
+      opacity: 0.9;
+      transform: translateY(0) rotate(0deg);
+      animation: confettiCair ${duracao}s ease-in ${atraso}s forwards;
+      --confetti-rotacao: ${rotacao}deg;
+    `;
+    container.appendChild(conf);
+  }
+
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 2600);
+}
+
 // ======================================
 //   RENDERIZACAO DE TEMAS EM APARENCIAS
 // ======================================
@@ -388,14 +444,13 @@ function renderizarTemasAparencia() {
   if (!container || !configProFeatures) return;
 
   const temAcesso = temFeaturePro("temas");
+  const proTemp = typeof isPROTemp === "function" && isPROTemp();
   const oferta = getEl("ofertaTemasPro");
+  const infoProTemp = getEl("infoTemasProTemp");
 
-  // A secao de temas PRO agora aparece SEMPRE. No FREE ela vira uma "vitrine"
-  // bloqueada (cards com cadeado) + um banner de oferta do Modo PRO.
   if (secaoTemas) secaoTemas.style.display = "block";
-  if (oferta) oferta.style.display = temAcesso ? "none" : "";
-
-  container.innerHTML = "";
+  if (oferta) oferta.style.display = (temAcesso || proTemp) ? "none" : "";
+  if (infoProTemp) infoProTemp.style.display = (!temAcesso && proTemp) ? "" : "none";
 
   const temaSelecionado =
     localStorage.getItem("temaProSelecionado") || "classico";
@@ -405,6 +460,9 @@ function renderizarTemasAparencia() {
     (t) => t.tipo === "pro",
   );
 
+  // Fragment evita reflow a cada appendChild — insercao unica no DOM
+  const fragment = document.createDocumentFragment();
+
   temasPro.forEach((tema) => {
     const usarClaro = document.body.classList.contains("light");
     const varsPreview =
@@ -412,15 +470,24 @@ function renderizarTemasAparencia() {
     // Nomes dos temas tem 2 palavras (ex.: "Verde Assinatura"). Quebra a 1a
     // palavra em linha propria pra todos ocuparem 2 linhas de forma uniforme.
     const nomeEmDuasLinhas = tema.nome.replace(/ (?=\S+$)/, "<br>");
+    const gradientePreview = `linear-gradient(135deg, ${varsPreview["--accent-soft"]}, ${varsPreview["--accent-strong"]})`;
 
     const card = document.createElement("div");
 
-    if (temAcesso) {
-      // PRO: card selecionavel (comportamento original).
+    // PRO temporário + tema verde → mostra como selecionado (sem cadeado)
+    if (!temAcesso && proTemp && tema.id === "verde") {
+      card.className = "card-tema selecionado";
+      card.innerHTML = `
+        <div class="tema-preview" style="background: ${gradientePreview}"></div>
+        <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
+        <button class="btn-selecionar-tema" type="button" disabled>Selecionado</button>
+      `;
+    } else if (temAcesso) {
+      // PRO pago: card selecionavel (comportamento original).
       const ehSelecionado = temaSelecionado === tema.id;
       card.className = `card-tema ${ehSelecionado ? "selecionado" : ""}`;
       card.innerHTML = `
-        <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}"></div>
+        <div class="tema-preview" style="background: ${gradientePreview}"></div>
         <h4 class="tema-nome"><span>${nomeEmDuasLinhas}</span></h4>
         <button class="btn-selecionar-tema" data-tema="${tema.id}" type="button">
           ${ehSelecionado ? "Selecionado" : "Usar tema"}
@@ -435,7 +502,7 @@ function renderizarTemasAparencia() {
       // card inteiro leva pra tela do Modo PRO (a oferta).
       card.className = "card-tema bloqueado";
       card.innerHTML = `
-        <div class="tema-preview" style="background: ${varsPreview["--gradient-principal"]}">
+        <div class="tema-preview" style="background: ${gradientePreview}">
           <span class="tema-cadeado" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -451,22 +518,33 @@ function renderizarTemasAparencia() {
       });
     }
 
-    container.appendChild(card);
+    fragment.appendChild(card);
   });
+
+  container.innerHTML = "";
+  container.appendChild(fragment);
 }
 
 /**
  * Seleciona e aplica um tema PRO da tela de Aparencias
  */
+function _atualizarSelecaoCards(temaId) {
+  const container = getEl("containerTemasAparencia");
+  if (!container) return;
+  container.querySelectorAll(".card-tema").forEach(function(card) {
+    const btn = card.querySelector(".btn-selecionar-tema[data-tema]");
+    if (!btn) return;
+    const ehEste = btn.dataset.tema === temaId;
+    card.classList.toggle("selecionado", ehEste);
+    btn.textContent = ehEste ? "Selecionado" : "Usar tema";
+  });
+}
+
 function selecionarTemaPRO(temaId) {
-  // Aplicar tema via utilitario
   const sucesso = aplicarTemaPro(temaId);
 
   if (sucesso) {
-    // Atualizar visual dos cards
-    renderizarTemasAparencia();
-    // Usa o NOME do tema (ex.: "Dourado Solar") em vez do ID
-    // ("amarelo") pra bater com o que o card mostra.
+    _atualizarSelecaoCards(temaId);
     const tema = obterTemaPro(temaId);
     const nomeTema = tema && tema.nome ? tema.nome : temaId;
     mostrarNotificacao(`Tema "${nomeTema}" aplicado!`);
@@ -497,10 +575,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (telaAparencia) {
     const observer = new MutationObserver(() => {
       if (telaAparencia.classList.contains("ativa")) {
-        // Pequeno delay para garantir que a config foi carregada
-        setTimeout(() => {
-          inicializarTemasAparencia();
-        }, 100);
+        const container = getEl("containerTemasAparencia");
+        if (!container || container.children.length === 0) {
+          setTimeout(() => inicializarTemasAparencia(), 100);
+        }
       }
     });
 

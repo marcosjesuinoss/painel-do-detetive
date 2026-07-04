@@ -69,8 +69,8 @@ function atualizarStatusPRO() {
     if (obrigadoCard) obrigadoCard.style.display = "none";
 
     if (btnMenuPRO) {
-      // Atualiza so o <span> pra NAO destruir o icone SVG do botao.
-      const spanMenuPRO = btnMenuPRO.querySelector("span");
+      // Atualiza so o <span> do label (nao o do shimmer) pra NAO destruir o icone SVG do botao.
+      const spanMenuPRO = btnMenuPRO.querySelector("span:not(.btn-pro-cta-shimmer)");
       if (spanMenuPRO) spanMenuPRO.textContent = "Ativar Modo PRO";
       else btnMenuPRO.textContent = "Ativar Modo PRO";
       // display vazio (nao "block") pra preservar o display:flex do
@@ -137,10 +137,9 @@ function acaoBotaoMenuPRO() {
 function aplicarEfeitosPRO() {
   document.body.classList.add("modo-pro");
 
-  if (typeof ocultarBannerAnuncio === "function") ocultarBannerAnuncio();
-
   setTimeout(() => {
     restaurarTemaPro();
+    if (typeof renderizarTemasAparencia === "function") renderizarTemasAparencia();
   }, 100);
 }
 
@@ -148,11 +147,16 @@ function aplicarEfeitosPRO() {
  * Remove efeitos PRO
  */
 function removerEfeitosPRO() {
+  // PRO temporário gerencia seu próprio visual; não sobrescrever
+  if (typeof isPROTemp === "function" && isPROTemp()) return;
+
   document.body.classList.remove("modo-pro");
 
   // Restaurar tema classico
   setTimeout(() => {
+    if (typeof isPROTemp === "function" && isPROTemp()) return;
     aplicarTemaPro("classico");
+    if (typeof renderizarTemasAparencia === "function") renderizarTemasAparencia();
   }, 100);
 }
 
@@ -161,6 +165,9 @@ function removerEfeitosPRO() {
  */
 function inicializarTelaPRO() {
   atualizarStatusPRO();
+  if (typeof reiniciarAnimacaoEntradaPRO === "function") {
+    reiniciarAnimacaoEntradaPRO();
+  }
 }
 
 /**
@@ -175,9 +182,9 @@ function atualizarTelaSobre() {
   if (!textoProEl || !botaoProEl || !cardProEl) return;
 
   // Atualiza o label do botao SEM destruir o icone SVG interno - escreve
-  // no <span> se existir, senao cai pro textContent (fallback legado).
+  // no <span> do label (nao o do shimmer) se existir, senao cai pro textContent (fallback legado).
   const definirLabelBotaoPro = (texto) => {
-    const span = botaoProEl.querySelector("span");
+    const span = botaoProEl.querySelector("span:not(.btn-pro-cta-shimmer)");
     if (span) span.textContent = texto;
     else botaoProEl.textContent = texto;
   };
@@ -247,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const telaPRO = getEl("pro");
     if (telaPRO && telaPRO.classList.contains("ativa")) {
       inicializarTelaPRO();
+      if (typeof sincronizarShimmers === "function") sincronizarShimmers();
     }
   });
 

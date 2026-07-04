@@ -25,6 +25,7 @@ function fecharPopupLimpar() {
 }
 
 function confirmarLimpar() {
+  if (typeof notificarSaidaPartida === "function") notificarSaidaPartida();
   // "Limpar tabela" zera marcacoes e ESTADO DE SESSAO do assistente
   // (trincas/grupos, origens de duvida, pendencias do modo manual,
   // ultima mudanca narrada). PRESERVA configuracoes do popup do
@@ -68,6 +69,11 @@ function confirmarLimpar() {
   resetarSelecoesGlobais();
   criarTabela();
   atualizarBotaoContinuar();
+
+  // Reinicia o timer do snackbar rewarded — novo ciclo de marcação
+  if (typeof exibirSnackbarRewardedSeElegivel === "function") {
+    exibirSnackbarRewardedSeElegivel();
+  }
 }
 
 /* =====================================

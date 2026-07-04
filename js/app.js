@@ -374,5 +374,96 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  executarEtapaInicial("botao-voltar-android", () => {
+    inicializarBotaoVoltarAndroid();
+  });
+
   setTimeout(esconderSplash, 1400);
 });
+
+// ============================================================================
+// BOTAO FISICO/GESTO DE VOLTAR DO ANDROID (@capacitor/app)
+// ============================================================================
+// Sem o plugin @capacitor/app, o botao nativo de voltar nao tem historico de
+// URL pra usar (SPA de tela unica) e o Capacitor fecha o app direto em
+// qualquer tela. Aqui reaproveitamos a mesma navegacao que os botoes
+// ".btn-voltar" da UI ja usam, na seguinte ordem de prioridade:
+//   1) popup acessivel aberto (popupAtivo)      -> fecha o popup certo
+//   2) menu lateral aberto                       -> fecha o menu
+//   3) tela ativa tem .btn-voltar[data-destino]  -> navega pro destino
+//   4) sem destino (inicio, jogo)                -> duplo toque pra sair
+function fecharPopupAtivoPorBackButton() {
+  if (!popupAtivo || !popupAtivo.id) return false;
+
+  const fechadoresPorId = {
+    popupConfirmar: () => fecharPopup(),
+    popupLimpar: () => fecharPopupLimpar(),
+    popupMinhasCartas: () => pularMinhasCartas(),
+    popupOfertaRewarded: () => fecharPopupOfertaRewarded(),
+    popupSugestao: () => fecharPopupSugestao(),
+    popupDistribuicaoCartas: () => fecharPopupDistribuicaoCartas(),
+    popupConfiguracoesAssistenteIA: () => fecharConfiguracoesAssistenteIA(),
+  };
+
+  const fechar = fechadoresPorId[popupAtivo.id];
+  if (typeof fechar === "function") {
+    fechar();
+  } else {
+    fecharOverlayAcessivel(popupAtivo.id);
+  }
+  return true;
+}
+
+let _ultimoToqueSaidaAndroid = 0;
+let _ultimoToqueVoltarJogoAndroid = 0;
+
+function inicializarBotaoVoltarAndroid() {
+  const AppPlugin = window.Capacitor?.Plugins?.App;
+  if (!AppPlugin) return; // navegador/PWA - sem botao fisico de voltar
+
+  AppPlugin.addListener("backButton", () => {
+    if (fecharPopupAtivoPorBackButton()) return;
+
+    const menu = getEl("menuLateral");
+    if (menu && menu.classList.contains("aberto")) {
+      toggleMenu();
+      return;
+    }
+
+    const telaAtiva = document.querySelector(".tela.ativa");
+    const btnVoltar = telaAtiva?.querySelector(".btn-voltar[data-destino]");
+    if (btnVoltar) {
+      mostrarTela(btnVoltar.dataset.destino);
+      return;
+    }
+
+    // "jogo" nao tem .btn-voltar proprio na UI (so sai via menu lateral) -
+    // exige duplo toque antes de voltar pra home, mesmo esquema da tela
+    // inicial, pra evitar sair da partida sem querer.
+    if (telaAtiva?.id === "jogo") {
+      const agoraJogo = Date.now();
+      if (agoraJogo - _ultimoToqueVoltarJogoAndroid < 2000) {
+        _ultimoToqueVoltarJogoAndroid = 0;
+        irParaInicio();
+        return;
+      }
+      _ultimoToqueVoltarJogoAndroid = agoraJogo;
+      if (typeof mostrarNotificacao === "function") {
+        mostrarNotificacao("Toque novamente para sair da partida");
+      }
+      return;
+    }
+
+    // Sem popup, menu ou destino (so "inicio" chega aqui) - confirma saida
+    // com duplo toque em vez de fechar o app de primeira.
+    const agora = Date.now();
+    if (agora - _ultimoToqueSaidaAndroid < 2000) {
+      AppPlugin.exitApp();
+      return;
+    }
+    _ultimoToqueSaidaAndroid = agora;
+    if (typeof mostrarNotificacao === "function") {
+      mostrarNotificacao("Toque novamente para sair");
+    }
+  });
+}

@@ -25,6 +25,15 @@ function toggleMenu() {
     document.removeEventListener("keydown", _fecharMenuPorEsc);
   }
 
+  // Se o toast rewarded estiver visível ao abrir o menu, fecha — mas não
+  // cancela o timer pendente (usuário pode abrir o menu antes dos 2 min)
+  if (!aberto && typeof fecharSnackbarRewarded === "function") {
+    const snackbar = document.getElementById("snackbarRewarded");
+    if (snackbar && snackbar.classList.contains("visivel")) {
+      fecharSnackbarRewarded();
+    }
+  }
+
   // IA-029: quando o menu ABRE, forca um update do assistente. Enquanto
   // o menu esta fechado, atualizarAssistenteIA pula o render (etapa 2) -
   // este trigger garante que ao abrir os cards refletem o estado atual.
@@ -51,6 +60,7 @@ function resetarMenu() {
 }
 
 function irParaInicio() {
+  if (typeof notificarSaidaPartida === "function") notificarSaidaPartida();
   resetarMenu();
   mostrarTela("inicio");
 }
