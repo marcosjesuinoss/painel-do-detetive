@@ -46,7 +46,12 @@ async function _sincronizarEntitlementPRO() {
 
 async function comprarPRO() {
   if (!_isCapacitor()) {
-    mostrarNotificacao("Pagamento disponível apenas no app Android.");
+    // BRANCH DE DEMONSTRACAO (web-demo): Google Play Billing nao existe
+    // fora do Capacitor, entao aqui a ativacao e provisoria e sem cobranca -
+    // so pra visitantes do link publico verem os recursos PRO funcionando.
+    _gravarProAtivado();
+    mostrarNotificacao("PRO Ativado com Sucesso!");
+    if (typeof celebrarProAtivado === "function") celebrarProAtivado();
     return;
   }
   const Purchases = _getPurchases();
