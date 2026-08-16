@@ -42,7 +42,7 @@
         line-height: 1.2;
         margin: 0 0 6px;
       }
-      .atualizado {
+      .privacidade-atualizado {
         color: var(--muted);
         font-size: 13px;
         margin: 0 0 24px;
@@ -55,7 +55,7 @@
       p, li { color: var(--text); font-size: 15px; }
       ul { padding-left: 20px; }
       li { margin-bottom: 6px; }
-      .nota {
+      .privacidade-nota {
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -65,7 +65,7 @@
         font-size: 14px;
       }
       strong { color: #fff; }
-      footer {
+      .privacidade-rodape {
         margin-top: 40px;
         padding-top: 18px;
         border-top: 1px solid var(--border);
@@ -79,8 +79,9 @@
     <div class="wrap">
       <a class="voltar" href="index.html">&larr; Voltar ao app</a>
 
+      <div id="conteudo-privacidade">
       <h1>Política de Privacidade</h1>
-      <p class="atualizado">Última atualização: 6 de junho de 2026</p>
+      <p class="privacidade-atualizado">Última atualização: 6 de junho de 2026</p>
 
       <p>
         Esta Política de Privacidade explica como o aplicativo
@@ -89,7 +90,7 @@
         <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.
       </p>
 
-      <div class="nota">
+      <div class="privacidade-nota">
         <strong>Resumo rápido:</strong> o Painel do Detetive funciona inteiramente
         no seu aparelho. Tudo o que você digita ou marca durante uma partida fica
         salvo apenas localmente, no seu dispositivo, e <strong>não é enviado para
@@ -114,12 +115,17 @@
         <li>Os nomes que você digita para os jogadores da partida;</li>
         <li>O andamento da partida (suas marcações na tabela);</li>
         <li>Suas preferências (tema visual, configurações do assistente);</li>
-        <li>O status do Modo PRO no aparelho.</li>
+        <li>O status de ativação do Modo PRO (armazenado localmente e verificado via servidor RevenueCat).</li>
       </ul>
       <p>
-        Esses dados <strong>não saem do seu dispositivo</strong> e não são
-        coletados, transmitidos ou armazenados por nós. Não há cadastro, conta de
-        usuário ou login. Não solicitamos dados sensíveis.
+        Os dados de jogo <strong>não saem do seu dispositivo</strong>. Não há
+        cadastro, conta de usuário ou login. Não solicitamos dados sensíveis.
+      </p>
+      <p>
+        A verificação da compra do Modo PRO é processada pelo serviço
+        RevenueCat, que pode transmitir um identificador anônimo do
+        dispositivo e o recibo de compra para seus servidores com fins
+        exclusivos de validação.
       </p>
 
       <h2>3. Cookies e tecnologias de armazenamento</h2>
@@ -130,25 +136,36 @@
         rastreamento</strong> para fins de marketing ou perfilamento.
       </p>
 
-      <h2>4. Análises e publicidade</h2>
+      <h2>4. Publicidade e serviços de terceiros</h2>
       <p>
-        Na versão atual, o aplicativo <strong>não utiliza ferramentas de análise
-        (analytics) nem exibe anúncios</strong>.
+        O app utiliza os seguintes serviços de terceiros que podem processar
+        dados do dispositivo:
       </p>
+      <ul>
+        <li>
+          <strong>Google AdMob</strong> — exibe anúncios na versão gratuita.
+          Pode coletar identificadores do dispositivo para personalização de
+          anúncios. O Modo PRO remove os anúncios.
+        </li>
+        <li>
+          <strong>RevenueCat</strong> — processa e valida a compra do Modo
+          PRO. Coleta identificador anônimo do dispositivo e recibo da loja
+          para verificação de entitlements. Dados enviados aos servidores da
+          RevenueCat exclusivamente para esse fim. Política de privacidade:
+          revenuecat.com/privacy.
+        </li>
+      </ul>
       <p>
-        Caso, no futuro, sejam adicionados anúncios ou medições de uso, parceiros
-        de tecnologia (por exemplo, redes de publicidade) poderão coletar
-        identificadores do dispositivo e dados de navegação para exibir anúncios.
-        Nesse caso, esta política será atualizada e, quando exigido pela lei, será
-        solicitado o seu <strong>consentimento</strong> antes de qualquer coleta
-        para esse fim.
+        Não utilizamos ferramentas de análise de comportamento (analytics)
+        próprias.
       </p>
 
       <h2>5. Compartilhamento de dados</h2>
       <p>
-        Não vendemos nem compartilhamos seus dados com terceiros. Como as
-        informações ficam apenas no seu dispositivo, não há transferência de dados
-        para nós ou para outras empresas.
+        Não vendemos dados pessoais. Os únicos terceiros que recebem dados do
+        dispositivo são os descritos na seção 4 (AdMob e RevenueCat),
+        exclusivamente para as finalidades indicadas. As informações de jogo
+        ficam apenas no seu dispositivo.
       </p>
 
       <h2>6. Seus direitos (LGPD)</h2>
@@ -195,11 +212,12 @@
         <strong>codecreationstudio@outlook.com</strong>.
       </p>
 
-      <footer>
+      <footer class="privacidade-rodape">
         Painel do Detetive — auxiliar não oficial para jogos de dedução. Detetive e
         Clue são marcas de seus respectivos titulares; este app não possui vínculo
         com elas.
       </footer>
+      </div>
     </div>
   </body>
 </html>
